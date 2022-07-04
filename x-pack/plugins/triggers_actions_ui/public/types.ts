@@ -428,7 +428,17 @@ export interface AlertsTableConfigurationRegistry {
     renderCustomActionsRow: (alert?: EcsFieldsResponse) => JSX.Element;
     width?: number;
   };
+  useBulkActions?: () => {
+    render: () => {};
+  };
 }
+
+export interface SelectedRowsAction {
+  action: string;
+  rowIndex: string;
+}
+
+export type SelectedRowsState = Set<string> | undefined;
 
 export interface AlertsTableFlyoutBaseProps {
   alert: EcsFieldsResponse;
