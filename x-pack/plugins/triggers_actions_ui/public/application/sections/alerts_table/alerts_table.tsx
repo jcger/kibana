@@ -35,6 +35,7 @@ import { getLeadingControlColumn as getBulkActionsLeadingControlColumn } from '.
 
 import './alerts_table.scss';
 import { SelectionContext } from './bulk_actions/context';
+import { getToolbarVisibility } from './toolbar';
 
 export const ACTIVE_ROW_CLASS = 'alertsTableActiveRow';
 const DEFAULT_ACTIONS_COLUMNS_WIDTH = 75;
@@ -92,12 +93,14 @@ const AlertsTable: React.FunctionComponent<AlertsTableProps> = (props: AlertsTab
     useActionsColumn();
 
   const rowSelection = useReducer(selectedRowsReducer, new Set<string>());
+  const [currentRowsSelected] = rowSelection;
   const { render: renderBulkActions } = useBulkActions();
+
+  const isBulkActionsColumnActive = Boolean(renderBulkActions);
 
   const leadingControlColumns = useMemo(() => {
     const isActionButtonsColumnActive =
       props.showExpandToDetails || Boolean(renderCustomActionsRow);
-    const isBulkActionsColumnActive = Boolean(renderBulkActions);
 
     let controlColumns = [...props.leadingControlColumns];
 
@@ -153,9 +156,9 @@ const AlertsTable: React.FunctionComponent<AlertsTableProps> = (props: AlertsTab
   }, [
     actionsColumnWidth,
     alerts,
+    isBulkActionsColumnActive,
     props.leadingControlColumns,
     props.showExpandToDetails,
-    renderBulkActions,
     renderCustomActionsRow,
     setFlyoutAlertIndex,
   ]);
@@ -247,6 +250,9 @@ const AlertsTable: React.FunctionComponent<AlertsTableProps> = (props: AlertsTab
             renderCellValue={handleRenderCellValue}
             gridStyle={{ ...GridStyles, rowClasses }}
             sorting={{ columns: sortingColumns, onSort }}
+            toolbarVisibility={getToolbarVisibility({
+              selectedRowsCount: currentRowsSelected?.size,
+            })}
             pagination={{
               ...pagination,
               pageSizeOptions: props.pageSizeOptions,
