@@ -5,29 +5,31 @@
  * 2.0.
  */
 
+import { EuiDataGridToolBarVisibilityOptions } from '@elastic/eui';
 import React from 'react';
 import { BulkActions } from '../bulk_actions/components/toolbar';
 
 export const getToolbarVisibility = ({
   selectedRowsCount,
+  alertsCount,
   bulkActionItems,
 }: {
   selectedRowsCount: number;
+  alertsCount: number;
   bulkActionItems?: JSX.Element[];
-}) => {
+}): boolean | EuiDataGridToolBarVisibilityOptions => {
   if (selectedRowsCount === 0 || selectedRowsCount === undefined) return false;
 
   const options = {
-    showColumnSelector: selectedRowsCount === 0 || selectedRowsCount === undefined,
+    showColumnSelector: false,
+    showSortSelector: false,
     additionalControls: {
       left: {
-        append: bulkActionItems && (
+        append: (
           <BulkActions
             selectedCount={selectedRowsCount}
-            totalItems={0}
+            totalItems={alertsCount}
             showClearSelection={true}
-            onSelectAll={() => {}}
-            onClearSelection={() => {}}
             bulkActionItems={bulkActionItems}
           />
         ),

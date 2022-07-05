@@ -11,6 +11,7 @@ export const selectedRowsReducer = (
   rowSelection: SelectedRowsState,
   { action, rowIndex }: SelectedRowsAction
 ) => {
+  console.log(rowIndex);
   if (action === 'add') {
     const nextRowSelection = new Set(rowSelection);
     nextRowSelection.add(rowIndex);
@@ -19,6 +20,10 @@ export const selectedRowsReducer = (
     const nextRowSelection = new Set(rowSelection);
     nextRowSelection.delete(rowIndex);
     return nextRowSelection;
+  } else if (action === 'clear') {
+    return new Set();
+  } else if (action === 'selectAll') {
+    return new Set(data.map((_, index) => index));
   }
   return rowSelection;
 };

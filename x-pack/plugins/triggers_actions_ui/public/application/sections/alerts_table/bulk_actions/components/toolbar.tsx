@@ -7,10 +7,11 @@
 
 import { EuiPopover, EuiButtonEmpty, EuiContextMenuPanel } from '@elastic/eui';
 import numeral from '@elastic/numeral';
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useContext } from 'react';
 // import styled from 'styled-components';
 import { useUiSetting$ } from '@kbn/kibana-react-plugin/public';
 import * as i18n from '../translations';
+import { SelectionContext } from '../context';
 
 interface BulkActionsProps {
   totalItems: number;
@@ -31,15 +32,15 @@ interface BulkActionsProps {
 const DEFAULT_NUMBER_FORMAT = 'format:number:defaultPattern';
 
 const BulkActionsComponent: React.FC<BulkActionsProps> = ({
-  selectedCount,
   totalItems,
   showClearSelection,
-  onSelectAll,
-  onClearSelection,
   bulkActionItems,
 }) => {
+  const [selectedRows, updateSelectedRows] = useContext(SelectionContext);
   const [isActionsPopoverOpen, setIsActionsPopoverOpen] = useState(false);
   const [defaultNumberFormat] = useUiSetting$<string>(DEFAULT_NUMBER_FORMAT);
+
+  const selectedCount = selectedRows ? selectedRows.size : 0;
 
   const formattedTotalCount = useMemo(
     () => numeral(totalItems).format(defaultNumberFormat),
@@ -66,11 +67,11 @@ const BulkActionsComponent: React.FC<BulkActionsProps> = ({
 
   const toggleSelectAll = useCallback(() => {
     if (!showClearSelection) {
-      onSelectAll();
+      updateSelectedRows({ action: 'selectAll' });
     } else {
-      onClearSelection();
+      updateSelectedRows({ action: 'clear' });
     }
-  }, [onClearSelection, onSelectAll, showClearSelection]);
+  }, [showClearSelection, updateSelectedRows]);
 
   const selectedAlertsText = useMemo(
     () =>

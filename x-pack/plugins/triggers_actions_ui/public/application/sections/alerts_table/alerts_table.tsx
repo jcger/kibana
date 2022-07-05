@@ -253,6 +253,7 @@ const AlertsTable: React.FunctionComponent<AlertsTableProps> = (props: AlertsTab
             toolbarVisibility={getToolbarVisibility({
               selectedRowsCount: currentRowsSelected ? currentRowsSelected.size : 0,
               bulkActionItems: renderBulkActions ? renderBulkActions() : undefined,
+              alertsCount,
             })}
             pagination={{
               ...pagination,

@@ -435,7 +435,7 @@ export interface AlertsTableConfigurationRegistry {
 
 export interface SelectedRowsAction {
   action: string;
-  rowIndex: string;
+  rowIndex?: string;
 }
 
 export type SelectedRowsState = Set<string> | undefined;

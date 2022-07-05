@@ -5,5 +5,5 @@
  * 2.0.
  */
 
-export { BulkActionsHeader } from './header';
-export { BulkActionsRowCell } from './cell';
+export { BulkActionsHeader } from './column_header';
+export { BulkActionsRowCell } from './row_cell';
