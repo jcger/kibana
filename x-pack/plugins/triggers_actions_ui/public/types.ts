@@ -429,7 +429,7 @@ export interface AlertsTableConfigurationRegistry {
     width?: number;
   };
   useBulkActions?: () => {
-    render: () => {};
+    render: () => JSX.Element[];
   };
 }
 

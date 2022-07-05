@@ -251,7 +251,8 @@ const AlertsTable: React.FunctionComponent<AlertsTableProps> = (props: AlertsTab
             gridStyle={{ ...GridStyles, rowClasses }}
             sorting={{ columns: sortingColumns, onSort }}
             toolbarVisibility={getToolbarVisibility({
-              selectedRowsCount: currentRowsSelected?.size,
+              selectedRowsCount: currentRowsSelected ? currentRowsSelected.size : 0,
+              bulkActionItems: renderBulkActions ? renderBulkActions() : undefined,
             })}
             pagination={{
               ...pagination,
