@@ -78,6 +78,7 @@ export function defineRoutes(opts: RouteOptions) {
     usageCounter,
     config$,
     getAlertIndicesAlias,
+    ruleTypeRegistry
   } = opts;
 
   defineLegacyRoutes(opts);
@@ -85,7 +86,7 @@ export function defineRoutes(opts: RouteOptions) {
   getRuleRoute(router, licenseState);
   getInternalRuleRoute(router, licenseState);
   resolveRuleRoute(router, licenseState);
-  updateRuleRoute(router, licenseState);
+  updateRuleRoute(router, licenseState, ruleTypeRegistry);
   deleteRuleRoute(router, licenseState);
   aggregateRulesRoute(router, licenseState);
   disableRuleRoute(router, licenseState);
