@@ -122,67 +122,68 @@ interface AlertDeletionProps {
 export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
   const [activeState, setActiveState] = useState({
     checked: false,
-    threshold: 1,
-    thresholdUnit: THRESHOLD_UNITS[0],
+    threshold: 3,
+    thresholdUnit: THRESHOLD_UNITS[1],
   });
 
   const [inactiveState, setInactiveState] = useState({
     checked: false,
-    threshold: 1,
-    thresholdUnit: THRESHOLD_UNITS[0],
+    threshold: 3,
+    thresholdUnit: THRESHOLD_UNITS[1],
   });
 
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
-  const isDeleteConfirmationValid =
-    deleteConfirmation === i18n.DELETE_PASSKEY || deleteConfirmation.length === 0;
+  const errorMessages = {
+    activeThreshold: getThresholdErrorMessages(activeState.threshold, activeState.thresholdUnit),
+    inactiveThreshold: getThresholdErrorMessages(
+      inactiveState.threshold,
+      inactiveState.thresholdUnit
+    ),
+  };
 
-  const activeThresholdErrorMessages = getThresholdErrorMessages(
-    activeState.threshold,
-    activeState.thresholdUnit
-  );
-  const isActiveThresholdValid = activeThresholdErrorMessages.length === 0;
-
-  const inactiveThresholdErrorMessages = getThresholdErrorMessages(
-    inactiveState.threshold,
-    inactiveState.thresholdUnit
-  );
-  const isInactiveThresholdValid = inactiveThresholdErrorMessages.length === 0;
+  const validations = {
+    isActiveThresholdValid: errorMessages.activeThreshold.length === 0,
+    isInactiveThresholdValid: errorMessages.inactiveThreshold.length === 0,
+    isDeleteConfirmationValid:
+      deleteConfirmation === i18n.DELETE_PASSKEY || deleteConfirmation.length === 0,
+  };
 
   const isFormValid =
-    isDeleteConfirmationValid &&
-    isActiveThresholdValid &&
-    isInactiveThresholdValid &&
-    deleteConfirmation.length > 0;
+    validations.isDeleteConfirmationValid &&
+    validations.isActiveThresholdValid &&
+    validations.isInactiveThresholdValid &&
+    deleteConfirmation.length > 0 &&
+    (activeState.checked || inactiveState.checked);
 
-  const onChangeActive = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setActiveState((prev) => ({ ...prev, checked: e.target.checked }));
+  const activeAlertsCallbacks = {
+    onChangeEnabled: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setActiveState((prev) => ({ ...prev, checked: e.target.checked }));
+    },
+    onChangeThreshold: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setActiveState((prev) => ({ ...prev, threshold: Number(e.target.value) }));
+    },
+    onChangeThresholdUnit: (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedValue = THRESHOLD_UNITS.find((option) => option.text === e.target.value);
+      if (selectedValue) {
+        setActiveState((prev) => ({ ...prev, thresholdUnit: selectedValue }));
+      }
+    },
   };
 
-  const onChangeActiveThreshold = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setActiveState((prev) => ({ ...prev, threshold: Number(e.target.value) }));
-  };
-
-  const onChangeActiveThresholdUnit = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = THRESHOLD_UNITS.find((option) => option.text === e.target.value);
-    if (selectedValue) {
-      setActiveState((prev) => ({ ...prev, thresholdUnit: selectedValue }));
-    }
-  };
-
-  const onChangeInactive = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInactiveState((prev) => ({ ...prev, checked: e.target.checked }));
-  };
-
-  const onChangeInactiveThreshold = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInactiveState((prev) => ({ ...prev, threshold: Number(e.target.value) }));
-  };
-
-  const onChangeInactiveThresholdUnit = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = THRESHOLD_UNITS.find((option) => option.text === e.target.value);
-    if (selectedValue) {
-      setInactiveState((prev) => ({ ...prev, thresholdUnit: selectedValue }));
-    }
+  const inactiveAlertsCallbacks = {
+    onChangeEnabled: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInactiveState((prev) => ({ ...prev, checked: e.target.checked }));
+    },
+    onChangeThreshold: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInactiveState((prev) => ({ ...prev, threshold: Number(e.target.value) }));
+    },
+    onChangeThresholdUnit: (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const selectedValue = THRESHOLD_UNITS.find((option) => option.text === e.target.value);
+      if (selectedValue) {
+        setInactiveState((prev) => ({ ...prev, thresholdUnit: selectedValue }));
+      }
+    },
   };
 
   const onChangeDeleteConfirmation = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,8 +191,19 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
   };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log(e);
+    const formState = {
+      isActiveAlertsDeletionEnabled: validations.isActiveThresholdValid,
+      isInactiveAlertsDeletionEnabled: validations.isInactiveThresholdValid,
+      activeAlertsDeletionThreshold: getThresholdInDays(
+        activeState.threshold,
+        activeState.thresholdUnit
+      ),
+      inactiveAlertsDeletionThreshold: getThresholdInDays(
+        inactiveState.threshold,
+        inactiveState.thresholdUnit
+      ),
+    };
+    console.log(formState);
   };
 
   return (
@@ -208,7 +220,7 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
           <EuiCheckbox
             id="alert-deletion-active"
             checked={activeState.checked}
-            onChange={onChangeActive}
+            onChange={activeAlertsCallbacks.onChangeEnabled}
             labelProps={{ css: 'width: 100%' }}
             label={
               <ThresholdSelector
@@ -216,11 +228,11 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
                 description={i18n.ACTIVE_ALERTS_DESCRIPTION}
                 threshold={activeState.threshold}
                 thresholdUnit={activeState.thresholdUnit}
-                onChangeThreshold={onChangeActiveThreshold}
-                onChangeThresholdUnit={onChangeActiveThresholdUnit}
-                isInvalid={!isActiveThresholdValid}
+                onChangeThreshold={activeAlertsCallbacks.onChangeThreshold}
+                onChangeThresholdUnit={activeAlertsCallbacks.onChangeThresholdUnit}
+                isInvalid={!validations.isActiveThresholdValid}
                 isDisabled={!activeState.checked} // TODO: also if readonly
-                error={activeThresholdErrorMessages}
+                error={errorMessages.activeThreshold}
               />
             }
           />
@@ -229,7 +241,7 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
           <EuiCheckbox
             id="alert-deletion-inactive"
             checked={inactiveState.checked}
-            onChange={onChangeInactive}
+            onChange={inactiveAlertsCallbacks.onChangeEnabled}
             labelProps={{ css: 'width: 100%' }}
             label={
               <ThresholdSelector
@@ -237,11 +249,11 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
                 description={i18n.INACTIVE_ALERTS_DESCRIPTION}
                 threshold={inactiveState.threshold}
                 thresholdUnit={inactiveState.thresholdUnit}
-                onChangeThreshold={onChangeInactiveThreshold}
-                onChangeThresholdUnit={onChangeInactiveThresholdUnit}
-                isInvalid={!isInactiveThresholdValid}
+                onChangeThreshold={inactiveAlertsCallbacks.onChangeThreshold}
+                onChangeThresholdUnit={inactiveAlertsCallbacks.onChangeThresholdUnit}
+                isInvalid={!validations.isInactiveThresholdValid}
                 isDisabled={!inactiveState.checked} // TODO: also if readonly
-                error={inactiveThresholdErrorMessages}
+                error={errorMessages.inactiveThreshold}
               />
             }
           />
@@ -254,7 +266,7 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
           <EuiFormRow
             label={i18n.DELETE_CONFIRMATION}
             fullWidth
-            isInvalid={!isDeleteConfirmationValid}
+            isInvalid={!validations.isDeleteConfirmationValid}
           >
             <EuiFieldText value={deleteConfirmation} onChange={onChangeDeleteConfirmation} />
           </EuiFormRow>
