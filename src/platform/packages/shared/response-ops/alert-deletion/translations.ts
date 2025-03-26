@@ -65,6 +65,18 @@ export const PREVIEW = i18n.translate('responseOpsAlertDeletion.preview', {
     "This action will permanently delete a total of 4000 alerts and you won't be able to restore them.",
 });
 
+export const DELETE_PASSKEY = i18n.translate('responseOpsAlertDeletion.deletePasskey', {
+  defaultMessage: 'Delete',
+});
+
 export const DELETE_CONFIRMATION = i18n.translate('responseOpsAlertDeletion.deleteConfirmation', {
-  defaultMessage: 'Type "Delete" to confirm clean up task',
+  defaultMessage: `Type "${DELETE_PASSKEY}" to confirm clean up task`,
+});
+
+export const THRESHOLD_ERROR_MAX = i18n.translate('responseOpsAlertDeletion.thresholdErrorMax', {
+  defaultMessage: 'Threshold must be less than 1000 days',
+});
+
+export const THRESHOLD_ERROR_MIN = i18n.translate('responseOpsAlertDeletion.thresholdErrorMin', {
+  defaultMessage: 'Threshold must be greater than 0 days',
 });
