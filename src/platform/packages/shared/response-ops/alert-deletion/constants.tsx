@@ -7,4 +7,11 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-export { AlertDeletion } from './components/modal';
+import { EuiSelectOption } from '@elastic/eui';
+import * as i18n from './translations';
+
+export const THRESHOLD_UNITS: EuiSelectOption[] = [
+  { text: i18n.DAYS, value: 'days' },
+  { text: i18n.MONTHS, value: 'months' },
+  { text: i18n.YEARS, value: 'years' },
+];

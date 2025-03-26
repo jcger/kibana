@@ -10,22 +10,21 @@
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { EuiButton } from '@elastic/eui';
-import { AlertDeletion } from './alert_deletion';
+import { AlertDeletionModal, type AlertDeletionProps } from './components/modal';
 
-const CallToAction = (props: { name: string }) => {
+const CallToAction = (props: AlertDeletionProps) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const closeModal = () => setIsModalVisible(false);
   const showModal = () => setIsModalVisible(true);
 
   return isModalVisible ? (
-    <AlertDeletion {...props} closeModal={closeModal} />
+    <AlertDeletionModal {...props} closeModal={closeModal} />
   ) : (
     <EuiButton onClick={showModal}>Click me!</EuiButton>
   );
 };
 
-// Define the Meta type for your component
-const meta: Meta<typeof AlertDeletion> = {
+const meta: Meta<typeof AlertDeletionModal> = {
   title: 'alertDeletion',
   component: CallToAction,
 };
@@ -36,6 +35,6 @@ type Story = StoryObj<typeof CallToAction>;
 
 export const Default: Story = {
   args: {
-    name: 'John',
+    closeModal: () => {},
   },
 };

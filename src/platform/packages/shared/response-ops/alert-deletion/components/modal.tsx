@@ -17,79 +17,17 @@ import {
   EuiForm,
   EuiButton,
   EuiButtonEmpty,
-  EuiFlexItem,
   EuiSpacer,
   EuiCheckbox,
   EuiFormRow,
-  EuiFieldNumber,
-  EuiFlexGroup,
-  EuiDescribedFormGroup,
-  EuiSelect,
   EuiSelectOption,
   EuiHorizontalRule,
   EuiFieldText,
+  EuiPanel,
 } from '@elastic/eui';
-import * as i18n from './translations';
-
-const THRESHOLD_UNITS: EuiSelectOption[] = [
-  { text: i18n.DAYS, value: 'days' },
-  { text: i18n.MONTHS, value: 'months' },
-  { text: i18n.YEARS, value: 'years' },
-];
-
-interface ThresholdSelectorProps {
-  title: string;
-  description: string;
-  threshold: number;
-  thresholdUnit: EuiSelectOption;
-  onChangeThreshold: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeThresholdUnit: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  isDisabled: boolean;
-  isInvalid: boolean;
-  error: string[];
-}
-const ThresholdSelector = ({
-  title,
-  description,
-  threshold,
-  thresholdUnit,
-  onChangeThreshold,
-  onChangeThresholdUnit,
-  isDisabled,
-  isInvalid,
-  error,
-}: ThresholdSelectorProps) => {
-  return (
-    <EuiDescribedFormGroup
-      fullWidth
-      title={<h3>{title}</h3>}
-      description={description}
-      descriptionFlexItemProps={{ grow: 2 }}
-    >
-      <EuiFormRow fullWidth isInvalid={isInvalid} isDisabled={isDisabled} error={error}>
-        <EuiFlexGroup gutterSize="s" responsive={false}>
-          <EuiFlexItem grow={1}>
-            <EuiFieldNumber
-              min={1}
-              max={1000}
-              value={threshold}
-              onChange={onChangeThreshold}
-              disabled={isDisabled}
-            />
-          </EuiFlexItem>
-          <EuiFlexItem grow={1}>
-            <EuiSelect
-              value={thresholdUnit.value as string}
-              onChange={onChangeThresholdUnit}
-              options={THRESHOLD_UNITS}
-              disabled={isDisabled}
-            />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      </EuiFormRow>
-    </EuiDescribedFormGroup>
-  );
-};
+import * as i18n from '../translations';
+import { ThresholdSelector } from './threshold_selector';
+import { THRESHOLD_UNITS } from '../constants';
 
 const getThresholdInDays = (threshold: number, thresholdUnit: EuiSelectOption) => {
   switch (thresholdUnit.value) {
@@ -116,10 +54,10 @@ const getThresholdErrorMessages = (threshold: number, thresholdUnit: EuiSelectOp
   return errorMessages;
 };
 
-interface AlertDeletionProps {
+export interface AlertDeletionProps {
   closeModal: () => void;
 }
-export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
+export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
   const [activeState, setActiveState] = useState({
     checked: false,
     threshold: 3,
@@ -217,47 +155,50 @@ export const AlertDeletion = ({ closeModal }: AlertDeletionProps) => {
           <p>{i18n.MODAL_DESCRIPTION}</p>
           <EuiSpacer size="l" />
 
-          <EuiCheckbox
-            id="alert-deletion-active"
-            checked={activeState.checked}
-            onChange={activeAlertsCallbacks.onChangeEnabled}
-            labelProps={{ css: 'width: 100%' }}
-            label={
-              <ThresholdSelector
-                title={i18n.ACTIVE_ALERTS}
-                description={i18n.ACTIVE_ALERTS_DESCRIPTION}
-                threshold={activeState.threshold}
-                thresholdUnit={activeState.thresholdUnit}
-                onChangeThreshold={activeAlertsCallbacks.onChangeThreshold}
-                onChangeThresholdUnit={activeAlertsCallbacks.onChangeThresholdUnit}
-                isInvalid={!validations.isActiveThresholdValid}
-                isDisabled={!activeState.checked} // TODO: also if readonly
-                error={errorMessages.activeThreshold}
-              />
-            }
-          />
+          <EuiPanel hasShadow={false} hasBorder color="subdued">
+            <EuiCheckbox
+              id="alert-deletion-active"
+              checked={activeState.checked}
+              onChange={activeAlertsCallbacks.onChangeEnabled}
+              labelProps={{ css: 'width: 100%' }}
+              label={
+                <ThresholdSelector
+                  title={i18n.ACTIVE_ALERTS}
+                  description={i18n.ACTIVE_ALERTS_DESCRIPTION}
+                  threshold={activeState.threshold}
+                  thresholdUnit={activeState.thresholdUnit}
+                  onChangeThreshold={activeAlertsCallbacks.onChangeThreshold}
+                  onChangeThresholdUnit={activeAlertsCallbacks.onChangeThresholdUnit}
+                  isInvalid={!validations.isActiveThresholdValid}
+                  isDisabled={!activeState.checked} // TODO: also if readonly
+                  error={errorMessages.activeThreshold}
+                />
+              }
+            />
+          </EuiPanel>
           <EuiSpacer size="m" />
 
-          <EuiCheckbox
-            id="alert-deletion-inactive"
-            checked={inactiveState.checked}
-            onChange={inactiveAlertsCallbacks.onChangeEnabled}
-            labelProps={{ css: 'width: 100%' }}
-            label={
-              <ThresholdSelector
-                title={i18n.INACTIVE_ALERTS}
-                description={i18n.INACTIVE_ALERTS_DESCRIPTION}
-                threshold={inactiveState.threshold}
-                thresholdUnit={inactiveState.thresholdUnit}
-                onChangeThreshold={inactiveAlertsCallbacks.onChangeThreshold}
-                onChangeThresholdUnit={inactiveAlertsCallbacks.onChangeThresholdUnit}
-                isInvalid={!validations.isInactiveThresholdValid}
-                isDisabled={!inactiveState.checked} // TODO: also if readonly
-                error={errorMessages.inactiveThreshold}
-              />
-            }
-          />
-
+          <EuiPanel hasShadow={false} hasBorder color="subdued">
+            <EuiCheckbox
+              id="alert-deletion-inactive"
+              checked={inactiveState.checked}
+              onChange={inactiveAlertsCallbacks.onChangeEnabled}
+              labelProps={{ css: 'width: 100%' }}
+              label={
+                <ThresholdSelector
+                  title={i18n.INACTIVE_ALERTS}
+                  description={i18n.INACTIVE_ALERTS_DESCRIPTION}
+                  threshold={inactiveState.threshold}
+                  thresholdUnit={inactiveState.thresholdUnit}
+                  onChangeThreshold={inactiveAlertsCallbacks.onChangeThreshold}
+                  onChangeThresholdUnit={inactiveAlertsCallbacks.onChangeThresholdUnit}
+                  isInvalid={!validations.isInactiveThresholdValid}
+                  isDisabled={!inactiveState.checked} // TODO: also if readonly
+                  error={errorMessages.inactiveThreshold}
+                />
+              }
+            />
+          </EuiPanel>
           <EuiHorizontalRule />
 
           <p>{i18n.PREVIEW}</p>
