@@ -26,8 +26,17 @@ import {
   EuiPanel,
 } from '@elastic/eui';
 import * as i18n from '../translations';
-import { ThresholdSelector } from './threshold_selector';
-import { THRESHOLD_UNITS } from '../constants';
+import { ModalThresholdSelector as ThresholdSelector } from './modal_threshold_selector';
+import {
+  DEFAULT_THRESHOLD,
+  DEFAULT_THRESHOLD_ENABLED,
+  DEFAULT_THRESHOLD_UNIT,
+  MAX_THRESHOLD_DAYS,
+  MIN_THRESHOLD_DAYS,
+  THRESHOLD_UNITS,
+} from '../constants';
+
+const FORM_ID = 'alert-deletion-settings';
 
 const getThresholdInDays = (threshold: number, thresholdUnit: EuiSelectOption) => {
   switch (thresholdUnit.value) {
@@ -45,10 +54,10 @@ const getThresholdInDays = (threshold: number, thresholdUnit: EuiSelectOption) =
 const getThresholdErrorMessages = (threshold: number, thresholdUnit: EuiSelectOption) => {
   const thresholdInDays = getThresholdInDays(threshold, thresholdUnit);
   const errorMessages = [];
-  if (thresholdInDays < 1) {
+  if (thresholdInDays < MIN_THRESHOLD_DAYS) {
     errorMessages.push(i18n.THRESHOLD_ERROR_MIN);
   }
-  if (thresholdInDays > 1000) {
+  if (thresholdInDays > MAX_THRESHOLD_DAYS) {
     errorMessages.push(i18n.THRESHOLD_ERROR_MAX);
   }
   return errorMessages;
@@ -59,15 +68,15 @@ export interface AlertDeletionProps {
 }
 export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
   const [activeState, setActiveState] = useState({
-    checked: false,
-    threshold: 3,
-    thresholdUnit: THRESHOLD_UNITS[1],
+    checked: DEFAULT_THRESHOLD_ENABLED,
+    threshold: DEFAULT_THRESHOLD,
+    thresholdUnit: DEFAULT_THRESHOLD_UNIT,
   });
 
   const [inactiveState, setInactiveState] = useState({
-    checked: false,
-    threshold: 3,
-    thresholdUnit: THRESHOLD_UNITS[1],
+    checked: DEFAULT_THRESHOLD_ENABLED,
+    threshold: DEFAULT_THRESHOLD,
+    thresholdUnit: DEFAULT_THRESHOLD_UNIT,
   });
 
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
@@ -146,7 +155,7 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
 
   return (
     <EuiModal aria-labelledby={'alert-deletion-modal'} onClose={closeModal}>
-      <EuiForm id="alert-deletion-settings" component="form" onSubmit={onSubmit}>
+      <EuiForm id={FORM_ID} component="form" onSubmit={onSubmit}>
         <EuiModalHeader>
           <EuiModalHeaderTitle id={'alert-deletion-modal'}>{i18n.MODAL_TITLE}</EuiModalHeaderTitle>
         </EuiModalHeader>
@@ -215,7 +224,7 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
 
         <EuiModalFooter>
           <EuiButtonEmpty onClick={closeModal}>Cancel</EuiButtonEmpty>
-          <EuiButton type="submit" form="alert-deletion-settings" fill isDisabled={!isFormValid}>
+          <EuiButton type="submit" form={FORM_ID} fill isDisabled={!isFormValid}>
             {i18n.MODAL_SUBMIT}
           </EuiButton>
         </EuiModalFooter>

@@ -19,7 +19,7 @@ import {
 } from '@elastic/eui';
 import { THRESHOLD_UNITS } from '../constants';
 
-interface ThresholdSelectorProps {
+interface ModalThresholdSelectorProps {
   title: string;
   description: string;
   threshold: number;
@@ -30,7 +30,7 @@ interface ThresholdSelectorProps {
   isInvalid: boolean;
   error: string[];
 }
-export const ThresholdSelector = ({
+export const ModalThresholdSelector = ({
   title,
   description,
   threshold,
@@ -40,7 +40,7 @@ export const ThresholdSelector = ({
   isDisabled,
   isInvalid,
   error,
-}: ThresholdSelectorProps) => {
+}: ModalThresholdSelectorProps) => {
   return (
     <EuiDescribedFormGroup
       fullWidth

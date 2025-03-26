@@ -15,3 +15,10 @@ export const THRESHOLD_UNITS: EuiSelectOption[] = [
   { text: i18n.MONTHS, value: 'months' },
   { text: i18n.YEARS, value: 'years' },
 ];
+
+export const MIN_THRESHOLD_DAYS = 1;
+export const MAX_THRESHOLD_DAYS = 1000;
+
+export const DEFAULT_THRESHOLD_ENABLED = false;
+export const DEFAULT_THRESHOLD = 3;
+export const DEFAULT_THRESHOLD_UNIT: EuiSelectOption = THRESHOLD_UNITS[1];
