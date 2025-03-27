@@ -48,6 +48,10 @@ export const MODAL_SUBMIT = i18n.translate('responseOpsAlertDeletion.modalSubmit
   defaultMessage: 'Run clean up task',
 });
 
+export const MODAL_CANCEL = i18n.translate('responseOpsAlertDeletion.modalCancel', {
+  defaultMessage: 'Cancel',
+});
+
 export const DAYS = i18n.translate('responseOpsAlertDeletion.days', {
   defaultMessage: 'days',
 });
@@ -74,9 +78,9 @@ export const DELETE_CONFIRMATION = i18n.translate('responseOpsAlertDeletion.dele
 });
 
 export const THRESHOLD_ERROR_MAX = i18n.translate('responseOpsAlertDeletion.thresholdErrorMax', {
-  defaultMessage: 'Threshold must be less than 1000 days',
+  defaultMessage: 'Threshold limit of 1000 days',
 });
 
 export const THRESHOLD_ERROR_MIN = i18n.translate('responseOpsAlertDeletion.thresholdErrorMin', {
-  defaultMessage: 'Threshold must be greater than 0 days',
+  defaultMessage: 'Threshold must be at least 1 day',
 });

@@ -37,6 +37,7 @@ import {
 } from '../constants';
 
 const FORM_ID = 'alert-deletion-settings';
+const MODAL_ID = 'alert-deletion-modal';
 
 const getThresholdInDays = (threshold: number, thresholdUnit: EuiSelectOption) => {
   switch (thresholdUnit.value) {
@@ -154,10 +155,10 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
   };
 
   return (
-    <EuiModal aria-labelledby={'alert-deletion-modal'} onClose={closeModal}>
+    <EuiModal aria-labelledby={MODAL_ID} onClose={closeModal}>
       <EuiForm id={FORM_ID} component="form" onSubmit={onSubmit}>
         <EuiModalHeader>
-          <EuiModalHeaderTitle id={'alert-deletion-modal'}>{i18n.MODAL_TITLE}</EuiModalHeaderTitle>
+          <EuiModalHeaderTitle id={MODAL_ID}>{i18n.MODAL_TITLE}</EuiModalHeaderTitle>
         </EuiModalHeader>
 
         <EuiModalBody>
@@ -167,6 +168,7 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
           <EuiPanel hasShadow={false} hasBorder color="subdued">
             <EuiCheckbox
               id="alert-deletion-active"
+              data-test-subj="alert-deletion-active-checkbox"
               checked={activeState.checked}
               onChange={activeAlertsCallbacks.onChangeEnabled}
               labelProps={{ css: 'width: 100%' }}
@@ -181,6 +183,8 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
                   isInvalid={!validations.isActiveThresholdValid}
                   isDisabled={!activeState.checked} // TODO: also if readonly
                   error={errorMessages.activeThreshold}
+                  thresholdTestSubj="alert-deletion-active-threshold"
+                  thresholdUnitTestSubj="alert-deletion-active-threshold-unit"
                 />
               }
             />
@@ -190,6 +194,7 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
           <EuiPanel hasShadow={false} hasBorder color="subdued">
             <EuiCheckbox
               id="alert-deletion-inactive"
+              data-test-subj="alert-deletion-inactive-checkbox"
               checked={inactiveState.checked}
               onChange={inactiveAlertsCallbacks.onChangeEnabled}
               labelProps={{ css: 'width: 100%' }}
@@ -204,6 +209,8 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
                   isInvalid={!validations.isInactiveThresholdValid}
                   isDisabled={!inactiveState.checked} // TODO: also if readonly
                   error={errorMessages.inactiveThreshold}
+                  thresholdTestSubj="alert-deletion-inactive-threshold"
+                  thresholdUnitTestSubj="alert-deletion-inactive-threshold-unit"
                 />
               }
             />
@@ -218,13 +225,23 @@ export const AlertDeletionModal = ({ closeModal }: AlertDeletionProps) => {
             fullWidth
             isInvalid={!validations.isDeleteConfirmationValid}
           >
-            <EuiFieldText value={deleteConfirmation} onChange={onChangeDeleteConfirmation} />
+            <EuiFieldText
+              value={deleteConfirmation}
+              onChange={onChangeDeleteConfirmation}
+              data-test-subj="alert-deletion-delete-confirmation"
+            />
           </EuiFormRow>
         </EuiModalBody>
 
         <EuiModalFooter>
-          <EuiButtonEmpty onClick={closeModal}>Cancel</EuiButtonEmpty>
-          <EuiButton type="submit" form={FORM_ID} fill isDisabled={!isFormValid}>
+          <EuiButtonEmpty onClick={closeModal}>{i18n.MODAL_CANCEL}</EuiButtonEmpty>
+          <EuiButton
+            type="submit"
+            form={FORM_ID}
+            fill
+            isDisabled={!isFormValid}
+            data-test-subj="alert-deletion-submit"
+          >
             {i18n.MODAL_SUBMIT}
           </EuiButton>
         </EuiModalFooter>

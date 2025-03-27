@@ -29,6 +29,8 @@ interface ModalThresholdSelectorProps {
   isDisabled: boolean;
   isInvalid: boolean;
   error: string[];
+  thresholdTestSubj: string;
+  thresholdUnitTestSubj: string;
 }
 export const ModalThresholdSelector = ({
   title,
@@ -40,6 +42,8 @@ export const ModalThresholdSelector = ({
   isDisabled,
   isInvalid,
   error,
+  thresholdTestSubj,
+  thresholdUnitTestSubj,
 }: ModalThresholdSelectorProps) => {
   return (
     <EuiDescribedFormGroup
@@ -58,14 +62,16 @@ export const ModalThresholdSelector = ({
               onChange={onChangeThreshold}
               disabled={isDisabled}
               isInvalid={error.length > 0}
+              data-test-subj={thresholdTestSubj}
             />
           </EuiFlexItem>
           <EuiFlexItem grow={1}>
             <EuiSelect
-              value={thresholdUnit.value as string}
+              value={thresholdUnit.text as string}
               onChange={onChangeThresholdUnit}
               options={THRESHOLD_UNITS}
               disabled={isDisabled}
+              data-test-subj={thresholdUnitTestSubj}
             />
           </EuiFlexItem>
         </EuiFlexGroup>
