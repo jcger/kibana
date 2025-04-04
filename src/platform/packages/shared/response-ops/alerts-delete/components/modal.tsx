@@ -25,6 +25,8 @@ import {
   EuiFieldText,
   EuiPanel,
 } from '@elastic/eui';
+import type { NotificationsSetup } from '@kbn/core-notifications-browser';
+import type { IHttpFetchError, ResponseErrorBody } from '@kbn/core-http-browser';
 import { HttpStart } from '@kbn/core/public';
 import { FormattedMessage } from '@kbn/i18n-react';
 import { AlertDeleteCategoryIds } from '@kbn/alerting-plugin/common/constants/alert_delete';
@@ -39,6 +41,7 @@ import {
   THRESHOLD_UNITS,
 } from '../constants';
 import { useAlertDeletePreview } from '../api/preview/use_alert_delete_preview';
+import { useAlertDeleteSchedule } from '../api/schedule/use_alert_delete_schedule';
 
 const FORM_ID = 'alert-delete-settings';
 const MODAL_ID = 'alert-delete-modal';
@@ -120,14 +123,14 @@ const getThresholdErrorMessages = (threshold: number, thresholdUnit: EuiSelectOp
 };
 
 export interface AlertDeleteProps {
-  services: { http: HttpStart };
+  services: { http: HttpStart; notifications: NotificationsSetup };
   categoryIds: AlertDeleteCategoryIds[];
   onCloseModal: () => void;
   isVisible: boolean;
   isDisabled?: boolean;
 }
 export const AlertDeleteModal = ({
-  services: { http },
+  services: { http, notifications },
   categoryIds,
   onCloseModal,
   isVisible,
@@ -185,6 +188,20 @@ export const AlertDeleteModal = ({
     },
   });
 
+  const { mutate: alertDeleteScheduleSubmit } = useAlertDeleteSchedule({
+    services: { http },
+    onSuccess: () => {
+      notifications.toasts.addSuccess(i18n.ALERT_DELETE_SUCCESS);
+      onClose();
+    },
+    onError: (error: IHttpFetchError<ResponseErrorBody>) => {
+      notifications.toasts.addDanger({
+        title: i18n.ALERT_DELETE_FAILURE,
+        text: error.body?.message || JSON.stringify(error),
+      });
+    },
+  });
+
   const isFormValid =
     validations.isDeleteConfirmationValid &&
     validations.isActiveThresholdValid &&
@@ -228,19 +245,21 @@ export const AlertDeleteModal = ({
     setDeleteConfirmation(e.target.value);
   };
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    // const formState = {
-    //   isActiveAlertsDeleteEnabled: validations.isActiveThresholdValid,
-    //   isInactiveAlertsDeleteEnabled: validations.isInactiveThresholdValid,
-    //   activeAlertsDeleteThreshold: getThresholdInDays(
-    //     activeState.threshold,
-    //     activeState.thresholdUnit
-    //   ),
-    //   inactiveAlertsDeleteThreshold: getThresholdInDays(
-    //     inactiveState.threshold,
-    //     inactiveState.thresholdUnit
-    //   ),
-    // };
+  const onScheduleCleanUpTask = (ev: React.FormEvent) => {
+    ev.preventDefault();
+
+    alertDeleteScheduleSubmit({
+      isActiveAlertDeleteEnabled: validations.isActiveThresholdValid,
+      isInactiveAlertDeleteEnabled: validations.isInactiveThresholdValid,
+      activeAlertDeleteThreshold: getThresholdInDays(
+        activeState.threshold,
+        activeState.thresholdUnit
+      ),
+      inactiveAlertDeleteThreshold: getThresholdInDays(
+        inactiveState.threshold,
+        inactiveState.thresholdUnit
+      ),
+    });
   };
 
   const onClose = () => {
@@ -267,7 +286,7 @@ export const AlertDeleteModal = ({
 
   return (
     <EuiModal aria-labelledby={MODAL_ID} onClose={onClose} data-test-subj="alert-delete-modal">
-      <EuiForm id={FORM_ID} component="form" onSubmit={onSubmit}>
+      <EuiForm id={FORM_ID} component="form">
         <EuiModalHeader>
           <EuiModalHeaderTitle id={MODAL_ID}>{i18n.MODAL_TITLE}</EuiModalHeaderTitle>
         </EuiModalHeader>
@@ -370,6 +389,7 @@ export const AlertDeleteModal = ({
             color="danger"
             isDisabled={!isFormValid || isDisabled}
             data-test-subj="alert-delete-submit"
+            onClick={onScheduleCleanUpTask}
           >
             {i18n.MODAL_SUBMIT}
           </EuiButton>

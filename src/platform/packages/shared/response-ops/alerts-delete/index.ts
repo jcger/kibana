@@ -18,3 +18,12 @@ export {
   type AlertDeletePreviewApiCallParams,
   alertDeletePreviewApiCall,
 } from './api/preview/alert_delete_preview_api_call';
+
+export {
+  type UseAlertDeleteScheduleParams,
+  useAlertDeleteSchedule,
+} from './api/schedule/use_alert_delete_schedule';
+export {
+  type AlertDeleteScheduleApiCallParams,
+  alertDeleteScheduleApiCall,
+} from './api/schedule/alert_delete_schedule_api_call';
