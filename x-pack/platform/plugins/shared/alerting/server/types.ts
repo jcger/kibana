@@ -70,6 +70,7 @@ export interface AlertingApiRequestHandlerContext {
   areApiKeysEnabled: () => Promise<boolean>;
   getAlertDeletionClient: () => {
     previewTask: (settings: unknown, spaceId: string) => Promise<{ affectedAlertCount: number }>;
+    scheduleTask: (_request: unknown, settings: unknown, spaceIds: string[]) => Promise<boolean>;
   };
 }
 

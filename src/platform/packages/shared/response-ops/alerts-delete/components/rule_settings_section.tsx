@@ -12,11 +12,20 @@ import { EuiButton, EuiDescribedFormGroup } from '@elastic/eui';
 import { EuiText } from '@elastic/eui';
 import { css } from '@emotion/react';
 import { HttpStart } from '@kbn/core/public';
+import type { NotificationsStart } from '@kbn/core-notifications-browser';
 import * as i18n from '../translations';
 
 const ModalComponent = lazy(() => import('./modal'));
 
-export const AlertDeleteRuleSettingsSection = ({ http }: { http: HttpStart }) => {
+export interface AlertDeleteRuleSettingsSectionProps {
+  services: {
+    http: HttpStart;
+    notifications: NotificationsStart;
+  };
+}
+export const AlertDeleteRuleSettingsSection = ({
+  services: { http, notifications },
+}: AlertDeleteRuleSettingsSectionProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const onCloseModal = () => setIsModalOpen(false);
@@ -49,7 +58,11 @@ export const AlertDeleteRuleSettingsSection = ({ http }: { http: HttpStart }) =>
         </EuiButton>
       </EuiDescribedFormGroup>
       <Suspense fallback={<></>}>
-        <ModalComponent http={http} onCloseModal={onCloseModal} isVisible={isModalOpen} />
+        <ModalComponent
+          services={{ http, notifications }}
+          onCloseModal={onCloseModal}
+          isVisible={isModalOpen}
+        />
       </Suspense>
     </>
   );

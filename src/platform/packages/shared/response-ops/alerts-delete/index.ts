@@ -7,5 +7,13 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
+export type {
+  UseAlertDeleteScheduleParams,
+  AlertDeleteScheduleApiCallParams,
+  AlertDeleteScheduleApiCallRequestBody,
+} from './api/useAlertDeleteSchedule';
+
 export { AlertDeleteModal } from './components/modal';
 export { AlertDeleteRuleSettingsSection as AlertDeleteDescriptiveFormGroup } from './components/rule_settings_section';
+
+export { useAlertDeleteSchedule, alertDeleteScheduleApiCall } from './api/useAlertDeleteSchedule';

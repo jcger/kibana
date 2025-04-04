@@ -677,6 +677,9 @@ export class AlertingPlugin {
                 affectedAlertCount: 55,
               };
             },
+            scheduleTask: async (_request: unknown, settings: unknown, spaceIds: string[]) => {
+              return Promise.resolve(true);
+            },
           };
         },
         getRulesClient: () => {

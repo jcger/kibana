@@ -6,7 +6,10 @@
  */
 
 import type { RulesSettingsAlertDeleteProperties } from '@kbn/alerting-types';
-import type { AlertDeletePreviewQueryV1 } from '../../../../../common/routes/alert_delete';
+import type {
+  AlertDeletePreviewQueryV1,
+  AlertDeleteScheduleQueryV1,
+} from '../../../../../common/routes/alert_delete';
 
 export const transformRequestToAlertDeletePreview = ({
   is_active_alert_delete_enabled: isActiveAlertDeleteEnabled,
@@ -15,6 +18,22 @@ export const transformRequestToAlertDeletePreview = ({
   inactive_alert_delete_threshold: inactiveAlertDeleteThreshold,
   category_ids: categoryIds,
 }: AlertDeletePreviewQueryV1): RulesSettingsAlertDeleteProperties => {
+  return {
+    isActiveAlertDeleteEnabled,
+    isInactiveAlertDeleteEnabled,
+    activeAlertDeleteThreshold,
+    inactiveAlertDeleteThreshold,
+    categoryIds,
+  };
+};
+
+export const transformRequestToAlertDeleteSchedule = ({
+  is_active_alert_delete_enabled: isActiveAlertDeleteEnabled,
+  is_inactive_alert_delete_enabled: isInactiveAlertDeleteEnabled,
+  active_alert_delete_threshold: activeAlertDeleteThreshold,
+  inactive_alert_delete_threshold: inactiveAlertDeleteThreshold,
+  category_ids: categoryIds,
+}: AlertDeleteScheduleQueryV1): RulesSettingsAlertDeleteProperties => {
   return {
     isActiveAlertDeleteEnabled,
     isInactiveAlertDeleteEnabled,
