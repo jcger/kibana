@@ -44,6 +44,8 @@ interface GetOAuthAuthorizationCodeAccessTokenOpts {
   };
   connectorTokenClient: ConnectorTokenClientContract;
   scope?: string;
+  authMode?: 'shared' | 'personal';
+  profileUid?: string;
 }
 
 /**
@@ -57,6 +59,8 @@ export const getOAuthAuthorizationCodeAccessToken = async ({
   credentials,
   connectorTokenClient,
   scope,
+  authMode,
+  profileUid,
 }: GetOAuthAuthorizationCodeAccessTokenOpts): Promise<string | null> => {
   const { clientId, tokenUrl, additionalFields, useBasicAuth } = credentials.config;
   const { clientSecret } = credentials.secrets;
@@ -64,6 +68,16 @@ export const getOAuthAuthorizationCodeAccessToken = async ({
   if (!clientId || !clientSecret) {
     logger.warn(`Missing required fields for requesting OAuth Authorization Code access token`);
     return null;
+  }
+
+  const effectiveAuthMode = authMode ?? 'shared';
+  const isPersonalMode = effectiveAuthMode === 'personal';
+
+  if (isPersonalMode) {
+    if (!profileUid) {
+      logger.error(`profileUid is required for personal auth mode on connectorId: ${connectorId}`);
+      return null;
+    }
   }
 
   // Default to true (OAuth 2.0 recommended practice)
@@ -75,6 +89,7 @@ export const getOAuthAuthorizationCodeAccessToken = async ({
   return await lock(async () => {
     // Re-fetch token inside lock - another request may have already refreshed it
     const { connectorToken, hasErrors } = await connectorTokenClient.get({
+      profileUid: isPersonalMode ? profileUid : undefined,
       connectorId,
       tokenType: 'access_token',
     });

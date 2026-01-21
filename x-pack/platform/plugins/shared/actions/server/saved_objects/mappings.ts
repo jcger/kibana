@@ -101,6 +101,40 @@ export const connectorTokenMappings: SavedObjectsTypeMappingDefinition = {
   },
 };
 
+export const userConnectorTokenMappings: SavedObjectsTypeMappingDefinition = {
+  dynamic: false,
+  properties: {
+    profileUid: {
+      type: 'keyword',
+    },
+    connectorId: {
+      type: 'keyword',
+    },
+    tokenType: {
+      type: 'keyword',
+    },
+    // NO NEED TO BE INDEXED
+    // token: {
+    //   type: 'binary',
+    // },
+    // expiresAt: {
+    //   type: 'date',
+    // },
+    // createdAt: {
+    //   type: 'date',
+    // },
+    // updatedAt: {
+    //   type: 'date',
+    // },
+    // refreshToken: {
+    //   type: 'binary',
+    // },
+    // refreshTokenExpiresAt: {
+    //   type: 'date',
+    // },
+  },
+};
+
 export const oauthStateMappings: SavedObjectsTypeMappingDefinition = {
   dynamic: false,
   properties: {

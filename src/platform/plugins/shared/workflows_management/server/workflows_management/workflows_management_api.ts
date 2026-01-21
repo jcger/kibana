@@ -190,10 +190,12 @@ export class WorkflowsManagementApi {
     request: KibanaRequest
   ): Promise<string> {
     const { event, ...manualInputs } = inputs;
+    const userProfileUid = this.workflowsService.getUserProfileUid(request);
     const context = {
       event,
       spaceId,
       inputs: manualInputs,
+      userProfileUid,
     };
     const workflowsExecutionEngine = await this.getWorkflowsExecutionEngine();
     const executeResponse = await workflowsExecutionEngine.executeWorkflow(
@@ -280,10 +282,12 @@ export class WorkflowsManagementApi {
       parsedYaml.data as unknown as WorkflowYaml
     );
     const { event, ...manualInputs } = inputs;
+    const userProfileUid = this.workflowsService.getUserProfileUid(request);
     const context = {
       event,
       spaceId,
       inputs: manualInputs,
+      userProfileUid,
     };
     const workflowsExecutionEngine = await this.getWorkflowsExecutionEngine();
     const executeResponse = await workflowsExecutionEngine.executeWorkflow(

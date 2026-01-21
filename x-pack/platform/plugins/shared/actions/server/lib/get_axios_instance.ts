@@ -50,6 +50,8 @@ async function handleOAuth401Error({
   connectorId,
   secrets,
   connectorTokenClient,
+  authMode,
+  profileUid,
   logger,
   configurationUtilities,
   axiosInstance,
@@ -58,6 +60,8 @@ async function handleOAuth401Error({
   connectorId: string;
   secrets: OAuth2RefreshParams;
   connectorTokenClient: ConnectorTokenClientContract;
+  authMode?: 'shared' | 'personal';
+  profileUid?: string;
   logger: Logger;
   configurationUtilities: ActionsConfigurationUtilities;
   axiosInstance: AxiosInstance;
@@ -70,9 +74,18 @@ async function handleOAuth401Error({
   error.config._retry = true;
   logger.debug(`Attempting token refresh for connectorId ${connectorId} after 401 error`);
 
+  const effectiveAuthMode = authMode ?? 'shared';
+  const isPersonalMode = effectiveAuthMode === 'personal';
+
+  if (isPersonalMode && !profileUid) {
+    logger.error('profileUid is required for personal auth mode token refresh');
+    return Promise.reject(error);
+  }
+
   try {
     // Fetch current token to get refresh token
     const { connectorToken, hasErrors } = await connectorTokenClient.get({
+      profileUid: isPersonalMode ? profileUid : undefined,
       connectorId,
       tokenType: 'access_token',
     });
@@ -132,6 +145,8 @@ export interface GetAxiosInstanceWithAuthFnOpts {
   connectorId: string;
   connectorTokenClient?: ConnectorTokenClientContract;
   secrets: ValidatedSecrets;
+  authMode?: 'shared' | 'personal';
+  profileUid?: string;
 }
 export type GetAxiosInstanceWithAuthFn = (
   opts: GetAxiosInstanceWithAuthFnOpts
@@ -146,6 +161,8 @@ export const getAxiosInstanceWithAuth = ({
     connectorId,
     secrets,
     connectorTokenClient,
+    authMode,
+    profileUid,
   }: GetAxiosInstanceWithAuthFnOpts) => {
     let authTypeId: string | undefined;
     try {
@@ -208,6 +225,8 @@ export const getAxiosInstanceWithAuth = ({
                 connectorId,
                 secrets: secrets as OAuth2RefreshParams,
                 connectorTokenClient,
+                authMode,
+                profileUid,
                 logger,
                 configurationUtilities,
                 axiosInstance,
@@ -243,6 +262,8 @@ export const getAxiosInstanceWithAuth = ({
               },
               connectorTokenClient,
               scope: opts.scope,
+              authMode,
+              profileUid,
             });
           }
 
