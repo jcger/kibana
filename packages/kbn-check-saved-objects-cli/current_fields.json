@@ -1336,6 +1336,11 @@
   "usage-counters": [
     "domainId"
   ],
+  "user_connector_token": [
+    "connectorId",
+    "profileUid",
+    "tokenType"
+  ],
   "visualization": [
     "description",
     "kibanaSavedObjectMeta",

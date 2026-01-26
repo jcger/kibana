@@ -4401,6 +4401,20 @@
       }
     }
   },
+  "user_connector_token": {
+    "dynamic": false,
+    "properties": {
+      "connectorId": {
+        "type": "keyword"
+      },
+      "profileUid": {
+        "type": "keyword"
+      },
+      "tokenType": {
+        "type": "keyword"
+      }
+    }
+  },
   "visualization": {
     "dynamic": false,
     "properties": {
