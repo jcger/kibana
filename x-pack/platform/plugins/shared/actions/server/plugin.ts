@@ -77,6 +77,10 @@ import {
   scheduleOAuthStateCleanupTask,
 } from './lib/oauth_state_cleanup_task';
 import {
+  initializeUserConnectorTokenCleanupTask,
+  scheduleUserConnectorTokenCleanupTask,
+} from './lib/user_connector_token_cleanup_task';
+import {
   ACTION_SAVED_OBJECT_TYPE,
   ACTION_TASK_PARAMS_SAVED_OBJECT_TYPE,
   ALERT_SAVED_OBJECT_TYPE,
@@ -410,6 +414,7 @@ export class ActionsPlugin
     }
 
     initializeOAuthStateCleanupTask(this.logger, plugins.taskManager, core);
+    initializeUserConnectorTokenCleanupTask(this.logger, plugins.taskManager, core);
 
     const subActionFramework = createSubActionConnectorFramework({
       actionTypeRegistry,
@@ -712,6 +717,7 @@ export class ActionsPlugin
       .then(() => {
         scheduleActionsTelemetry(this.telemetryLogger, plugins.taskManager);
         scheduleOAuthStateCleanupTask(this.logger, plugins.taskManager);
+        scheduleUserConnectorTokenCleanupTask(this.logger, plugins.taskManager);
       })
       .catch(() => {});
 
