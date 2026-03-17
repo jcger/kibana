@@ -46,7 +46,10 @@ interface GetOAuthAuthorizationCodeAccessTokenOpts {
   connectorTokenClient: ConnectorTokenClientContract;
   scope?: string;
   authMode?: AuthMode;
-  profileUid?: string;
+  userIdentifiers?: {
+    profileUid?: string;
+    userCloudId?: string;
+  };
   /**
    * When true, skip the expiration check and force a token refresh.
    * Use this when you've received a 401 and know the token is invalid
@@ -96,7 +99,7 @@ export const getOAuthAuthorizationCodeAccessToken = async ({
   connectorTokenClient,
   scope,
   authMode,
-  profileUid,
+  userIdentifiers,
   forceRefresh = false,
 }: GetOAuthAuthorizationCodeAccessTokenOpts): Promise<string | null> => {
   const { clientId, tokenUrl, additionalFields, useBasicAuth } = credentials.config;
@@ -109,7 +112,7 @@ export const getOAuthAuthorizationCodeAccessToken = async ({
 
   const isPerUser = authMode === 'per-user';
 
-  if (isPerUser && !profileUid) {
+  if (isPerUser && !userIdentifiers?.profileUid) {
     logger.warn(
       `Per-user authMode requires a profileUid for connectorId: ${connectorId}. Cannot retrieve token.`
     );
@@ -126,7 +129,7 @@ export const getOAuthAuthorizationCodeAccessToken = async ({
     // Re-fetch token inside lock - another request may have already refreshed it
     const { connectorToken, hasErrors } = isPerUser
       ? await connectorTokenClient.get({
-          profileUid: profileUid!,
+          userIdentifiers: userIdentifiers!,
           connectorId,
           tokenType: 'access_token',
         })

@@ -410,11 +410,11 @@ describe('getOAuthAuthorizationCodeAccessToken', () => {
       await getOAuthAuthorizationCodeAccessToken({
         ...baseOpts,
         authMode: 'per-user',
-        profileUid: 'profile-1',
+        userIdentifiers: { profileUid: 'profile-1' },
       });
 
       expect(connectorTokenClient.get).toHaveBeenCalledWith({
-        profileUid: 'profile-1',
+        userIdentifiers: { profileUid: 'profile-1' },
         connectorId: 'connector-1',
         tokenType: 'access_token',
       });
@@ -429,7 +429,7 @@ describe('getOAuthAuthorizationCodeAccessToken', () => {
       const result = await getOAuthAuthorizationCodeAccessToken({
         ...baseOpts,
         authMode: 'per-user',
-        profileUid: 'profile-1',
+        userIdentifiers: { profileUid: 'profile-1' },
       });
 
       expect(result).toBe('stored-per-user-access-token');
@@ -446,7 +446,7 @@ describe('getOAuthAuthorizationCodeAccessToken', () => {
       const result = await getOAuthAuthorizationCodeAccessToken({
         ...baseOpts,
         authMode: 'per-user',
-        profileUid: 'profile-1',
+        userIdentifiers: { profileUid: 'profile-1' },
       });
 
       expect(requestOAuthRefreshToken).toHaveBeenCalledWith(
@@ -468,7 +468,7 @@ describe('getOAuthAuthorizationCodeAccessToken', () => {
       const result = await getOAuthAuthorizationCodeAccessToken({
         ...baseOpts,
         authMode: 'per-user',
-        profileUid: 'profile-1',
+        userIdentifiers: { profileUid: 'profile-1' },
       });
 
       expect(result).toBeNull();

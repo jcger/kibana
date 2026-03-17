@@ -13,7 +13,7 @@ import type { ActionInfo } from './action_executor';
 import type { AuthTypeRegistry } from '../auth_types';
 import { getCustomAgents } from './get_custom_agents';
 import type { ActionsConfigurationUtilities } from '../actions_config';
-import type { ConnectorTokenClientContract } from '../types';
+import type { ConnectorTokenClientContract, CurrentUserIdentifiers } from '../types';
 import { getBeforeRedirectFn } from './before_redirect';
 import { getOAuthClientCredentialsAccessToken } from './get_oauth_client_credentials_access_token';
 import { getOAuthAuthorizationCodeAccessToken } from './get_oauth_authorization_code_access_token';
@@ -52,7 +52,7 @@ async function handleOAuth401Error({
   configurationUtilities,
   axiosInstance,
   authMode,
-  profileUid,
+  userIdentifiers,
 }: {
   error: AxiosErrorWithRetry;
   connectorId: string;
@@ -62,7 +62,7 @@ async function handleOAuth401Error({
   configurationUtilities: ActionsConfigurationUtilities;
   axiosInstance: AxiosInstance;
   authMode?: AuthMode;
-  profileUid?: string;
+  userIdentifiers: CurrentUserIdentifiers | undefined;
 }): Promise<never | AxiosInstance> {
   // Prevent retry loops - only attempt refresh once per request
   if (error.config._retry) {
@@ -97,7 +97,7 @@ async function handleOAuth401Error({
     connectorTokenClient,
     scope,
     authMode,
-    profileUid,
+    userIdentifiers,
     forceRefresh: true,
   });
 
@@ -121,7 +121,7 @@ export interface GetAxiosInstanceWithAuthFnOpts {
   secrets: ValidatedSecrets;
   signal?: AbortSignal;
   authMode?: AuthMode;
-  profileUid?: string;
+  userIdentifiers?: CurrentUserIdentifiers;
 }
 export type GetAxiosInstanceWithAuthFn = (
   opts: GetAxiosInstanceWithAuthFnOpts
@@ -138,7 +138,7 @@ export const getAxiosInstanceWithAuth = ({
     connectorTokenClient,
     signal,
     authMode,
-    profileUid,
+    userIdentifiers,
   }: GetAxiosInstanceWithAuthFnOpts) => {
     let authTypeId: string | undefined;
     try {
@@ -198,7 +198,7 @@ export const getAxiosInstanceWithAuth = ({
                   configurationUtilities,
                   axiosInstance,
                   authMode,
-                  profileUid,
+                  userIdentifiers,
                 });
               }
               return Promise.reject(error);
@@ -240,7 +240,7 @@ export const getAxiosInstanceWithAuth = ({
               connectorTokenClient,
               scope: opts.scope,
               authMode,
-              profileUid,
+              userIdentifiers,
             });
           }
 

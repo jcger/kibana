@@ -47,6 +47,7 @@ import type {
   InMemoryConnector,
   ActionTypeExecutorResult,
   ConnectorTokenClientContract,
+  GetCurrentUserIdentifiersFromAPIKeyFn,
   HookServices,
   ActionType,
 } from '../types';
@@ -121,7 +122,7 @@ export interface ConstructorOptions {
   ) => Promise<AxiosInstance>;
   spaces?: SpacesServiceSetup;
   isESOCanEncrypt: boolean;
-  getCurrentUserProfileIdFromAPIKey?: (request: KibanaRequest) => Promise<string | undefined>;
+  getCurrentUserIdentifiersFromAPIKey?: GetCurrentUserIdentifiersFromAPIKeyFn;
 }
 
 export interface ActionsClientContext {
@@ -147,10 +148,10 @@ export interface ActionsClientContext {
   ) => Promise<AxiosInstance>;
   spaces?: SpacesServiceSetup;
   isESOCanEncrypt: boolean;
-  getCurrentUserProfileIdFromAPIKey?: (request: KibanaRequest) => Promise<string | undefined>;
+  getCurrentUserIdentifiersFromAPIKey?: GetCurrentUserIdentifiersFromAPIKeyFn;
 }
 
-const noop = async (_request: KibanaRequest): Promise<string | undefined> => undefined;
+const noop = async (_request: KibanaRequest): Promise<undefined> => undefined;
 
 export class ActionsClient {
   private readonly context: ActionsClientContext;
@@ -176,7 +177,7 @@ export class ActionsClient {
     getAxiosInstanceWithAuth,
     spaces,
     isESOCanEncrypt,
-    getCurrentUserProfileIdFromAPIKey,
+    getCurrentUserIdentifiersFromAPIKey: getCurrentUserIdentifiersFromAPIKey,
   }: ConstructorOptions) {
     this.context = {
       logger,
@@ -199,7 +200,7 @@ export class ActionsClient {
       getAxiosInstanceWithAuth,
       spaces,
       isESOCanEncrypt,
-      getCurrentUserProfileIdFromAPIKey: getCurrentUserProfileIdFromAPIKey ?? noop,
+      getCurrentUserIdentifiersFromAPIKey: getCurrentUserIdentifiersFromAPIKey ?? noop,
     };
   }
 
@@ -454,7 +455,7 @@ export class ActionsClient {
           );
         }
 
-        const profileUid = await this.context.getCurrentUserProfileIdFromAPIKey?.(
+        const userIdentifiers = await this.context.getCurrentUserIdentifiersFromAPIKey?.(
           this.context.request
         );
 
@@ -469,7 +470,7 @@ export class ActionsClient {
           connectorTokenClient: this.context.connectorTokenClient,
           scope: tokenOpts.scope,
           authMode,
-          profileUid,
+          userIdentifiers,
         });
 
         this.context.logger.debug(

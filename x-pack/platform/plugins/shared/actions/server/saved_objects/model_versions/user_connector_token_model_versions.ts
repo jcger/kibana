@@ -6,7 +6,10 @@
  */
 
 import type { SavedObjectsModelVersionMap } from '@kbn/core-saved-objects-server';
-import { rawUserConnectorTokenSchemaV1 } from '../schemas/raw_user_connector_token';
+import {
+  rawUserConnectorTokenSchemaV1,
+  rawUserConnectorTokenSchemaV2,
+} from '../schemas/raw_user_connector_token';
 
 export const userConnectorTokenModelVersions: SavedObjectsModelVersionMap = {
   '1': {
@@ -14,6 +17,20 @@ export const userConnectorTokenModelVersions: SavedObjectsModelVersionMap = {
     schemas: {
       forwardCompatibility: rawUserConnectorTokenSchemaV1.extends({}, { unknowns: 'ignore' }),
       create: rawUserConnectorTokenSchemaV1,
+    },
+  },
+  '2': {
+    changes: [
+      {
+        type: 'mappings_addition',
+        addedMappings: {
+          userCloudId: { type: 'keyword' },
+        },
+      },
+    ],
+    schemas: {
+      forwardCompatibility: rawUserConnectorTokenSchemaV2.extends({}, { unknowns: 'ignore' }),
+      create: rawUserConnectorTokenSchemaV2,
     },
   },
 };

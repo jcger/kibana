@@ -566,6 +566,7 @@ describe('delete()', () => {
 
       await connectorTokenClient.deleteConnectorTokens({
         connectorId: '123',
+        userIdentifiers: { profileUid: 'user-123' },
         authMode: 'per-user',
       });
 
@@ -581,7 +582,7 @@ describe('delete()', () => {
 
       await connectorTokenClient.deleteConnectorTokens({
         connectorId: '123',
-        profileUid: 'user-123',
+        userIdentifiers: { profileUid: 'user-123' },
       });
 
       expect(unsecuredSavedObjectsClient.delete).toHaveBeenCalledWith(
@@ -596,7 +597,7 @@ describe('delete()', () => {
 
       await connectorTokenClient.deleteConnectorTokens({
         connectorId: '123',
-        profileUid: 'user-123',
+        userIdentifiers: { profileUid: 'user-123' },
         authMode: 'shared',
       });
 
@@ -612,7 +613,7 @@ describe('delete()', () => {
 
       await connectorTokenClient.deleteConnectorTokens({
         connectorId: '123',
-        profileUid: 'user-123',
+        userIdentifiers: { profileUid: 'user-123' },
         authMode: 'per-user',
       });
 

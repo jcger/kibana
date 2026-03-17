@@ -41,6 +41,7 @@ import type {
   ActionTypeRegistryContract,
   ActionTypeSecrets,
   ConnectorTokenClientContract,
+  GetCurrentUserIdentifiersFromAPIKeyFn,
   GetServicesFunction,
   GetUnsecuredServicesFunction,
   InMemoryConnector,
@@ -73,7 +74,7 @@ export interface ActionExecutorContext {
   eventLogger: IEventLogger;
   inMemoryConnectors: InMemoryConnector[];
   getActionsAuthorizationWithRequest: (request: KibanaRequest) => ActionsAuthorization;
-  getCurrentUserProfileIdFromAPIKey: (request: KibanaRequest) => Promise<string | undefined>;
+  getCurrentUserIdentifiersFromAPIKey: GetCurrentUserIdentifiersFromAPIKeyFn;
 }
 
 export interface TaskInfo {
@@ -405,8 +406,8 @@ export class ActionExecutor {
       throw new Error('ActionExecutor not initialized');
     }
 
-    const providedProfileUid = request
-      ? await this.actionExecutorContext!.getCurrentUserProfileIdFromAPIKey(request)
+    const userIdentifiers = request
+      ? await this.actionExecutorContext!.getCurrentUserIdentifiersFromAPIKey(request)
       : undefined;
 
     return withSpan(
@@ -424,7 +425,11 @@ export class ActionExecutor {
 
         const { actionTypeId, name, config, secrets, rawAction } = actionInfo;
         const authMode = rawAction.authMode;
-        const profileUid = providedProfileUid || currentUser?.profile_uid;
+        const resolvedProfileUid = userIdentifiers?.profileUid ?? currentUser?.profile_uid;
+        const resolvedUserIdentifiers =
+          resolvedProfileUid || userIdentifiers?.userCloudId
+            ? { profileUid: resolvedProfileUid, userCloudId: userIdentifiers?.userCloudId }
+            : undefined;
         const loggerId = actionTypeId.startsWith('.') ? actionTypeId.substring(1) : actionTypeId;
         const logger = this.actionExecutorContext!.logger.get(loggerId);
 
@@ -573,7 +578,7 @@ export class ActionExecutor {
             connectorTokenClient,
             signal,
             authMode,
-            profileUid,
+            userIdentifiers: resolvedUserIdentifiers,
           });
 
           if (rawResult && rawResult.status === 'error') {

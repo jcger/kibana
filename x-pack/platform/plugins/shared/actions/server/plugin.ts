@@ -45,6 +45,7 @@ import type { ServerlessPluginSetup, ServerlessPluginStart } from '@kbn/serverle
 import type { CloudSetup } from '@kbn/cloud-plugin/server';
 import type { AxiosInstance } from 'axios';
 import type { UsageApiSetup } from '@kbn/usage-api-plugin/server';
+import { ELASTIC_CLOUD_SSO_REALM_NAME } from '@kbn/security-plugin/server/authentication/providers/base';
 import { type ActionsConfig, type EnabledConnectorTypes } from './config';
 import { AllowedHosts, getValidatedConfig } from './config';
 import { resolveCustomHosts } from './lib/custom_host_settings';
@@ -64,6 +65,7 @@ import type {
   ActionTypeSecrets,
   ActionTypeParams,
   ActionsRequestHandlerContext,
+  CurrentUserIdentifiersResult,
   UnsecuredServices,
 } from './types';
 
@@ -564,7 +566,7 @@ export class ActionsPlugin
         spaces: this.spaces?.spacesService,
         isESOCanEncrypt: isESOCanEncrypt!,
         encryptedSavedObjectsClient,
-        getCurrentUserProfileIdFromAPIKey,
+        getCurrentUserIdentifiersFromAPIKey,
       });
     };
 
@@ -645,21 +647,29 @@ export class ActionsPlugin
     const getInternalSavedObjectsRepositoryWithoutAccessToActions = () =>
       core.savedObjects.createInternalRepository();
 
-    const getCurrentUserProfileIdFromAPIKey = async (
+    const getCurrentUserIdentifiersFromAPIKey = async (
       request: KibanaRequest
-    ): Promise<string | undefined> => {
+    ): CurrentUserIdentifiersResult => {
       try {
         const response = await core.elasticsearch.client
           .asScoped(request)
           .asCurrentUser.security.getApiKey({
             with_profile_uid: true,
           });
+
         if (response.api_keys && response.api_keys.length > 0) {
-          return response.api_keys[0].profile_uid;
+          const { profile_uid: profileUid, username, realm } = response.api_keys[0];
+          const userCloudId = realm === ELASTIC_CLOUD_SSO_REALM_NAME ? username : undefined;
+
+          if (profileUid || userCloudId) {
+            return { profileUid, userCloudId };
+          }
+          logger.debug(`No profile UID or cloud user ID found in API key response.`);
+        } else {
+          logger.debug(
+            `No API keys were returned from query, cannot retrieve associated profile id.`
+          );
         }
-        logger.debug(
-          `No API keys were returned from query, cannot retrieve associated profile id.`
-        );
       } catch (error) {
         logger.debug(
           `Failed to retrieve API key for user profile retrieval: ${
@@ -694,7 +704,7 @@ export class ActionsPlugin
         return instantiateAuthorization(request);
       },
       analyticsService: core.analytics,
-      getCurrentUserProfileIdFromAPIKey,
+      getCurrentUserIdentifiersFromAPIKey,
     });
 
     taskRunnerFactory!.initialize({
