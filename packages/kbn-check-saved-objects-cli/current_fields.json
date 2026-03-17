@@ -1387,7 +1387,8 @@
   "user_connector_token": [
     "connectorId",
     "credentialType",
-    "profileUid"
+    "profileUid",
+    "userCloudId"
   ],
   "visualization": [
     "description",
