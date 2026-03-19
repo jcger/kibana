@@ -56,7 +56,12 @@ export const GoogleDriveConnector: ConnectorSpec = {
     supportedFeatureIds: ['workflows', 'agentBuilder'],
   },
   auth: {
-    types: ['bearer'],
+    types: [
+      'bearer',
+      {
+        type: 'oauth_authorization_code',
+      },
+    ],
     headers: {
       Accept: 'application/json',
     },
