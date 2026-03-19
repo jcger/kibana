@@ -577,33 +577,38 @@ export class UserConnectorTokenClient {
     const RETENTION_DAYS = 90;
     const cutoffDate = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000);
 
+    const finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>({
+      type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
+      filter: `${USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE}.updated_at < "${cutoffDate.toISOString()}"`,
+      perPage: 100,
+    });
+
+    let totalDeleted = 0;
+
     try {
-      const finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>({
-        type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
-        filter: `${USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE}.attributes.updatedAt < "${cutoffDate.toISOString()}"`,
-        perPage: 100,
-      });
-
-      let totalDeleted = 0;
-
       for await (const response of finder.find()) {
-        await this.unsecuredSavedObjectsClient.bulkDelete(
+        if (response.saved_objects.length === 0) continue;
+
+        const result = await this.unsecuredSavedObjectsClient.bulkDelete(
           response.saved_objects.map((obj) => ({
             type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
             id: obj.id,
           }))
         );
-        totalDeleted += response.saved_objects.length;
+        totalDeleted += result.statuses.filter((s) => !s.error).length;
       }
-
-      await finder.close();
-
-      this.logger.debug(`Cleaned up ${totalDeleted} stale user connector tokens`);
-      return totalDeleted;
     } catch (err) {
-      this.logger.error(`Failed to cleanup stale user connector tokens. Error: ${err.message}`);
-      return 0;
+      this.logger.error(
+        `Failed to cleanup stale user connector tokens. Error: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+    } finally {
+      await finder.close();
     }
+
+    this.logger.debug(`Cleaned up ${totalDeleted} stale user connector tokens`);
+    return totalDeleted;
   }
 
   /**
