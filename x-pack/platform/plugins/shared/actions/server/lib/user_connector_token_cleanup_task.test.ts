@@ -7,7 +7,6 @@
 
 import { loggingSystemMock, savedObjectsRepositoryMock, coreMock } from '@kbn/core/server/mocks';
 import { taskManagerMock } from '@kbn/task-manager-plugin/server/mocks';
-import { encryptedSavedObjectsMock } from '@kbn/encrypted-saved-objects-plugin/server/mocks';
 import type { Logger } from '@kbn/core/server';
 import {
   initializeUserConnectorTokenCleanupTask,
@@ -16,9 +15,9 @@ import {
   USER_CONNECTOR_TOKEN_CLEANUP_TASK_TYPE,
   USER_CONNECTOR_TOKEN_CLEANUP_SCHEDULE,
 } from './user_connector_token_cleanup_task';
-import { UserConnectorTokenClient } from './user_connector_token_client';
+import { cleanupStaleUserConnectorTokens } from './cleanup_stale_user_connector_tokens';
 
-jest.mock('./user_connector_token_client');
+jest.mock('./cleanup_stale_user_connector_tokens');
 
 const logger = loggingSystemMock.create().get() as jest.Mocked<Logger>;
 
@@ -74,18 +73,16 @@ describe('scheduleUserConnectorTokenCleanupTask()', () => {
 });
 
 describe('task runner', () => {
-  const mockCleanupStaleTokens = jest.fn();
+  const mockCleanupStaleUserConnectorTokens = cleanupStaleUserConnectorTokens as jest.MockedFunction<
+    typeof cleanupStaleUserConnectorTokens
+  >;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (UserConnectorTokenClient as jest.Mock).mockImplementation(() => ({
-      cleanupStaleTokens: mockCleanupStaleTokens,
-    }));
   });
 
   const buildTaskRunner = (state: Record<string, unknown> = {}) => {
     const taskManagerSetup = taskManagerMock.createSetup();
-    const encryptedSavedObjectsStart = encryptedSavedObjectsMock.createStart();
     const savedObjectsRepository = savedObjectsRepositoryMock.create();
     const coreSetup = coreMock.createSetup();
 
@@ -95,7 +92,7 @@ describe('task runner', () => {
           createInternalRepository: jest.fn().mockReturnValue(savedObjectsRepository),
         },
       } as never,
-      { encryptedSavedObjects: encryptedSavedObjectsStart } as never,
+      {} as never,
       {} as never,
     ]);
 
@@ -110,12 +107,12 @@ describe('task runner', () => {
   };
 
   test('calls cleanupStaleTokens and returns updated state', async () => {
-    mockCleanupStaleTokens.mockResolvedValue(5);
+    mockCleanupStaleUserConnectorTokens.mockResolvedValue(5);
 
     const runner = buildTaskRunner({ runs: 2, last_cleanup_count: 3 });
     const result = await runner.run();
 
-    expect(mockCleanupStaleTokens).toHaveBeenCalled();
+    expect(mockCleanupStaleUserConnectorTokens).toHaveBeenCalled();
     expect(result).toEqual({
       state: { runs: 3, last_cleanup_count: 5 },
       schedule: USER_CONNECTOR_TOKEN_CLEANUP_SCHEDULE,
@@ -123,7 +120,7 @@ describe('task runner', () => {
   });
 
   test('returns state with runs incremented on error', async () => {
-    mockCleanupStaleTokens.mockRejectedValue(new Error('cleanup failed'));
+    mockCleanupStaleUserConnectorTokens.mockRejectedValue(new Error('cleanup failed'));
 
     const runner = buildTaskRunner({ runs: 1, last_cleanup_count: 0 });
     const result = await runner.run();
@@ -138,7 +135,7 @@ describe('task runner', () => {
   });
 
   test('handles empty initial state (runs defaults to 0)', async () => {
-    mockCleanupStaleTokens.mockResolvedValue(0);
+    mockCleanupStaleUserConnectorTokens.mockResolvedValue(0);
 
     const runner = buildTaskRunner({});
     const result = await runner.run();

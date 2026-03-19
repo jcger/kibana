@@ -570,53 +570,6 @@ export class UserConnectorTokenClient {
   }
 
   /**
-   * Clean up stale per-user connector tokens (called periodically by task manager)
-   * Deletes tokens that have not been updated within the 90-day retention window.
-   */
-  public async cleanupStaleTokens(): Promise<number> {
-    const RETENTION_DAYS = 90;
-    const cutoffDate = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000);
-
-    let finder:
-      | ReturnType<
-          typeof this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>
-        >
-      | undefined;
-    let totalDeleted = 0;
-
-    try {
-      finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>({
-        type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
-        filter: `${USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE}.updated_at < "${cutoffDate.toISOString()}"`,
-        perPage: 100,
-      });
-
-      for await (const response of finder.find()) {
-        if (response.saved_objects.length === 0) continue;
-
-        const result = await this.unsecuredSavedObjectsClient.bulkDelete(
-          response.saved_objects.map((obj) => ({
-            type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
-            id: obj.id,
-          }))
-        );
-        totalDeleted += result.statuses.filter((s) => s.success).length;
-      }
-    } catch (err) {
-      this.logger.error(
-        `Failed to cleanup stale user connector tokens. Error: ${
-          err instanceof Error ? err.message : String(err)
-        }`
-      );
-    } finally {
-      await finder?.close();
-    }
-
-    this.logger.debug(`Cleaned up ${totalDeleted} stale user connector tokens`);
-    return totalDeleted;
-  }
-
-  /**
    * Update per-user token with refresh token
    */
   public async updateWithRefreshToken({

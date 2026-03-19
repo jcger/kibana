@@ -12,8 +12,7 @@ import type {
   IntervalSchedule,
   ConcreteTaskInstance,
 } from '@kbn/task-manager-plugin/server';
-import type { ActionsPluginsStart } from '../plugin';
-import { UserConnectorTokenClient } from './user_connector_token_client';
+import { cleanupStaleUserConnectorTokens } from './cleanup_stale_user_connector_tokens';
 import { USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE } from '../constants/saved_objects';
 
 export const USER_CONNECTOR_TOKEN_CLEANUP_TASK_TYPE = 'actions:user_connector_token_cleanup';
@@ -33,7 +32,7 @@ const emptyState: TaskState = {
 export function initializeUserConnectorTokenCleanupTask(
   logger: Logger,
   taskManager: TaskManagerSetupContract,
-  core: CoreSetup<ActionsPluginsStart>
+  core: CoreSetup
 ) {
   registerUserConnectorTokenCleanupTask(logger, taskManager, core);
 }
@@ -50,7 +49,7 @@ export function scheduleUserConnectorTokenCleanupTask(
 function registerUserConnectorTokenCleanupTask(
   logger: Logger,
   taskManager: TaskManagerSetupContract,
-  core: CoreSetup<ActionsPluginsStart>
+  core: CoreSetup
 ) {
   taskManager.registerTaskDefinitions({
     [USER_CONNECTOR_TOKEN_CLEANUP_TASK_TYPE]: {
@@ -63,21 +62,16 @@ function registerUserConnectorTokenCleanupTask(
             const state = taskInstance.state as TaskState;
 
             try {
-              const [coreStart, { encryptedSavedObjects }] = await core.getStartServices();
+              const [coreStart] = await core.getStartServices();
 
               const unsecuredSavedObjectsClient = coreStart.savedObjects.createInternalRepository([
                 USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
               ]);
-              const encryptedSavedObjectsClient = encryptedSavedObjects.getClient({
-                includedHiddenTypes: [USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE],
-              });
-              const userConnectorTokenClient = new UserConnectorTokenClient({
-                encryptedSavedObjectsClient,
-                unsecuredSavedObjectsClient,
-                logger: logger.get('user_connector_token_cleanup'),
-              });
 
-              const cleanupCount = await userConnectorTokenClient.cleanupStaleTokens();
+              const cleanupCount = await cleanupStaleUserConnectorTokens(
+                unsecuredSavedObjectsClient,
+                logger.get('user_connector_token_cleanup')
+              );
 
               const updatedState: TaskState = {
                 runs: (state.runs || 0) + 1,
