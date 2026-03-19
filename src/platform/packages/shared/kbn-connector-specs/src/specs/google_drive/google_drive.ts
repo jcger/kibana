@@ -60,6 +60,7 @@ export const GoogleDriveConnector: ConnectorSpec = {
       'bearer',
       {
         type: 'oauth_authorization_code',
+        defaults: {},
       },
     ],
     headers: {
