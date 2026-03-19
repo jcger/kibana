@@ -65,6 +65,7 @@ import type {
   ActionTypeParams,
   ActionsRequestHandlerContext,
   UnsecuredServices,
+  ConnectorLifecycleListener,
 } from './types';
 
 import type { ActionsConfigurationUtilities } from './actions_config';
@@ -151,6 +152,8 @@ export interface PluginSetupContract {
   setEnabledConnectorTypes: (connectorTypes: EnabledConnectorTypes) => void;
 
   isActionTypeEnabled(id: string, options?: { notifyUsage: boolean }): boolean;
+
+  registerConnectorLifecycleListener(listener: ConnectorLifecycleListener): void;
 }
 
 export interface PluginStartContract {
@@ -256,6 +259,7 @@ export class ActionsPlugin
   private inMemoryConnectors: InMemoryConnector[];
   private inMemoryMetrics: InMemoryMetrics;
   private connectorUsageReportingTask: ConnectorUsageReportingTask | undefined;
+  private connectorLifecycleListeners: ConnectorLifecycleListener[] = [];
 
   constructor(initContext: PluginInitializerContext) {
     this.logger = initContext.logger.get();
@@ -490,6 +494,9 @@ export class ActionsPlugin
       isActionTypeEnabled: (id, options = { notifyUsage: false }) => {
         return this.actionTypeRegistry!.isActionTypeEnabled(id, options);
       },
+      registerConnectorLifecycleListener: (listener: ConnectorLifecycleListener) => {
+        this.connectorLifecycleListeners.push(listener);
+      },
     };
   }
 
@@ -569,6 +576,7 @@ export class ActionsPlugin
         spaces: this.spaces?.spacesService,
         isESOCanEncrypt: isESOCanEncrypt!,
         encryptedSavedObjectsClient,
+        connectorLifecycleListeners: this.connectorLifecycleListeners,
         getCurrentUserProfileIdFromAPIKey,
       });
     };
@@ -872,6 +880,7 @@ export class ActionsPlugin
       logger,
       getAxiosInstanceWithAuthHelper,
       spaces,
+      connectorLifecycleListeners,
     } = this;
 
     return async function actionsRouteHandlerContext(context, request) {
@@ -929,6 +938,7 @@ export class ActionsPlugin
             spaces: spaces?.spacesService,
             isESOCanEncrypt: isESOCanEncrypt!,
             encryptedSavedObjectsClient,
+            connectorLifecycleListeners,
           });
         },
         listTypes: (featureId?: string) => {
