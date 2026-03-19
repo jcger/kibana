@@ -50,7 +50,9 @@ import type {
   GetCurrentUserIdentifiersFromAPIKeyFn,
   HookServices,
   ActionType,
+  ConnectorLifecycleListener,
 } from '../types';
+import { invokePostDeleteListeners } from '../lib/invoke_lifecycle_listeners';
 import { PreconfiguredActionDisabledModificationError } from '../lib/errors/preconfigured_action_disabled_modification';
 import type {
   ExecuteOptions as EnqueueExecutionOptions,
@@ -122,6 +124,7 @@ export interface ConstructorOptions {
   ) => Promise<AxiosInstance>;
   spaces?: SpacesServiceSetup;
   isESOCanEncrypt: boolean;
+  connectorLifecycleListeners?: ConnectorLifecycleListener[];
   getCurrentUserIdentifiersFromAPIKey?: GetCurrentUserIdentifiersFromAPIKeyFn;
 }
 
@@ -148,10 +151,11 @@ export interface ActionsClientContext {
   ) => Promise<AxiosInstance>;
   spaces?: SpacesServiceSetup;
   isESOCanEncrypt: boolean;
+  connectorLifecycleListeners?: ConnectorLifecycleListener[];
   getCurrentUserIdentifiersFromAPIKey?: GetCurrentUserIdentifiersFromAPIKeyFn;
 }
 
-const noop = async (_request: KibanaRequest): Promise<undefined> => undefined;
+const noop = async (_request: KibanaRequest): Promise<string | undefined> => undefined;
 
 export class ActionsClient {
   private readonly context: ActionsClientContext;
@@ -177,7 +181,8 @@ export class ActionsClient {
     getAxiosInstanceWithAuth,
     spaces,
     isESOCanEncrypt,
-    getCurrentUserIdentifiersFromAPIKey: getCurrentUserIdentifiersFromAPIKey,
+    connectorLifecycleListeners,
+    getCurrentUserIdentifiersFromAPIKey,
   }: ConstructorOptions) {
     this.context = {
       logger,
@@ -200,6 +205,7 @@ export class ActionsClient {
       getAxiosInstanceWithAuth,
       spaces,
       isESOCanEncrypt,
+      connectorLifecycleListeners,
       getCurrentUserIdentifiersFromAPIKey: getCurrentUserIdentifiersFromAPIKey ?? noop,
     };
   }
@@ -578,6 +584,20 @@ export class ActionsClient {
         );
       }
     }
+
+    // Invoke cross-plugin lifecycle listeners (fire-and-forget to avoid blocking the API response)
+    void invokePostDeleteListeners(
+      this.context.connectorLifecycleListeners,
+      actionTypeId,
+      {
+        connectorId: id,
+        config,
+        logger: this.context.logger,
+        request: this.context.request,
+        services: hookServices,
+      },
+      this.context.logger
+    );
 
     try {
       await this.context.connectorTokenClient.deleteConnectorTokens({
