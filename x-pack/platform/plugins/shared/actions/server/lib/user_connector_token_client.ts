@@ -600,7 +600,7 @@ export class UserConnectorTokenClient {
             id: obj.id,
           }))
         );
-        totalDeleted += result.statuses.filter((s) => !s.error).length;
+        totalDeleted += result.statuses.filter((s) => s.success).length;
       }
     } catch (err) {
       this.logger.error(

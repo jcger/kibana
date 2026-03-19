@@ -212,11 +212,14 @@ export class OAuthStateClient {
             id: obj.id,
           }))
         );
-        totalDeleted += result.statuses.filter((s) => !s.error).length;
+
+        totalDeleted += result.statuses.filter((s) => s.success).length;
       }
     } catch (err) {
       this.logger.error(
-        `Failed to cleanup expired OAuth states. Error: ${err instanceof Error ? err.message : String(err)}`
+        `Failed to cleanup expired OAuth states. Error: ${
+          err instanceof Error ? err.message : String(err)
+        }`
       );
     } finally {
       await finder?.close();
