@@ -98,6 +98,7 @@ const ActionsConnectorsList = ({
     chrome,
     docLinks,
   } = useKibana().services;
+
   const { euiTheme } = useEuiTheme();
   const { connectorId } = useParams<{ connectorId?: string }>();
   const history = useHistory();

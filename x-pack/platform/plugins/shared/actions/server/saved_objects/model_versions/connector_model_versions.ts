@@ -33,29 +33,3 @@ export const connectorModelVersions: SavedObjectsModelVersionMap = {
     },
   },
 };
-
-export const connectorModelVersionsWithAuthMode: SavedObjectsModelVersionMap = {
-  '1': {
-    changes: [],
-    schemas: {
-      create: rawConnectorSchemaV1,
-    },
-  },
-  '2': {
-    changes: [
-      {
-        type: 'data_backfill',
-        backfillFn: (doc) => {
-          if (!doc.attributes.authMode) {
-            return { ...doc, attributes: { ...doc.attributes, authMode: 'shared' } };
-          }
-          return doc;
-        },
-      },
-    ],
-    schemas: {
-      create: rawConnectorSchemaV2,
-      forwardCompatibility: rawConnectorSchemaV2.extends({}, { unknowns: 'ignore' }),
-    },
-  },
-};
