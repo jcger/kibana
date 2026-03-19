@@ -189,15 +189,20 @@ export class OAuthStateClient {
    * Clean up expired OAuth states (called periodically by task manager)
    */
   public async cleanupExpiredStates(): Promise<number> {
-    const finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<OAuthStateAttributes>({
-      type: OAUTH_STATE_SAVED_OBJECT_TYPE,
-      filter: `${OAUTH_STATE_SAVED_OBJECT_TYPE}.attributes.expiresAt < "${new Date().toISOString()}"`,
-      perPage: 100,
-    });
-
+    let finder:
+      | ReturnType<
+          typeof this.unsecuredSavedObjectsClient.createPointInTimeFinder<OAuthStateAttributes>
+        >
+      | undefined;
     let totalDeleted = 0;
 
     try {
+      finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<OAuthStateAttributes>({
+        type: OAUTH_STATE_SAVED_OBJECT_TYPE,
+        filter: `${OAUTH_STATE_SAVED_OBJECT_TYPE}.attributes.expiresAt < "${new Date().toISOString()}"`,
+        perPage: 100,
+      });
+
       for await (const response of finder.find()) {
         if (response.saved_objects.length === 0) continue;
 
@@ -214,7 +219,7 @@ export class OAuthStateClient {
         `Failed to cleanup expired OAuth states. Error: ${err instanceof Error ? err.message : String(err)}`
       );
     } finally {
-      await finder.close();
+      await finder?.close();
     }
 
     this.logger.debug(`Cleaned up ${totalDeleted} expired OAuth states`);

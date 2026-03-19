@@ -577,15 +577,20 @@ export class UserConnectorTokenClient {
     const RETENTION_DAYS = 90;
     const cutoffDate = new Date(Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000);
 
-    const finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>({
-      type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
-      filter: `${USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE}.updated_at < "${cutoffDate.toISOString()}"`,
-      perPage: 100,
-    });
-
+    let finder:
+      | ReturnType<
+          typeof this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>
+        >
+      | undefined;
     let totalDeleted = 0;
 
     try {
+      finder = this.unsecuredSavedObjectsClient.createPointInTimeFinder<UserConnectorToken>({
+        type: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
+        filter: `${USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE}.updated_at < "${cutoffDate.toISOString()}"`,
+        perPage: 100,
+      });
+
       for await (const response of finder.find()) {
         if (response.saved_objects.length === 0) continue;
 
@@ -604,7 +609,7 @@ export class UserConnectorTokenClient {
         }`
       );
     } finally {
-      await finder.close();
+      await finder?.close();
     }
 
     this.logger.debug(`Cleaned up ${totalDeleted} stale user connector tokens`);
