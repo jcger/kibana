@@ -5,9 +5,10 @@
  * 2.0.
  */
 
-import type { ZodObject } from '@kbn/zod';
+import type { ZodObject } from '@kbn/zod/v4';
 import type { ToolResult, ToolType } from '@kbn/agent-builder-common';
-import { createBadRequestError, HookLifecycle } from '@kbn/agent-builder-common';
+import { isExcludedFromFilestore } from '@kbn/agent-builder-common/tools';
+import { createBadRequestError, HookLifecycle, ToolResultType } from '@kbn/agent-builder-common';
 import { withExecuteToolSpan } from '@kbn/inference-tracing';
 import type {
   AfterToolCallHookContext,
@@ -16,6 +17,7 @@ import type {
   ToolHandlerContext,
   ToolHandlerReturn,
 } from '@kbn/agent-builder-server';
+import { getAgentFromRunContext } from '@kbn/agent-builder-server';
 import type {
   ScopedRunnerRunToolsParams,
   ScopedRunnerRunInternalToolParams,
@@ -79,7 +81,12 @@ export const runInternalTool = async <TParams = Record<string, unknown>>({
     source = 'unknown',
   } = toolExecutionParams;
 
-  const context = forkContextForToolRun({ parentContext: parentManager.context, toolId: tool.id });
+  const context = forkContextForToolRun({
+    parentContext: parentManager.context,
+    toolId: tool.id,
+    toolCallId,
+    source,
+  });
   const manager = parentManager.createChild(context);
   const { resultStore, promptManager } = manager.deps;
 
@@ -121,6 +128,7 @@ export const runInternalTool = async <TParams = Record<string, unknown>>({
     }
   }
 
+  const startTime = Date.now();
   const toolHandlerContext = await createToolHandlerContext<TParams>({
     toolExecutionParams: {
       ...toolExecutionParams,
@@ -157,6 +165,8 @@ export const runInternalTool = async <TParams = Record<string, unknown>>({
     }
   );
 
+  const duration = Date.now() - startTime;
+
   let runToolReturn: RunToolReturn;
   if (isToolHandlerStandardReturn(toolReturn)) {
     const resultsWithIds = toolReturn.results.map<ToolResult>(
@@ -167,6 +177,15 @@ export const runInternalTool = async <TParams = Record<string, unknown>>({
         } as ToolResult)
     );
     runToolReturn = { results: resultsWithIds };
+
+    reportToolCallTelemetry({
+      parentManager,
+      toolId: tool.id,
+      toolCallId,
+      source,
+      results: resultsWithIds,
+      duration,
+    });
   } else {
     runToolReturn = { prompt: toolReturn.prompt };
   }
@@ -184,7 +203,7 @@ export const runInternalTool = async <TParams = Record<string, unknown>>({
   const afterToolHooksResult = await hooks.run(HookLifecycle.afterToolCall, postContext);
   runToolReturn = afterToolHooksResult.toolReturn;
 
-  if (runToolReturn.results) {
+  if (runToolReturn.results && !isExcludedFromFilestore(tool.id)) {
     runToolReturn.results.forEach((result) => {
       resultStore.add({
         tool_id: tool.id,
@@ -253,5 +272,68 @@ export const createToolHandlerContext = async <TParams = Record<string, unknown>
     toolManager,
     filestore,
     events: createToolEventEmitter({ eventHandler: onEvent, context: manager.context }),
+    runContext: manager.context,
   };
+};
+
+const getAgentExecutionContext = (manager: RunnerManager) => {
+  return getAgentFromRunContext(manager.context);
+};
+
+const reportToolCallTelemetry = ({
+  parentManager,
+  toolId,
+  toolCallId,
+  source,
+  results,
+  duration,
+}: {
+  parentManager: RunnerManager;
+  toolId: string;
+  toolCallId: string;
+  source: string;
+  results: ToolResult[];
+  duration: number;
+}): void => {
+  const { analyticsService } = parentManager.deps;
+  if (!analyticsService) {
+    return;
+  }
+
+  try {
+    const agentContext = getAgentExecutionContext(parentManager);
+    const allErrors = results.length > 0 && results.every((r) => r.type === ToolResultType.error);
+
+    if (allErrors) {
+      const firstError = results[0];
+      const errorMessage =
+        firstError.type === ToolResultType.error
+          ? (firstError.data as { message: string }).message
+          : 'Unknown error';
+      analyticsService.reportToolCallError({
+        agentId: agentContext?.agentId,
+        conversationId: agentContext?.conversationId,
+        executionId: agentContext?.executionId,
+        toolId,
+        toolCallId,
+        source,
+        errorType: 'tool_error',
+        errorMessage,
+        duration,
+      });
+    } else {
+      analyticsService.reportToolCallSuccess({
+        agentId: agentContext?.agentId,
+        conversationId: agentContext?.conversationId,
+        executionId: agentContext?.executionId,
+        toolId,
+        toolCallId,
+        source,
+        resultTypes: results.map((r) => r.type),
+        duration,
+      });
+    }
+  } catch (e) {
+    parentManager.deps.logger.warn(`Failed to report tool call telemetry: ${e}`);
+  }
 };
