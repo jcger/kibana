@@ -52,7 +52,7 @@ describe('scheduleUserConnectorTokenCleanupTask()', () => {
     expect(taskManagerStart.ensureScheduled).toHaveBeenCalledWith({
       id: USER_CONNECTOR_TOKEN_CLEANUP_TASK_ID,
       taskType: USER_CONNECTOR_TOKEN_CLEANUP_TASK_TYPE,
-      state: { runs: 0, last_cleanup_count: 0 },
+      state: {},
       params: {},
       schedule: USER_CONNECTOR_TOKEN_CLEANUP_SCHEDULE,
     });
@@ -73,15 +73,14 @@ describe('scheduleUserConnectorTokenCleanupTask()', () => {
 });
 
 describe('task runner', () => {
-  const mockCleanupStaleUserConnectorTokens = cleanupStaleUserConnectorTokens as jest.MockedFunction<
-    typeof cleanupStaleUserConnectorTokens
-  >;
+  const mockCleanupStaleUserConnectorTokens =
+    cleanupStaleUserConnectorTokens as jest.MockedFunction<typeof cleanupStaleUserConnectorTokens>;
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  const buildTaskRunner = (state: Record<string, unknown> = {}) => {
+  const buildTaskRunner = () => {
     const taskManagerSetup = taskManagerMock.createSetup();
     const savedObjectsRepository = savedObjectsRepositoryMock.create();
     const coreSetup = coreMock.createSetup();
@@ -101,48 +100,35 @@ describe('task runner', () => {
     const registeredDefinitions = taskManagerSetup.registerTaskDefinitions.mock.calls[0][0];
     const taskDef = registeredDefinitions[USER_CONNECTOR_TOKEN_CLEANUP_TASK_TYPE];
 
-    const taskInstance = { state } as never;
     const abortController = new AbortController();
-    return taskDef.createTaskRunner({ taskInstance, abortController });
+    return taskDef.createTaskRunner({ taskInstance: {} as never, abortController });
   };
 
-  test('calls cleanupStaleTokens and returns updated state', async () => {
+  test('calls cleanupStaleUserConnectorTokens and returns empty state', async () => {
     mockCleanupStaleUserConnectorTokens.mockResolvedValue(5);
 
-    const runner = buildTaskRunner({ runs: 2, last_cleanup_count: 3 });
+    const runner = buildTaskRunner();
     const result = await runner.run();
 
     expect(mockCleanupStaleUserConnectorTokens).toHaveBeenCalled();
     expect(result).toEqual({
-      state: { runs: 3, last_cleanup_count: 5 },
+      state: {},
       schedule: USER_CONNECTOR_TOKEN_CLEANUP_SCHEDULE,
     });
   });
 
-  test('returns state with runs incremented on error', async () => {
+  test('logs error and returns empty state on failure', async () => {
     mockCleanupStaleUserConnectorTokens.mockRejectedValue(new Error('cleanup failed'));
 
-    const runner = buildTaskRunner({ runs: 1, last_cleanup_count: 0 });
+    const runner = buildTaskRunner();
     const result = await runner.run();
 
     expect(result).toEqual({
-      state: { runs: 2, last_cleanup_count: 0 },
+      state: {},
       schedule: USER_CONNECTOR_TOKEN_CLEANUP_SCHEDULE,
     });
     expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining('User connector token cleanup task failed')
     );
-  });
-
-  test('handles empty initial state (runs defaults to 0)', async () => {
-    mockCleanupStaleUserConnectorTokens.mockResolvedValue(0);
-
-    const runner = buildTaskRunner({});
-    const result = await runner.run();
-
-    expect(result).toEqual({
-      state: { runs: 1, last_cleanup_count: 0 },
-      schedule: USER_CONNECTOR_TOKEN_CLEANUP_SCHEDULE,
-    });
   });
 });

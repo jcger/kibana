@@ -16,7 +16,7 @@ const unsecuredSavedObjectsClient = savedObjectsClientMock.create();
 let clock: sinon.SinonFakeTimers;
 
 beforeAll(() => {
-  clock = sinon.useFakeTimers(new Date('2021-01-01T12:00:00.000Z'));
+  clock = sinon.useFakeTimers(new Date('2026-01-01T12:00:00.000Z'));
 });
 beforeEach(() => {
   clock.reset();
@@ -88,15 +88,13 @@ describe('cleanupStaleUserConnectorTokens()', () => {
       yield { saved_objects: [] };
     });
 
-    const before = new Date(clock.now - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const expectedCutoff = new Date(clock.now - 90 * 24 * 60 * 60 * 1000).toISOString();
     await cleanupStaleUserConnectorTokens(unsecuredSavedObjectsClient, logger);
-    const after = new Date(clock.now - 90 * 24 * 60 * 60 * 1000).toISOString();
 
     const callArg = unsecuredSavedObjectsClient.createPointInTimeFinder.mock.calls[0][0] as {
       filter: string;
     };
-    expect(callArg.filter).toContain(before);
-    expect(callArg.filter).toContain(after);
+    expect(callArg.filter).toContain(expectedCutoff);
   });
 
   test('returns 0 and logs error when generator throws', async () => {
