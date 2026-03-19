@@ -4659,6 +4659,9 @@
       },
       "profileUid": {
         "type": "keyword"
+      },
+      "userCloudId": {
+        "type": "keyword"
       }
     }
   },
