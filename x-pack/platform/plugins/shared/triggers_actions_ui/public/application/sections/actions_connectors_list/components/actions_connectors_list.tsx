@@ -37,7 +37,6 @@ import {
   OAuthRedirectMode,
   useConnectorOAuthDisconnect,
 } from '@kbn/response-ops-oauth-hooks';
-import { useConnectorContext } from '../../../..';
 import { loadActionTypes, deleteActions } from '../../../lib/action_connector_api';
 import {
   hasDeleteActionsCapability,
@@ -99,8 +98,6 @@ const ActionsConnectorsList = ({
     chrome,
     docLinks,
   } = useKibana().services;
-  const { services: authorizationCodeEnabled } = useConnectorContext();
-
   const { euiTheme } = useEuiTheme();
   const { connectorId } = useParams<{ connectorId?: string }>();
   const history = useHistory();
@@ -322,47 +319,6 @@ const ActionsConnectorsList = ({
         );
       },
     },
-    authorizationCodeEnabled
-      ? {
-          field: 'authMode',
-          'data-test-subj': 'connectorsTableCell-authMode',
-          name: i18n.translate(
-            'xpack.triggersActionsUI.sections.actionsConnectorsList.connectorsListTable.columns.authModeTitle',
-            {
-              defaultMessage: 'Authentication',
-            }
-          ),
-          sortable: false,
-          truncateText: true,
-          render: (authMode: 'shared' | 'per-user') => {
-            return authMode === 'shared' ? (
-              <EuiFlexGroup wrap responsive={false} gutterSize="xs" alignItems="center">
-                <EuiFlexItem grow={false}>
-                  <EuiIcon type="users" aria-hidden={true} />
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  {i18n.translate(
-                    'xpack.triggersActionsUI.sections.actionsConnectorsList.connectorsListTable.columns.authModeShared',
-                    { defaultMessage: 'Service account' }
-                  )}
-                </EuiFlexItem>
-              </EuiFlexGroup>
-            ) : (
-              <EuiFlexGroup wrap responsive={false} gutterSize="xs" alignItems="center">
-                <EuiFlexItem grow={false}>
-                  <EuiIcon type="user" aria-hidden={true} />
-                </EuiFlexItem>
-                <EuiFlexItem grow={false}>
-                  {i18n.translate(
-                    'xpack.triggersActionsUI.sections.actionsConnectorsList.connectorsListTable.columns.authModePerUser',
-                    { defaultMessage: 'Personal credentials' }
-                  )}
-                </EuiFlexItem>
-              </EuiFlexGroup>
-            );
-          },
-        }
-      : null,
     {
       field: 'authMode',
       'data-test-subj': 'connectorsTableCell-authMode',
@@ -738,7 +694,6 @@ const OAuthOperations: React.FunctionComponent<{
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
 
   const isUserConnectedToConnector = item.currentUserConnectionStatus === 'connected';
-
 
   const { connect, cancelConnect, isConnecting, isAwaitingCallback } = useConnectorOAuthConnect({
     connectorId: item.id,

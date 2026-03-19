@@ -15,9 +15,9 @@ import { getAuthMode } from './get_auth_mode';
 function getCurrentUserConnectionStatus(
   connectorId: string,
   userTokenConnectors: GetUserTokenConnectorsSoResult,
-  authMode: AuthMode | undefined
+  authMode: AuthMode
 ): 'connected' | 'not_connected' | 'not_applicable' {
-  if (authMode === undefined || authMode === 'shared') {
+  if (authMode === 'shared') {
     return 'not_applicable';
   }
   if (userTokenConnectors.connectorIds.includes(connectorId)) {
@@ -30,14 +30,10 @@ export function connectorFromSavedObject(
   savedObject: SavedObject<RawAction>,
   isDeprecated: boolean,
   isConnectorTypeDeprecated: boolean,
-  authorizationCodeEnabled: boolean,
   userTokenConnectors?: GetUserTokenConnectorsSoResult
 ): Connector {
   const { authMode: savedAuthMode, ...restAttributes } = savedObject.attributes;
-  const authMode = getAuthMode(
-    savedAuthMode as Connector['authMode'] | undefined,
-    authorizationCodeEnabled
-  );
+  const authMode = getAuthMode(savedAuthMode as Connector['authMode'] | undefined);
   return {
     id: savedObject.id,
     ...restAttributes,
@@ -45,9 +41,9 @@ export function connectorFromSavedObject(
     isDeprecated,
     isSystemAction: false,
     isConnectorTypeDeprecated,
+    authMode,
     currentUserConnectionStatus: userTokenConnectors
       ? getCurrentUserConnectionStatus(savedObject.id, userTokenConnectors, authMode)
       : 'not_applicable',
-    ...(authMode !== undefined ? { authMode } : {}),
   };
 }

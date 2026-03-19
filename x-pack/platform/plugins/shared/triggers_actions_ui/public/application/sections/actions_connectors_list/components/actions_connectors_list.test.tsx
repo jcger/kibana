@@ -27,7 +27,6 @@ jest.mock('../../../..', () => ({
     services: {
       validateEmailAddresses: jest.fn(),
       enabledEmailServices: ['*'],
-      authorizationCodeEnabled: false,
     },
   }),
 }));
@@ -780,7 +779,6 @@ describe('actions_connectors_list', () => {
         services: {
           validateEmailAddresses: jest.fn(),
           enabledEmailServices: ['*'],
-          authorizationCodeEnabled: true,
         },
       });
 

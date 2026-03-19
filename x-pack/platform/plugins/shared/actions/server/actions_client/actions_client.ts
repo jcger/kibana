@@ -125,7 +125,6 @@ export interface ConstructorOptions {
   isESOCanEncrypt: boolean;
   connectorLifecycleListeners?: ConnectorLifecycleListener[];
   getCurrentUserProfileIdFromAPIKey?: (request: KibanaRequest) => Promise<string | undefined>;
-  authorizationCodeEnabled?: boolean;
 }
 
 export interface ActionsClientContext {
@@ -153,7 +152,6 @@ export interface ActionsClientContext {
   isESOCanEncrypt: boolean;
   connectorLifecycleListeners?: ConnectorLifecycleListener[];
   getCurrentUserProfileIdFromAPIKey?: (request: KibanaRequest) => Promise<string | undefined>;
-  authorizationCodeEnabled?: boolean;
 }
 
 const noop = async (_request: KibanaRequest): Promise<string | undefined> => undefined;
@@ -184,7 +182,6 @@ export class ActionsClient {
     isESOCanEncrypt,
     connectorLifecycleListeners,
     getCurrentUserProfileIdFromAPIKey,
-    authorizationCodeEnabled = false,
   }: ConstructorOptions) {
     this.context = {
       logger,
@@ -209,7 +206,6 @@ export class ActionsClient {
       isESOCanEncrypt,
       connectorLifecycleListeners,
       getCurrentUserProfileIdFromAPIKey: getCurrentUserProfileIdFromAPIKey ?? noop,
-      authorizationCodeEnabled,
     };
   }
 
@@ -294,7 +290,6 @@ export class ActionsClient {
       throw error;
     }
 
-    const authorizationCodeEnabled = this.context.authorizationCodeEnabled ?? false;
     const actionResults = new Array<ActionResult>();
 
     for (const connectorId of ids) {
@@ -307,7 +302,6 @@ export class ActionsClient {
           inMemoryConnector,
           id: connectorId,
           actionTypeRegistry: this.context.actionTypeRegistry,
-          authorizationCodeEnabled,
         });
 
         /**
@@ -359,8 +353,7 @@ export class ActionsClient {
         connectorFromSavedObject(
           action,
           isConnectorDeprecated(action.attributes),
-          this.context.actionTypeRegistry.isDeprecated(action.attributes.actionTypeId),
-          authorizationCodeEnabled
+          this.context.actionTypeRegistry.isDeprecated(action.attributes.actionTypeId)
         )
       );
     }

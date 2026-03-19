@@ -28,7 +28,6 @@ export interface GetAllUnsecuredParams {
   logger: Logger;
   spaceId: string;
   connectorTypeRegistry: ActionTypeRegistry;
-  authorizationCodeEnabled: boolean;
 }
 
 export interface InjectExtraFindDataParams {

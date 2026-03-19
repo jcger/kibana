@@ -323,7 +323,6 @@ describe('getAll()', () => {
         encryptedSavedObjectsClient,
         isESOCanEncrypt,
         getAxiosInstanceWithAuth,
-        authorizationCodeEnabled: true,
       });
 
       const result = await actionsClient.getAll();
@@ -504,7 +503,6 @@ describe('getAll()', () => {
         encryptedSavedObjectsClient,
         isESOCanEncrypt,
         getAxiosInstanceWithAuth,
-        authorizationCodeEnabled: true,
       });
 
       const result = await actionsClient.getAll({ includeSystemActions: true });
@@ -650,7 +648,6 @@ describe('getAll()', () => {
         encryptedSavedObjectsClient,
         isESOCanEncrypt,
         getAxiosInstanceWithAuth,
-        authorizationCodeEnabled: true,
       });
 
       const result = await actionsClient.getAll({ includeSystemActions: true });
@@ -727,7 +724,6 @@ describe('getAll()', () => {
         encryptedSavedObjectsClient,
         isESOCanEncrypt,
         getAxiosInstanceWithAuth,
-        authorizationCodeEnabled: true,
       });
 
       const result = await actionsClient.getAll({ includeSystemActions: true });
@@ -1203,7 +1199,6 @@ describe('getAll()', () => {
         encryptedSavedObjectsClient,
         isESOCanEncrypt,
         getAxiosInstanceWithAuth,
-        authorizationCodeEnabled: true,
       });
 
       const result = await actionsClient.getAllSystemConnectors();
@@ -1563,7 +1558,6 @@ describe('getAllUnsecured()', () => {
       logger,
       spaceId: 'default',
       connectorTypeRegistry: actionTypeRegistry,
-      authorizationCodeEnabled: true,
     });
 
     expect(result).toContainConnectorsFindResult([
@@ -1732,7 +1726,6 @@ describe('getAllUnsecured()', () => {
       logger,
       spaceId: 'custom',
       connectorTypeRegistry: actionTypeRegistry,
-      authorizationCodeEnabled: true,
     });
 
     expect(result).toContainConnectorsFindResult([
@@ -1887,7 +1880,6 @@ describe('getAllUnsecured()', () => {
       logger,
       spaceId: 'default',
       connectorTypeRegistry: actionTypeRegistry,
-      authorizationCodeEnabled: true,
     });
 
     expect(result).toContainConnectorsFindResult([

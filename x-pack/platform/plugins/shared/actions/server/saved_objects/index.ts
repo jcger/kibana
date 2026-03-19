@@ -46,8 +46,7 @@ export function setupSavedObjects(
   encryptedSavedObjects: EncryptedSavedObjectsPluginSetup,
   actionTypeRegistry: ActionTypeRegistry,
   taskManagerIndex: string,
-  inMemoryConnectors: InMemoryConnector[],
-  authorizationCodeEnabled: boolean
+  inMemoryConnectors: InMemoryConnector[]
 ) {
   savedObjects.registerType({
     name: ACTION_SAVED_OBJECT_TYPE,
@@ -208,5 +207,4 @@ export function setupSavedObjects(
       'createdBy',
     ]),
   });
-
 }

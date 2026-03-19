@@ -35,7 +35,6 @@ interface GetAllHelperOpts {
   namespace?: string;
   savedObjectsClient: SavedObjectClientForFind;
   connectorTypeRegistry: ActionTypeRegistry;
-  authorizationCodeEnabled: boolean;
   profileUid?: string;
 }
 
@@ -56,8 +55,6 @@ export async function getAll({
     throw error;
   }
 
-  const authorizationCodeEnabled = context.authorizationCodeEnabled ?? false;
-
   return await getAllHelper({
     auditLogger: context.auditLogger,
     esClient: context.scopedClusterClient.asInternalUser,
@@ -68,7 +65,6 @@ export async function getAll({
     logger: context.logger,
     savedObjectsClient: context.unsecuredSavedObjectsClient,
     connectorTypeRegistry: context.actionTypeRegistry,
-    authorizationCodeEnabled,
     profileUid,
   });
 }
@@ -81,7 +77,6 @@ export async function getAllUnsecured({
   logger,
   spaceId,
   connectorTypeRegistry,
-  authorizationCodeEnabled,
 }: GetAllUnsecuredParams): Promise<ConnectorWithExtraFindData[]> {
   const namespace = spaceId && spaceId !== 'default' ? spaceId : undefined;
 
@@ -94,7 +89,6 @@ export async function getAllUnsecured({
     namespace,
     savedObjectsClient: internalSavedObjectsRepository,
     connectorTypeRegistry,
-    authorizationCodeEnabled,
   });
 }
 
@@ -107,7 +101,6 @@ async function getAllHelper({
   namespace,
   savedObjectsClient,
   connectorTypeRegistry,
-  authorizationCodeEnabled,
   profileUid,
 }: GetAllHelperOpts): Promise<ConnectorWithExtraFindData[]> {
   let userTokenConnectors: GetUserTokenConnectorsSoResult = {
@@ -128,7 +121,6 @@ async function getAllHelper({
       rawAction,
       isConnectorDeprecated(rawAction.attributes),
       connectorTypeRegistry.isDeprecated(rawAction.attributes.actionTypeId),
-      authorizationCodeEnabled,
       userTokenConnectors
     );
     return omit(connector, 'secrets');
@@ -148,7 +140,6 @@ async function getAllHelper({
   const mergedResult = [
     ...savedObjectsActions,
     ...(await filterInferenceConnectors(esClient, inMemoryConnectors)).map((connector) => {
-      const authMode = getAuthMode(connector.authMode, authorizationCodeEnabled);
       return {
         id: connector.id,
         actionTypeId: connector.actionTypeId,
@@ -157,9 +148,9 @@ async function getAllHelper({
         isDeprecated: isConnectorDeprecated(connector),
         isSystemAction: connector.isSystemAction,
         isConnectorTypeDeprecated: connectorTypeRegistry.isDeprecated(connector.actionTypeId),
+        authMode: getAuthMode(connector.authMode),
         currentUserConnectionStatus: 'not_applicable' as const,
         ...(connector.exposeConfig ? { config: connector.config } : {}),
-        ...(authMode !== undefined ? { authMode } : {}),
       };
     }),
   ].sort((a, b) => a.name.localeCompare(b.name));
@@ -204,14 +195,12 @@ export async function getAllSystemConnectors({
     throw error;
   }
 
-  const authorizationCodeEnabled = context.authorizationCodeEnabled ?? false;
   const systemConnectors = context.inMemoryConnectors.filter(
     (connector) => connector.isSystemAction
   );
 
   const transformedSystemConnectors = systemConnectors
     .map((systemConnector) => {
-      const authMode = getAuthMode(systemConnector.authMode, authorizationCodeEnabled);
       return {
         id: systemConnector.id,
         actionTypeId: systemConnector.actionTypeId,
@@ -222,8 +211,8 @@ export async function getAllSystemConnectors({
         isConnectorTypeDeprecated: context.actionTypeRegistry.isDeprecated(
           systemConnector.actionTypeId
         ),
+        authMode: getAuthMode(systemConnector.authMode),
         currentUserConnectionStatus: 'not_applicable' as const,
-        ...(authMode !== undefined ? { authMode } : {}),
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
