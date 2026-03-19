@@ -675,6 +675,4 @@ describe('UserConnectorTokenClient', () => {
       ).rejects.toThrow('token id is missing');
     });
   });
-
 });
-
