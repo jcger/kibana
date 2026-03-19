@@ -699,7 +699,12 @@ describe('UserConnectorTokenClient', () => {
         yield { saved_objects: staleObjects };
       });
 
-      unsecuredSavedObjectsClient.bulkDelete.mockResolvedValue({ statuses: [] });
+      unsecuredSavedObjectsClient.bulkDelete.mockResolvedValue({
+        statuses: [
+          { id: 'stale-token-1', type: 'user_connector_token', success: true },
+          { id: 'stale-token-2', type: 'user_connector_token', success: true },
+        ],
+      });
 
       const result = await userClient.cleanupStaleTokens();
 
@@ -707,7 +712,7 @@ describe('UserConnectorTokenClient', () => {
       expect(unsecuredSavedObjectsClient.createPointInTimeFinder).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'user_connector_token',
-          filter: expect.stringMatching(/user_connector_token\.attributes\.updatedAt < "/),
+          filter: expect.stringMatching(/user_connector_token\.updated_at < "/),
           perPage: 100,
         })
       );
@@ -726,7 +731,7 @@ describe('UserConnectorTokenClient', () => {
       const result = await userClient.cleanupStaleTokens();
 
       expect(result).toBe(0);
-      expect(unsecuredSavedObjectsClient.bulkDelete).toHaveBeenCalledWith([]);
+      expect(unsecuredSavedObjectsClient.bulkDelete).not.toHaveBeenCalled();
     });
 
     test('uses cutoff date 90 days in the past', async () => {
@@ -777,7 +782,16 @@ describe('UserConnectorTokenClient', () => {
         yield { saved_objects: [{ id: 'token-3' }] };
       });
 
-      unsecuredSavedObjectsClient.bulkDelete.mockResolvedValue({ statuses: [] });
+      unsecuredSavedObjectsClient.bulkDelete
+        .mockResolvedValueOnce({
+          statuses: [
+            { id: 'token-1', type: 'user_connector_token', success: true },
+            { id: 'token-2', type: 'user_connector_token', success: true },
+          ],
+        })
+        .mockResolvedValueOnce({
+          statuses: [{ id: 'token-3', type: 'user_connector_token', success: true }],
+        });
 
       const result = await userClient.cleanupStaleTokens();
 
