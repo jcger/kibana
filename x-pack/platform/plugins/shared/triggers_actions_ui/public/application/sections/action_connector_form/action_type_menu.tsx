@@ -13,12 +13,15 @@ import { EuiToolTip } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n-react';
 import { isEmpty } from 'lodash';
 import { checkActionTypeEnabled } from '@kbn/alerts-ui-shared/src/check_action_type_enabled';
+import { ACTION_TYPE_SOURCES } from '@kbn/actions-types';
+import { ConnectorIconsMap } from '@kbn/connector-specs/icons';
 import { TECH_PREVIEW_DESCRIPTION, TECH_PREVIEW_LABEL } from '../translations';
 import type { ActionType, ActionTypeIndex, ActionTypeRegistryContract } from '../../../types';
 import { loadActionTypes } from '../../lib/action_connector_api';
 import { actionTypeCompare } from '../../lib/action_type_compare';
 import { useKibana } from '../../../common/lib/kibana';
 import { SectionLoading } from '../../components/section_loading';
+import { shouldHideWorkflowsOnlyConnector } from '@kbn/alerts-ui-shared';
 
 interface Props {
   onActionTypeChange: (actionType: ActionType) => void;
@@ -53,6 +56,15 @@ const filterActionTypes = (actionTypes: RegisteredActionType[], searchValue: str
   });
 };
 
+export function getConnectorIcon(id: string): IconType {
+  const lazyIcon = ConnectorIconsMap.get(id);
+  if (lazyIcon) {
+    return lazyIcon;
+  }
+
+  return 'plugs';
+}
+
 export const ActionTypeMenu = ({
   onActionTypeChange,
   featureId,
@@ -64,6 +76,7 @@ export const ActionTypeMenu = ({
   const {
     http,
     notifications: { toasts },
+    uiSettings,
   } = useKibana().services;
   const [loadingActionTypes, setLoadingActionTypes] = useState<boolean>(false);
   const [actionTypesIndex, setActionTypesIndex] = useState<ActionTypeIndex | undefined>(undefined);
@@ -73,7 +86,6 @@ export const ActionTypeMenu = ({
       try {
         setLoadingActionTypes(true);
         const availableActionTypes = await loadActionTypes({ http, featureId });
-        setLoadingActionTypes(false);
 
         const index: ActionTypeIndex = {};
         for (const actionTypeItem of availableActionTypes) {
@@ -102,27 +114,55 @@ export const ActionTypeMenu = ({
             ),
           });
         }
+      } finally {
+        setLoadingActionTypes(false);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const registeredActionTypes = Object.entries(actionTypesIndex ?? [])
-    .filter(([id, details]) => {
+
+  const registeredActionTypes = Object.entries(actionTypesIndex ?? {})
+    .filter(([id, actionType]) => {
       const actionTypeModel = actionTypeRegistry.has(id) ? actionTypeRegistry.get(id) : undefined;
-      const shouldHideInUi = actionTypeModel?.getHideInUi?.(
+      if (actionType.source === ACTION_TYPE_SOURCES.spec) {
+        if (shouldHideWorkflowsOnlyConnector(actionType.supportedFeatureIds, uiSettings)) {
+          return false;
+        }
+
+        return actionType.enabledInConfig === true;
+      }
+
+      if (!actionTypeModel) {
+        return false;
+      }
+
+      const shouldHideInUi = actionTypeModel.getHideInUi?.(
         actionTypesIndex ? Object.values(actionTypesIndex) : []
       );
 
-      return details.enabledInConfig === true && !shouldHideInUi;
+      return actionType.enabledInConfig === true && !shouldHideInUi;
     })
+    // Card subtitle (`RegisteredActionType.selectMessage`): spec-backed rows use connector-types
+    // list `description`; stack-backed rows use the in-process registry model `selectMessage`.
     .map(([id, actionType]) => {
-      const actionTypeModel = actionTypeRegistry.get(id);
+      if (actionType.source === ACTION_TYPE_SOURCES.spec) {
+        return {
+          iconClass: getConnectorIcon(actionType.id),
+          selectMessage: actionType.description ?? '',
+          actionType,
+          name: actionType.name,
+          isExperimental: actionType.isExperimental ?? false,
+          isDeprecated: actionType.isDeprecated,
+        };
+      }
+
+      const actionTypeModel = actionTypeRegistry.has(id) ? actionTypeRegistry.get(id) : undefined;
       return {
         iconClass: actionTypeModel ? actionTypeModel.iconClass : '',
         selectMessage: actionTypeModel ? actionTypeModel.selectMessage : '',
         actionType,
         name: actionType.name,
-        isExperimental: actionTypeModel.isExperimental,
+        isExperimental: actionTypeModel?.isExperimental,
         isDeprecated: actionType.isDeprecated,
       };
     });

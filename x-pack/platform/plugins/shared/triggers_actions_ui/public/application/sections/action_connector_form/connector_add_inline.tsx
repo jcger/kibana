@@ -64,11 +64,13 @@ export const AddConnectorInline = ({
   const actionTypeName = actionTypesIndex
     ? actionTypesIndex[actionItem.actionTypeId].name
     : actionItem.actionTypeId;
-  const actionTypeRegistered = actionTypeRegistry.get(actionItem.actionTypeId);
+  const actionTypeRegistered = actionTypeRegistry.has(actionItem.actionTypeId)
+    ? actionTypeRegistry.get(actionItem.actionTypeId)
+    : undefined;
   const allowGroupConnector = (actionTypeRegistered?.subtype ?? []).map((subtype) => subtype.id);
   const connectorDropdownErrors = useMemo(
-    () => [`Unable to load ${actionTypeRegistered.actionTypeTitle} connector`],
-    [actionTypeRegistered.actionTypeTitle]
+    () => [`Unable to load ${actionTypeRegistered?.actionTypeTitle ?? actionTypeName} connector`],
+    [actionTypeRegistered?.actionTypeTitle, actionTypeName]
   );
 
   const noConnectorsLabel = (
@@ -157,7 +159,7 @@ export const AddConnectorInline = ({
         buttonContent={
           <EuiFlexGroup gutterSize="s" alignItems="center">
             <EuiFlexItem grow={false}>
-              <EuiIcon type={actionTypeRegistered.iconClass} size="m" />
+              <EuiIcon type={actionTypeRegistered?.iconClass ?? 'plugs'} size="m" />
             </EuiFlexItem>
             <EuiFlexItem>
               <EuiText>
@@ -166,7 +168,7 @@ export const AddConnectorInline = ({
                     defaultMessage="{actionConnectorName}"
                     id="xpack.triggersActionsUI.sections.connectorAddInline.newRuleActionTypeEditTitle"
                     values={{
-                      actionConnectorName: actionTypeRegistered.actionTypeTitle,
+                      actionConnectorName: actionTypeRegistered?.actionTypeTitle ?? actionTypeName,
                     }}
                   />
                 </div>
@@ -182,13 +184,13 @@ export const AddConnectorInline = ({
                   content={
                     <FormattedMessage
                       defaultMessage="Unable to load connector"
-                      id="xpack.triggersActionsUI.sections.connectorAddInline.unableToLoadConnectorTitle'"
+                      id="xpack.triggersActionsUI.sections.connectorAddInline.unableToLoadConnectorTitle"
                     />
                   }
                 />
               </EuiFlexItem>
             )}
-            {actionTypeRegistered && actionTypeRegistered.isExperimental && (
+            {actionTypeRegistered?.isExperimental && (
               <EuiFlexItem grow={false}>
                 <EuiBetaBadge
                   label={TECH_PREVIEW_LABEL}
