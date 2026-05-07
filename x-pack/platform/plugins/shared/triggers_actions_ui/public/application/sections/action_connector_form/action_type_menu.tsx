@@ -7,7 +7,16 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import type { IconType } from '@elastic/eui';
-import { EuiFlexItem, EuiCard, EuiIcon, EuiFlexGrid, EuiSpacer } from '@elastic/eui';
+import {
+  EuiFlexItem,
+  EuiCard,
+  EuiIcon,
+  EuiFlexGrid,
+  EuiSpacer,
+  EuiIconTip,
+  EuiFlexGroup,
+  EuiText,
+} from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { EuiToolTip } from '@elastic/eui';
 import { FormattedMessage } from '@kbn/i18n-react';
@@ -15,13 +24,19 @@ import { isEmpty } from 'lodash';
 import { checkActionTypeEnabled } from '@kbn/alerts-ui-shared/src/check_action_type_enabled';
 import { ACTION_TYPE_SOURCES } from '@kbn/actions-types';
 import { ConnectorIconsMap } from '@kbn/connector-specs/icons';
+import {
+  DEPRECATED_CONNECTOR_TOOLTIP_CONTENT,
+  DEPRECATED_LABEL,
+  DEPRECATED_LLM_CONNECTOR_INFO,
+} from '@kbn/response-ops-rule-form/src/translations';
+import { isLLMConnectorTypeId } from '@kbn/response-ops-rule-form/src/constants';
+import { shouldHideWorkflowsOnlyConnector } from '@kbn/alerts-ui-shared';
 import { TECH_PREVIEW_DESCRIPTION, TECH_PREVIEW_LABEL } from '../translations';
 import type { ActionType, ActionTypeIndex, ActionTypeRegistryContract } from '../../../types';
 import { loadActionTypes } from '../../lib/action_connector_api';
 import { actionTypeCompare } from '../../lib/action_type_compare';
 import { useKibana } from '../../../common/lib/kibana';
 import { SectionLoading } from '../../components/section_loading';
-import { shouldHideWorkflowsOnlyConnector } from '@kbn/alerts-ui-shared';
 
 interface Props {
   onActionTypeChange: (actionType: ActionType) => void;
@@ -120,7 +135,6 @@ export const ActionTypeMenu = ({
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   const registeredActionTypes = Object.entries(actionTypesIndex ?? {})
     .filter(([id, actionType]) => {
       const actionTypeModel = actionTypeRegistry.has(id) ? actionTypeRegistry.get(id) : undefined;
@@ -176,10 +190,39 @@ export const ActionTypeMenu = ({
     .sort((a, b) => actionTypeCompare(a.actionType, b.actionType))
     .map((item, index) => {
       const checkEnabledResult = checkActionTypeEnabled(item.actionType);
+      const isLLMConnector = isLLMConnectorTypeId(item.actionType.id);
+      const description = isLLMConnector ? (
+        <EuiFlexGroup
+          gutterSize="xs"
+          alignItems="center"
+          justifyContent="center"
+          responsive={false}
+        >
+          <EuiFlexItem grow={false}>
+            <EuiText size="s">{item.selectMessage}</EuiText>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiIconTip
+              type="info"
+              color="subdued"
+              content={DEPRECATED_LLM_CONNECTOR_INFO}
+              data-test-subj={`${item.actionType.id}-deprecation-info`}
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      ) : (
+        item.selectMessage
+      );
       const card = (
         <EuiCard
           betaBadgeProps={
-            item.isExperimental
+            item.isDeprecated
+              ? {
+                  label: DEPRECATED_LABEL,
+                  tooltipContent: DEPRECATED_CONNECTOR_TOOLTIP_CONTENT,
+                  color: 'warning',
+                }
+              : item.isExperimental
               ? { label: TECH_PREVIEW_LABEL, tooltipContent: TECH_PREVIEW_DESCRIPTION }
               : undefined
           }
@@ -188,7 +231,7 @@ export const ActionTypeMenu = ({
           data-test-subj={`${item.actionType.id}-card`}
           icon={<EuiIcon size="xl" type={item.iconClass} />}
           title={item.name}
-          description={item.selectMessage}
+          description={description}
           isDisabled={!checkEnabledResult.isEnabled}
           onClick={() => {
             onActionTypeChange(item.actionType);

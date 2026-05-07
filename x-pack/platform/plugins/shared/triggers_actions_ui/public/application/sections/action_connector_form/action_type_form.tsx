@@ -503,6 +503,24 @@ export const ActionTypeForm = ({
 
   const showActionAlertsFilter = ruleType?.hasAlertsMappings || producerId === AlertConsumers.SIEM;
 
+  const isRecoveredActionGroup =
+    !!selectedActionGroup?.id && selectedActionGroup.id === ruleType?.recoveryActionGroup?.id;
+
+  const actionNotifyWhen = (
+    <RuleActionsNotifyWhen
+      frequency={actionItem.frequency}
+      throttle={actionThrottle}
+      throttleUnit={actionThrottleUnit}
+      hasAlertsMappings={hasAlertsMappings}
+      onChange={onActionFrequencyChange}
+      showMinimumThrottleWarning={showMinimumThrottleWarning}
+      showMinimumThrottleUnitWarning={showMinimumThrottleUnitWarning}
+      notifyWhenSelectOptions={notifyWhenSelectOptions}
+      onUseDefaultMessage={() => setUseDefaultMessage(true)}
+      isRecoveredActionGroup={isRecoveredActionGroup}
+    />
+  );
+
   const accordionContent = checkEnabledResult.isEnabled ? (
     <>
       <EuiSplitPanel.Inner
