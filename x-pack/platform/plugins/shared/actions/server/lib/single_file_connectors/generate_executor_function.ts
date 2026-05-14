@@ -8,6 +8,7 @@
 import type { ConnectorSpec } from '@kbn/connector-specs';
 import {
   ConnectorResponseSizeLimitError,
+  isConnectorResponseSizeLimitError,
   getConnectorActionErrorMeta,
   getFinitePositiveNumber,
   getHeaderValue,
@@ -25,7 +26,6 @@ interface FetcherOptions {
 }
 
 const DEFAULT_RESPONSE_SIZE_HEADER = 'content-length';
-const MAX_CONTENT_LENGTH_ERROR_PATTERN = /maxContentLength size of (\d+) exceeded/;
 
 const getResponseSizeHeaderBytes = ({
   error,
@@ -44,11 +44,6 @@ const getResponseSizeHeaderBytes = ({
     getHeaderValue({ headers: axiosError.request?.res?.headers, headerName });
 
   return getFinitePositiveNumber(Array.isArray(headerValue) ? headerValue[0] : headerValue);
-};
-
-const parseMaxContentLengthLimit = (message: string): number | undefined => {
-  const match = message.match(MAX_CONTENT_LENGTH_ERROR_PATTERN);
-  return match ? Number(match[1]) : undefined;
 };
 
 export const generateExecutorFunction = ({
@@ -113,8 +108,7 @@ export const generateExecutorFunction = ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
 
-      if (MAX_CONTENT_LENGTH_ERROR_PATTERN.test(errorMessage)) {
-        const limitBytes = parseMaxContentLengthLimit(errorMessage);
+      if (isConnectorResponseSizeLimitError(error)) {
         const contentLengthBytes = getResponseSizeHeaderBytes({
           error,
           headerName: actions[subAction].responseSizeHeader ?? DEFAULT_RESPONSE_SIZE_HEADER,
@@ -123,8 +117,8 @@ export const generateExecutorFunction = ({
         // Connector-provided metadata (e.g. file size from provider API) takes
         // precedence over generic header-derived values.
         throw new ConnectorResponseSizeLimitError({
-          message: errorMessage,
-          limitBytes,
+          message: error.message,
+          limitBytes: error.limitBytes,
           contentLengthBytes: connectorMeta?.contentLengthBytes ?? contentLengthBytes,
           estimatedOutputBytes: connectorMeta?.estimatedOutputBytes,
         });

@@ -14,6 +14,10 @@ import type {
 import axios from 'axios';
 import type { Logger } from '@kbn/core/server';
 import type { AuthMode, GetTokenOpts } from '@kbn/connector-specs';
+import {
+  ConnectorResponseSizeLimitError,
+  getResponseContentLengthBytes,
+} from '@kbn/connector-specs';
 import type { CloudSetup } from '@kbn/cloud-plugin/server';
 import type { ActionInfo } from './action_executor';
 import type { AuthTypeRegistry } from '../auth_types';
@@ -48,7 +52,6 @@ interface GetAxiosInstanceOpts {
 
 type ValidatedSecrets = Record<string, unknown>;
 
-const MAX_CONTENT_LENGTH_ERROR_MESSAGE = 'maxContentLength';
 const SENSITIVE_HEADER_NAMES = new Set([
   'authorization',
   'cookie',
@@ -110,10 +113,6 @@ const logMaxContentLengthError = ({
   maxContentLength: number;
 }) => {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  if (!errorMessage.includes(MAX_CONTENT_LENGTH_ERROR_MESSAGE)) {
-    return;
-  }
-
   const axiosError = error as AxiosError & {
     request?: {
       res?: {
@@ -252,12 +251,34 @@ export const getAxiosInstanceWithAuth = ({
         secrets
       );
       configuredAxiosInstance.interceptors.response.use(undefined, (error: unknown) => {
-        logMaxContentLengthError({
-          connectorId,
-          error,
-          logger,
-          maxContentLength: configuredMaxContentLength,
-        });
+        const axiosError = error as {
+          code?: string;
+          config?: { maxContentLength?: number };
+          response?: unknown;
+          request?: unknown;
+        };
+        if (
+          configuredMaxContentLength > 0 &&
+          axiosError.code === 'ERR_BAD_RESPONSE' &&
+          axiosError.config?.maxContentLength === configuredMaxContentLength
+        ) {
+          logMaxContentLengthError({
+            connectorId,
+            error,
+            logger,
+            maxContentLength: configuredMaxContentLength,
+          });
+          const sizeLimitError = new ConnectorResponseSizeLimitError({
+            message: error instanceof Error ? error.message : String(error),
+            limitBytes: configuredMaxContentLength,
+            contentLengthBytes: getResponseContentLengthBytes(error),
+          });
+          Object.assign(sizeLimitError, {
+            response: axiosError.response,
+            request: axiosError.request,
+          });
+          return Promise.reject(sizeLimitError);
+        }
         return Promise.reject(error);
       });
 

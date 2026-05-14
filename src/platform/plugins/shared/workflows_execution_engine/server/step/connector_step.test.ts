@@ -146,6 +146,8 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 10485760 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: { limitBytes: 10485760 },
     });
 
     const step = {
@@ -175,7 +177,9 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
       errorMeta: {
+        limitBytes: 1024 * 1024,
         contentLengthBytes: 10 * 1024 * 1024,
         estimatedOutputBytes: 14 * 1024 * 1024,
       },
@@ -222,6 +226,8 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: { limitBytes: 1024 * 1024 },
     });
 
     const step = {
@@ -260,7 +266,9 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
       errorMeta: {
+        limitBytes: 1024 * 1024,
         contentLengthBytes: 10 * 1024 * 1024,
         estimatedOutputBytes: 14 * 1024 * 1024,
       },
@@ -302,7 +310,8 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
-      errorMeta: { contentLengthBytes: 10 * 1024 * 1024 },
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: { limitBytes: 1024 * 1024, contentLengthBytes: 10 * 1024 * 1024 },
     });
 
     const step = {

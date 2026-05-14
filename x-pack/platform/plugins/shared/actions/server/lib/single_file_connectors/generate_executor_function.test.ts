@@ -236,10 +236,11 @@ describe('generateExecutorFunction', () => {
     });
 
     it('throws ConnectorResponseSizeLimitError with content-length from Axios error response headers', async () => {
-      const error = new Error('maxContentLength size of 1048576 exceeded') as Error & {
-        response?: { headers?: Record<string, string> };
-      };
-      error.response = { headers: { 'content-length': '10485760' } };
+      const error = new ConnectorResponseSizeLimitError({
+        message: 'maxContentLength size of 1048576 exceeded',
+        limitBytes: 1048576,
+      });
+      Object.assign(error, { response: { headers: { 'content-length': '10485760' } } });
       mockHandler.mockRejectedValue(error);
 
       const executor = generateExecutorFunction({
@@ -258,10 +259,11 @@ describe('generateExecutorFunction', () => {
     });
 
     it('uses action responseSizeHeader when extracting Axios error response size', async () => {
-      const error = new Error('maxContentLength size of 1048576 exceeded') as Error & {
-        request?: { res?: { headers?: Record<string, string> } };
-      };
-      error.request = { res: { headers: { 'x-resource-size': '2048' } } };
+      const error = new ConnectorResponseSizeLimitError({
+        message: 'maxContentLength size of 1048576 exceeded',
+        limitBytes: 1048576,
+      });
+      Object.assign(error, { request: { res: { headers: { 'x-resource-size': '2048' } } } });
       mockHandler.mockRejectedValue(error);
 
       const executor = generateExecutorFunction({
@@ -286,10 +288,11 @@ describe('generateExecutorFunction', () => {
     });
 
     it('connector-provided metadata takes precedence over header-derived contentLengthBytes', async () => {
-      const error = new Error('maxContentLength size of 1048576 exceeded') as Error & {
-        response?: { headers?: Record<string, string> };
-      };
-      error.response = { headers: { 'content-length': '10485760' } };
+      const error = new ConnectorResponseSizeLimitError({
+        message: 'maxContentLength size of 1048576 exceeded',
+        limitBytes: 1048576,
+      });
+      Object.assign(error, { response: { headers: { 'content-length': '10485760' } } });
       setConnectorActionErrorMeta(error, {
         contentLengthBytes: 20 * 1024 * 1024,
         estimatedOutputBytes: 28 * 1024 * 1024,
@@ -312,7 +315,12 @@ describe('generateExecutorFunction', () => {
     });
 
     it('throws ConnectorResponseSizeLimitError and is an instance of the class', async () => {
-      mockHandler.mockRejectedValue(new Error('maxContentLength size of 1048576 exceeded'));
+      mockHandler.mockRejectedValue(
+        new ConnectorResponseSizeLimitError({
+          message: 'maxContentLength size of 1048576 exceeded',
+          limitBytes: 1048576,
+        })
+      );
 
       const executor = generateExecutorFunction({
         actions: makeActions(),

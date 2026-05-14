@@ -29,16 +29,9 @@ import type { IWorkflowEventLogger } from '../workflow_event_logger';
  */
 const CONNECTOR_TYPES_WITH_LAYER_1 = new Set<string>(['http']);
 
-// Fallback pattern for non-spec connectors (e.g. http) that still surface the raw
-// Axios message instead of a typed ConnectorResponseSizeLimitError.
-const ACTIONS_MAX_CONTENT_LENGTH_ERROR_PATTERN = /maxContentLength size of (\d+) exceeded/;
-
-const getActionsMaxContentLengthLimit = (errorMessage: string): number | undefined => {
-  const match = errorMessage.match(ACTIONS_MAX_CONTENT_LENGTH_ERROR_PATTERN);
-  return match ? Number(match[1]) : undefined;
-};
-
-const getLimitBytesFromErrorMeta = (errorMeta: Record<string, unknown> | undefined): number | undefined => {
+const getLimitBytesFromErrorMeta = (
+  errorMeta: Record<string, unknown> | undefined
+): number | undefined => {
   const v = errorMeta?.limitBytes;
   return typeof v === 'number' ? v : undefined;
 };
@@ -201,16 +194,11 @@ export class ConnectorStepImpl extends BaseAtomicNodeImplementation<ConnectorSte
       } else {
         const errorMsg = serviceMessage ?? message ?? 'Unknown error';
 
-        // Typed path: spec connectors throw ConnectorResponseSizeLimitError, which
-        // action_executor.ts converts to errorName + structured errorMeta.
-        // Fallback path: non-spec connectors (e.g. http) still surface the raw Axios message.
-        const isResponseSizeLimitError =
-          errorName === 'ConnectorResponseSizeLimitError' || errorMsg.includes('maxContentLength');
+        const isResponseSizeLimitError = errorName === 'ConnectorResponseSizeLimitError';
 
         if (isResponseSizeLimitError) {
           if (!usesWorkflowTransportLimit) {
-            const limitBytes =
-              getLimitBytesFromErrorMeta(errorMeta) ?? getActionsMaxContentLengthLimit(errorMsg);
+            const limitBytes = getLimitBytesFromErrorMeta(errorMeta);
             return {
               input: withInputs,
               output: undefined,
