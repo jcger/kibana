@@ -7,6 +7,7 @@
 
 import type { ConnectorSpec } from '@kbn/connector-specs';
 import {
+  ConnectorResponseSizeLimitError,
   getConnectorActionErrorMeta,
   getFinitePositiveNumber,
   getHeaderValue,
@@ -24,6 +25,7 @@ interface FetcherOptions {
 }
 
 const DEFAULT_RESPONSE_SIZE_HEADER = 'content-length';
+const MAX_CONTENT_LENGTH_ERROR_PATTERN = /maxContentLength size of (\d+) exceeded/;
 
 const getResponseSizeHeaderBytes = ({
   error,
@@ -44,22 +46,9 @@ const getResponseSizeHeaderBytes = ({
   return getFinitePositiveNumber(Array.isArray(headerValue) ? headerValue[0] : headerValue);
 };
 
-const getErrorMeta = ({
-  error,
-  contentLengthBytes,
-}: {
-  error: unknown;
-  contentLengthBytes?: number;
-}): Record<string, unknown> | undefined => {
-  const connectorActionErrorMeta = getConnectorActionErrorMeta(error);
-  // Connector-provided metadata (e.g. file size from provider API) takes
-  // precedence over generic header-derived values.
-  const errorMeta = {
-    ...(contentLengthBytes !== undefined ? { contentLengthBytes } : {}),
-    ...connectorActionErrorMeta,
-  };
-
-  return Object.keys(errorMeta).length > 0 ? errorMeta : undefined;
+const parseMaxContentLengthLimit = (message: string): number | undefined => {
+  const match = message.match(MAX_CONTENT_LENGTH_ERROR_PATTERN);
+  return match ? Number(match[1]) : undefined;
 };
 
 export const generateExecutorFunction = ({
@@ -123,17 +112,29 @@ export const generateExecutorFunction = ({
       return { status: 'ok', data, actionId: connectorId };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const contentLengthBytes = getResponseSizeHeaderBytes({
-        error,
-        headerName: actions[subAction].responseSizeHeader ?? DEFAULT_RESPONSE_SIZE_HEADER,
-      });
-      const errorMeta = getErrorMeta({ error, contentLengthBytes });
+
+      if (MAX_CONTENT_LENGTH_ERROR_PATTERN.test(errorMessage)) {
+        const limitBytes = parseMaxContentLengthLimit(errorMessage);
+        const contentLengthBytes = getResponseSizeHeaderBytes({
+          error,
+          headerName: actions[subAction].responseSizeHeader ?? DEFAULT_RESPONSE_SIZE_HEADER,
+        });
+        const connectorMeta = getConnectorActionErrorMeta(error);
+        // Connector-provided metadata (e.g. file size from provider API) takes
+        // precedence over generic header-derived values.
+        throw new ConnectorResponseSizeLimitError({
+          message: errorMessage,
+          limitBytes,
+          contentLengthBytes: connectorMeta?.contentLengthBytes ?? contentLengthBytes,
+          estimatedOutputBytes: connectorMeta?.estimatedOutputBytes,
+        });
+      }
+
       logger.error(`error on ${connectorId} event: ${errorMessage}`);
       return {
         status: 'error',
         message: errorMessage,
         actionId: connectorId,
-        ...(errorMeta ? { errorMeta } : {}),
       };
     }
   };

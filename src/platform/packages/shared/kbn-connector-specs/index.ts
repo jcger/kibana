@@ -29,3 +29,8 @@ export { normalizeAuthorizationHeaderValue } from './src/auth_types/oauth_authz_
 
 export { ConnectorAuthorizationError, isConnectorAuthorizationError } from './src/errors';
 export type { ConnectorAuthorizationReason } from './src/errors';
+
+export {
+  ConnectorResponseSizeLimitError,
+  isConnectorResponseSizeLimitError,
+} from './src/errors';
