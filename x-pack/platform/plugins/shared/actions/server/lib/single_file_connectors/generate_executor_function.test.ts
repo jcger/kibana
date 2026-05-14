@@ -8,7 +8,10 @@
 import { loggingSystemMock } from '@kbn/core/server/mocks';
 import type { MockedLogger } from '@kbn/logging-mocks';
 import { generateExecutorFunction } from './generate_executor_function';
-import { setConnectorActionErrorMeta } from '@kbn/connector-specs';
+import {
+  ConnectorResponseSizeLimitError,
+  setConnectorActionErrorMeta,
+} from '@kbn/connector-specs';
 import type { ConnectorSpec } from '@kbn/connector-specs';
 import type { GetAxiosInstanceWithAuthFn } from '../get_axios_instance';
 
@@ -232,11 +235,12 @@ describe('generateExecutorFunction', () => {
       });
     });
 
-    it('includes content-length from Axios error response headers', async () => {
-      const error = new Error('maxContentLength size of 1048576 exceeded') as Error & {
-        response?: { headers?: Record<string, string> };
-      };
-      error.response = { headers: { 'content-length': '10485760' } };
+    it('throws ConnectorResponseSizeLimitError with content-length from Axios error response headers', async () => {
+      const error = new ConnectorResponseSizeLimitError({
+        message: 'maxContentLength size of 1048576 exceeded',
+        limitBytes: 1048576,
+      });
+      Object.assign(error, { response: { headers: { 'content-length': '10485760' } } });
       mockHandler.mockRejectedValue(error);
 
       const executor = generateExecutorFunction({
@@ -244,23 +248,22 @@ describe('generateExecutorFunction', () => {
         getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
       });
 
-      const result = await executor(
-        makeExecOptions({ subAction: 'testAction', subActionParams: {} })
-      );
-
-      expect(result).toEqual({
-        status: 'error',
+      await expect(
+        executor(makeExecOptions({ subAction: 'testAction', subActionParams: {} }))
+      ).rejects.toMatchObject({
+        name: 'ConnectorResponseSizeLimitError',
         message: 'maxContentLength size of 1048576 exceeded',
-        actionId: connectorId,
-        errorMeta: { contentLengthBytes: 10 * 1024 * 1024 },
+        limitBytes: 1048576,
+        contentLengthBytes: 10 * 1024 * 1024,
       });
     });
 
     it('uses action responseSizeHeader when extracting Axios error response size', async () => {
-      const error = new Error('maxContentLength size of 1048576 exceeded') as Error & {
-        request?: { res?: { headers?: Record<string, string> } };
-      };
-      error.request = { res: { headers: { 'x-resource-size': '2048' } } };
+      const error = new ConnectorResponseSizeLimitError({
+        message: 'maxContentLength size of 1048576 exceeded',
+        limitBytes: 1048576,
+      });
+      Object.assign(error, { request: { res: { headers: { 'x-resource-size': '2048' } } } });
       mockHandler.mockRejectedValue(error);
 
       const executor = generateExecutorFunction({
@@ -275,23 +278,21 @@ describe('generateExecutorFunction', () => {
         getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
       });
 
-      const result = await executor(
-        makeExecOptions({ subAction: 'testAction', subActionParams: {} })
-      );
-
-      expect(result).toEqual({
-        status: 'error',
-        message: 'maxContentLength size of 1048576 exceeded',
-        actionId: connectorId,
-        errorMeta: { contentLengthBytes: 2048 },
+      await expect(
+        executor(makeExecOptions({ subAction: 'testAction', subActionParams: {} }))
+      ).rejects.toMatchObject({
+        name: 'ConnectorResponseSizeLimitError',
+        limitBytes: 1048576,
+        contentLengthBytes: 2048,
       });
     });
 
-    it('merges connector-provided error metadata with Axios header metadata', async () => {
-      const error = new Error('maxContentLength size of 1048576 exceeded') as Error & {
-        response?: { headers?: Record<string, string> };
-      };
-      error.response = { headers: { 'content-length': '10485760' } };
+    it('connector-provided metadata takes precedence over header-derived contentLengthBytes', async () => {
+      const error = new ConnectorResponseSizeLimitError({
+        message: 'maxContentLength size of 1048576 exceeded',
+        limitBytes: 1048576,
+      });
+      Object.assign(error, { response: { headers: { 'content-length': '10485760' } } });
       setConnectorActionErrorMeta(error, {
         contentLengthBytes: 20 * 1024 * 1024,
         estimatedOutputBytes: 28 * 1024 * 1024,
@@ -303,19 +304,32 @@ describe('generateExecutorFunction', () => {
         getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
       });
 
-      const result = await executor(
-        makeExecOptions({ subAction: 'testAction', subActionParams: {} })
+      await expect(
+        executor(makeExecOptions({ subAction: 'testAction', subActionParams: {} }))
+      ).rejects.toMatchObject({
+        name: 'ConnectorResponseSizeLimitError',
+        limitBytes: 1048576,
+        contentLengthBytes: 20 * 1024 * 1024,
+        estimatedOutputBytes: 28 * 1024 * 1024,
+      });
+    });
+
+    it('throws ConnectorResponseSizeLimitError and is an instance of the class', async () => {
+      mockHandler.mockRejectedValue(
+        new ConnectorResponseSizeLimitError({
+          message: 'maxContentLength size of 1048576 exceeded',
+          limitBytes: 1048576,
+        })
       );
 
-      expect(result).toEqual({
-        status: 'error',
-        message: 'maxContentLength size of 1048576 exceeded',
-        actionId: connectorId,
-        errorMeta: {
-          contentLengthBytes: 20 * 1024 * 1024,
-          estimatedOutputBytes: 28 * 1024 * 1024,
-        },
+      const executor = generateExecutorFunction({
+        actions: makeActions(),
+        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
       });
+
+      await expect(
+        executor(makeExecOptions({ subAction: 'testAction', subActionParams: {} }))
+      ).rejects.toBeInstanceOf(ConnectorResponseSizeLimitError);
     });
 
     it('logs the error message when the handler throws', async () => {

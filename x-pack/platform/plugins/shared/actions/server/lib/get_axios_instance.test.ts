@@ -17,6 +17,7 @@ import { requestOAuthClientCredentialsToken } from './request_oauth_client_crede
 import { getOAuthAuthorizationCodeAccessToken } from './get_oauth_authorization_code_access_token';
 import { PFX } from '@kbn/connector-specs/src/auth_types/pfx';
 import type { NormalizedAuthType } from '@kbn/connector-specs';
+import { ConnectorResponseSizeLimitError } from '@kbn/connector-specs';
 
 jest.mock('./get_custom_agents', () => ({
   getCustomAgents: jest.fn().mockReturnValue({
@@ -96,10 +97,12 @@ describe('getAxiosInstance', () => {
 
     const error = new Error('maxContentLength size of 20971520 exceeded') as Error & {
       code?: string;
+      config?: { maxContentLength?: number };
       response?: { status?: number; headers?: Record<string, string> };
       request?: { res?: { headers?: Record<string, string> } };
     };
     error.code = 'ERR_BAD_RESPONSE';
+    error.config = { maxContentLength: 20 * 1024 * 1024 };
     error.response = {
       status: 200,
       headers: {
@@ -120,7 +123,11 @@ describe('getAxiosInstance', () => {
 
     // @ts-expect-error accessing internal axios interceptor handlers
     const rejectionHandler = result!.interceptors.response.handlers[0].rejected as Function;
-    await expect(rejectionHandler(error)).rejects.toBe(error);
+    await expect(rejectionHandler(error)).rejects.toBeInstanceOf(ConnectorResponseSizeLimitError);
+    await expect(rejectionHandler(error)).rejects.toMatchObject({
+      limitBytes: 20 * 1024 * 1024,
+      contentLengthBytes: 104857600,
+    });
 
     expect(logger.debug).toHaveBeenCalledWith(
       'Actions Axios request exceeded maxContentLength: maxContentLength size of 20971520 exceeded; metadata: {"connectorId":"1","configuredMaxContentLength":20971520,"errorCode":"ERR_BAD_RESPONSE","responseStatus":200,"responseContentLength":"104857600","requestResponseContentLength":"104857600","responseHeaderKeys":["content-length","content-type","set-cookie"],"requestResponseHeaderKeys":["Content-Length","server","cookie"],"responseHeaders":{"content-length":"104857600","content-type":"application/octet-stream","set-cookie":"[REDACTED]"},"requestResponseHeaders":{"Content-Length":"104857600","server":"test","cookie":"[REDACTED]"}}'

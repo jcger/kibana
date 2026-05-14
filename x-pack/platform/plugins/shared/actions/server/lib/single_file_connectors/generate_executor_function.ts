@@ -7,6 +7,8 @@
 
 import type { ConnectorSpec } from '@kbn/connector-specs';
 import {
+  ConnectorResponseSizeLimitError,
+  isConnectorResponseSizeLimitError,
   getConnectorActionErrorMeta,
   getFinitePositiveNumber,
   getHeaderValue,
@@ -42,24 +44,6 @@ const getResponseSizeHeaderBytes = ({
     getHeaderValue({ headers: axiosError.request?.res?.headers, headerName });
 
   return getFinitePositiveNumber(Array.isArray(headerValue) ? headerValue[0] : headerValue);
-};
-
-const getErrorMeta = ({
-  error,
-  contentLengthBytes,
-}: {
-  error: unknown;
-  contentLengthBytes?: number;
-}): Record<string, unknown> | undefined => {
-  const connectorActionErrorMeta = getConnectorActionErrorMeta(error);
-  // Connector-provided metadata (e.g. file size from provider API) takes
-  // precedence over generic header-derived values.
-  const errorMeta = {
-    ...(contentLengthBytes !== undefined ? { contentLengthBytes } : {}),
-    ...connectorActionErrorMeta,
-  };
-
-  return Object.keys(errorMeta).length > 0 ? errorMeta : undefined;
 };
 
 export const generateExecutorFunction = ({
@@ -123,17 +107,28 @@ export const generateExecutorFunction = ({
       return { status: 'ok', data, actionId: connectorId };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      const contentLengthBytes = getResponseSizeHeaderBytes({
-        error,
-        headerName: actions[subAction].responseSizeHeader ?? DEFAULT_RESPONSE_SIZE_HEADER,
-      });
-      const errorMeta = getErrorMeta({ error, contentLengthBytes });
+
+      if (isConnectorResponseSizeLimitError(error)) {
+        const contentLengthBytes = getResponseSizeHeaderBytes({
+          error,
+          headerName: actions[subAction].responseSizeHeader ?? DEFAULT_RESPONSE_SIZE_HEADER,
+        });
+        const connectorMeta = getConnectorActionErrorMeta(error);
+        // Connector-provided metadata (e.g. file size from provider API) takes
+        // precedence over generic header-derived values.
+        throw new ConnectorResponseSizeLimitError({
+          message: error.message,
+          limitBytes: error.limitBytes,
+          contentLengthBytes: connectorMeta?.contentLengthBytes ?? contentLengthBytes,
+          estimatedOutputBytes: connectorMeta?.estimatedOutputBytes,
+        });
+      }
+
       logger.error(`error on ${connectorId} event: ${errorMessage}`);
       return {
         status: 'error',
         message: errorMessage,
         actionId: connectorId,
-        ...(errorMeta ? { errorMeta } : {}),
       };
     }
   };

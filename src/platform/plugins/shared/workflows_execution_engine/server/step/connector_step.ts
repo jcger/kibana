@@ -29,16 +29,11 @@ import type { IWorkflowEventLogger } from '../workflow_event_logger';
  */
 const CONNECTOR_TYPES_WITH_LAYER_1 = new Set<string>(['http']);
 
-// Axios internal error message format — no typed error code is exposed for this case,
-// so regex matching is the only reliable detection method.
-const ACTIONS_MAX_CONTENT_LENGTH_ERROR_PATTERN = /maxContentLength size of (\d+) exceeded/;
-
-const getActionsMaxContentLengthLimit = (errorMessage: string): number | undefined => {
-  const match = errorMessage.match(ACTIONS_MAX_CONTENT_LENGTH_ERROR_PATTERN);
-  if (!match) {
-    return undefined;
-  }
-  return Number(match[1]);
+const getLimitBytesFromErrorMeta = (
+  errorMeta: Record<string, unknown> | undefined
+): number | undefined => {
+  const v = errorMeta?.limitBytes;
+  return typeof v === 'number' ? v : undefined;
 };
 
 const getContentLengthBytes = (
@@ -188,7 +183,7 @@ export class ConnectorStepImpl extends BaseAtomicNodeImplementation<ConnectorSte
         }
       }
 
-      const { data, status, message, serviceMessage, errorMeta } = output;
+      const { data, status, message, serviceMessage, errorMeta, errorName } = output;
 
       if (status === 'ok') {
         return {
@@ -199,9 +194,11 @@ export class ConnectorStepImpl extends BaseAtomicNodeImplementation<ConnectorSte
       } else {
         const errorMsg = serviceMessage ?? message ?? 'Unknown error';
 
-        if (errorMsg.includes('maxContentLength')) {
+        const isResponseSizeLimitError = errorName === 'ConnectorResponseSizeLimitError';
+
+        if (isResponseSizeLimitError) {
           if (!usesWorkflowTransportLimit) {
-            const limitBytes = getActionsMaxContentLengthLimit(errorMsg);
+            const limitBytes = getLimitBytesFromErrorMeta(errorMeta);
             return {
               input: withInputs,
               output: undefined,

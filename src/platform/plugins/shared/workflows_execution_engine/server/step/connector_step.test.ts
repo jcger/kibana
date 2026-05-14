@@ -146,6 +146,8 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 10485760 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: { limitBytes: 10485760 },
     });
 
     const step = {
@@ -175,7 +177,9 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
       errorMeta: {
+        limitBytes: 1024 * 1024,
         contentLengthBytes: 10 * 1024 * 1024,
         estimatedOutputBytes: 14 * 1024 * 1024,
       },
@@ -222,6 +226,8 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: { limitBytes: 1024 * 1024 },
     });
 
     const step = {
@@ -260,7 +266,9 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
       errorMeta: {
+        limitBytes: 1024 * 1024,
         contentLengthBytes: 10 * 1024 * 1024,
         estimatedOutputBytes: 14 * 1024 * 1024,
       },
@@ -302,7 +310,8 @@ describe('ConnectorStepImpl', () => {
       status: 'error',
       message: null,
       serviceMessage: 'maxContentLength size of 1048576 exceeded',
-      errorMeta: { contentLengthBytes: 10 * 1024 * 1024 },
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: { limitBytes: 1024 * 1024, contentLengthBytes: 10 * 1024 * 1024 },
     });
 
     const step = {
@@ -330,6 +339,84 @@ describe('ConnectorStepImpl', () => {
       contentLengthBytes: 10 * 1024 * 1024,
       suggestedLimitBytes: 10 * 1024 * 1024,
     });
+  });
+
+  it('detects response size limit via errorName (typed path) for spec connector without max-step-size', async () => {
+    const { stepExecutionRuntime, connectorExecutor, workflowRuntime, workflowLogger } =
+      createMocks();
+
+    // This is what action_executor.ts produces when it catches ConnectorResponseSizeLimitError
+    connectorExecutor.execute.mockResolvedValue({
+      status: 'error',
+      message: 'an error occurred while running the action',
+      serviceMessage: 'maxContentLength size of 1048576 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: {
+        limitBytes: 1048576,
+        contentLengthBytes: 10 * 1024 * 1024,
+        estimatedOutputBytes: 14 * 1024 * 1024,
+      },
+    });
+
+    const step = {
+      name: 'download_file',
+      stepId: 'download_file',
+      type: 'google_drive.downloadFile',
+      'connector-id': 'conn-123',
+    };
+
+    const impl = new ConnectorStepImpl(
+      step,
+      stepExecutionRuntime as any,
+      connectorExecutor as any,
+      workflowRuntime as any,
+      workflowLogger as any
+    );
+
+    const result = await (impl as any)._run({});
+    expect(result.error.type).toBe('ActionsResponseContentLengthExceeded');
+    expect(result.error.details).toEqual({
+      configKey: 'xpack.actions.maxResponseContentLength',
+      limitBytes: 1048576,
+      contentLengthBytes: 10 * 1024 * 1024,
+      estimatedOutputBytes: 14 * 1024 * 1024,
+      suggestedLimitBytes: 14 * 1024 * 1024,
+    });
+  });
+
+  it('uses limitBytes from errorMeta (typed path) instead of parsing the message', async () => {
+    const { stepExecutionRuntime, connectorExecutor, workflowRuntime, workflowLogger } =
+      createMocks();
+
+    connectorExecutor.execute.mockResolvedValue({
+      status: 'error',
+      message: 'an error occurred while running the action',
+      serviceMessage: 'maxContentLength size of 999 exceeded',
+      errorName: 'ConnectorResponseSizeLimitError',
+      errorMeta: {
+        limitBytes: 2097152,
+      },
+    });
+
+    const step = {
+      name: 'download_file',
+      stepId: 'download_file',
+      type: 'google_drive.downloadFile',
+      'connector-id': 'conn-123',
+    };
+
+    const impl = new ConnectorStepImpl(
+      step,
+      stepExecutionRuntime as any,
+      connectorExecutor as any,
+      workflowRuntime as any,
+      workflowLogger as any
+    );
+
+    const result = await (impl as any)._run({});
+    expect(result.error.type).toBe('ActionsResponseContentLengthExceeded');
+    // limitBytes should come from errorMeta (2MB), not from parsing the message (999)
+    expect(result.error.details.limitBytes).toBe(2097152);
   });
 
   it('throws when connectorExecutor is undefined', async () => {
