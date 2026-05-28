@@ -11,6 +11,8 @@ import { z } from '@kbn/zod/v4';
 import { fromJSONSchema } from '@kbn/zod/v4/from_json_schema';
 import * as connectorsSpecs from '../all_specs';
 import { serializeConnectorSpec } from './serialize_connector_spec';
+import { generateSecretsSchemaFromSpec } from './generate_secrets_schema_from_spec';
+import { OAUTH_CLIENT_ID_REQUIRED_MESSAGE } from '../auth_types/translations';
 import { getMeta } from '../connector_spec_ui';
 
 describe('connector spec serialization integration tests', () => {
@@ -185,6 +187,47 @@ describe('connector spec serialization integration tests', () => {
       const fieldMeta = getMeta(apiKeyField);
       expect(fieldMeta.label).toBe('API key');
       expect(fieldMeta.sensitive).toBe(true);
+    });
+  });
+
+  describe('validator messages preservation', () => {
+    const inputWithEmptyClientId = {
+      config: {},
+      secrets: {
+        authType: 'oauth_client_credentials',
+        tokenUrl: 'https://example.com/oauth/token',
+        clientId: '',
+        clientSecret: 'sec',
+      },
+    };
+
+    it('schema returns the i18n message on empty clientId', () => {
+      const sourceSecrets = generateSecretsSchemaFromSpec(connectorsSpecs.SalesforceConnector.auth);
+      const result = sourceSecrets.safeParse(inputWithEmptyClientId.secrets);
+
+      expect(result.success).toBe(false);
+      if (result.success) return;
+
+      const clientIdIssue = result.error.issues.find((i) => i.path.includes('clientId'));
+      expect(clientIdIssue?.message).toBe(OAUTH_CLIENT_ID_REQUIRED_MESSAGE);
+    });
+
+    it('schema recovers the i18n message after round-trip', () => {
+      const serialized = serializeConnectorSpec(connectorsSpecs.SalesforceConnector);
+      const overTheWire = JSON.parse(JSON.stringify(serialized));
+
+      const rebuilt = fromJSONSchema(overTheWire.schema, { preserveMeta: true }) as z.ZodObject<{
+        config: z.ZodType;
+        secrets: z.ZodType;
+      }>;
+
+      const result = rebuilt.safeParse(inputWithEmptyClientId);
+
+      expect(result.success).toBe(false);
+      if (result.success) return;
+
+      const clientIdIssue = result.error.issues.find((i) => i.path.includes('clientId'));
+      expect(clientIdIssue?.message).toBe(OAUTH_CLIENT_ID_REQUIRED_MESSAGE);
     });
   });
 });
