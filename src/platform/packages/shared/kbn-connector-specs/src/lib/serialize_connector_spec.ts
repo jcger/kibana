@@ -9,6 +9,7 @@
 
 import { z } from '@kbn/zod/v4';
 import type { ConnectorSpec } from '../connector_spec';
+import { attachErrorMessagesMeta } from './error_message_meta';
 import { generateSecretsSchemaFromSpec } from './generate_secrets_schema_from_spec';
 
 export interface SerializeConnectorSpecOptions {
@@ -27,6 +28,8 @@ export function serializeConnectorSpec(
       secrets: generateSecretsSchemaFromSpec(spec.auth, options),
     })
     .strict();
+
+  attachErrorMessagesMeta(combinedZodSchema);
 
   const jsonSchema = z.toJSONSchema(combinedZodSchema);
 

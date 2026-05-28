@@ -9,6 +9,7 @@
 
 import { ZodDiscriminatedUnion, ZodObject, type ZodRawShape } from '@kbn/zod/v4';
 import { fromJSONSchema } from '@kbn/zod/v4/from_json_schema';
+import { applyErrorMessagesFromMeta } from './error_message_meta';
 
 interface ConnectorShape {
   config: ZodObject<ZodRawShape>;
@@ -34,5 +35,8 @@ export function fromConnectorSpecSchema(
   if (!(config instanceof ZodObject) || !hasValidSecrets) {
     return undefined;
   }
-  return schema.strict() as ConnectorZodSchema;
+
+  const strictSchema = schema.strict() as ConnectorZodSchema;
+  applyErrorMessagesFromMeta(strictSchema);
+  return strictSchema;
 }

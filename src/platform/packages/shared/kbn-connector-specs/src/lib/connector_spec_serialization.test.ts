@@ -10,6 +10,7 @@
 import { z } from '@kbn/zod/v4';
 import { fromJSONSchema } from '@kbn/zod/v4/from_json_schema';
 import * as connectorsSpecs from '../all_specs';
+import { fromConnectorSpecSchema } from './deserialize_connector_spec';
 import { serializeConnectorSpec } from './serialize_connector_spec';
 import { generateSecretsSchemaFromSpec } from './generate_secrets_schema_from_spec';
 import { OAUTH_CLIENT_ID_REQUIRED_MESSAGE } from '../auth_types/translations';
@@ -216,10 +217,11 @@ describe('connector spec serialization integration tests', () => {
       const serialized = serializeConnectorSpec(connectorsSpecs.SalesforceConnector);
       const overTheWire = JSON.parse(JSON.stringify(serialized));
 
-      const rebuilt = fromJSONSchema(overTheWire.schema, { preserveMeta: true }) as z.ZodObject<{
-        config: z.ZodType;
-        secrets: z.ZodType;
-      }>;
+      const rebuilt = fromConnectorSpecSchema(overTheWire.schema);
+      expect(rebuilt).toBeDefined();
+      if (!rebuilt) {
+        return;
+      }
 
       const result = rebuilt.safeParse(inputWithEmptyClientId);
 
