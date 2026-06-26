@@ -103,7 +103,7 @@ export const getAxiosInstanceWithAuth = ({
         logger,
         configurationUtilities,
         authMode,
-        profileUid,
+        userIdentifiers: profileUid ? { profileUid } : undefined,
       };
 
       if (connectorTokenClient) {
