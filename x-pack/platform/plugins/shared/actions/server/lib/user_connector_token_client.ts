@@ -40,6 +40,7 @@ interface CreateOptions {
 
 export interface UpdateOptions {
   id: string;
+  userIdentifiers?: UserIdentifiers;
   token?: string;
   credentials?: SavedObjectAttributes;
   expiresAtMillis?: string;
@@ -188,6 +189,7 @@ export class UserConnectorTokenClient {
    */
   public async update({
     id,
+    userIdentifiers,
     token,
     credentials,
     expiresAtMillis,
@@ -226,6 +228,7 @@ export class UserConnectorTokenClient {
 
         const updatedAttributes: PersonalTokenAttributes = {
           ...(attributesWithoutId as PersonalTokenAttributes),
+          userCloudId: userIdentifiers?.userCloudId ?? existingAttrs.userCloudId,
           credentialType: resolvedCredentialType,
           credentials: resolvedCredentials,
           expiresAt: expiresAtMillis,
@@ -505,6 +508,7 @@ export class UserConnectorTokenClient {
       }
       await this.update({
         id: tokenId,
+        userIdentifiers,
         token: newToken,
         expiresAtMillis: new Date(tokenRequestDate + expiresInSec * 1000).toISOString(),
         credentialType: 'oauth',
@@ -602,6 +606,7 @@ export class UserConnectorTokenClient {
    */
   public async updateWithRefreshToken({
     id,
+    userIdentifiers,
     token,
     refreshToken,
     expiresIn,
@@ -610,6 +615,7 @@ export class UserConnectorTokenClient {
     credentialType,
   }: {
     id: string;
+    userIdentifiers?: UserIdentifiers;
     token: string;
     refreshToken?: string;
     expiresIn?: number;
@@ -669,6 +675,7 @@ export class UserConnectorTokenClient {
 
         const updatedAttributes: PersonalTokenAttributes = {
           ...attributesWithoutId,
+          userCloudId: userIdentifiers?.userCloudId ?? existingAttrs.userCloudId,
           credentialType:
             credentialType ?? (attributesWithoutId as PersonalTokenAttributes).credentialType,
           credentials,

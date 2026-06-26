@@ -589,6 +589,90 @@ describe('UserConnectorTokenClient', () => {
       });
     });
 
+    test('backfills userCloudId when provided and token had none', async () => {
+      unsecuredSavedObjectsClient.get.mockResolvedValueOnce({
+        id: 'token-id-1',
+        type: 'user_connector_token',
+        attributes: {
+          profileUid: 'user-profile-123',
+          connectorId: '123',
+          credentialType: 'oauth',
+          credentials: {
+            accessToken: 'oldtoken',
+            refreshToken: 'oldrefresh',
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        references: [],
+      });
+
+      unsecuredSavedObjectsClient.create.mockImplementation(async (_type, attributes) => ({
+        id: 'token-id-1',
+        type: 'user_connector_token',
+        attributes,
+        references: [],
+      }));
+
+      await userClient.updateWithRefreshToken({
+        id: 'per-user:token-id-1',
+        userIdentifiers: { profileUid: 'user-profile-123', userCloudId: 'cloud-backfill' },
+        token: 'newtoken',
+        refreshToken: 'newrefresh',
+        expiresIn: 3600,
+      });
+
+      expect(unsecuredSavedObjectsClient.create).toHaveBeenCalledWith(
+        'user_connector_token',
+        expect.objectContaining({
+          profileUid: 'user-profile-123',
+          userCloudId: 'cloud-backfill',
+        }),
+        expect.any(Object)
+      );
+    });
+
+    test('preserves existing userCloudId when refresh identifiers omit it', async () => {
+      unsecuredSavedObjectsClient.get.mockResolvedValueOnce({
+        id: 'token-id-1',
+        type: 'user_connector_token',
+        attributes: {
+          profileUid: 'user-profile-123',
+          userCloudId: 'existing-cloud-id',
+          connectorId: '123',
+          credentialType: 'oauth',
+          credentials: {
+            accessToken: 'oldtoken',
+            refreshToken: 'oldrefresh',
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        references: [],
+      });
+
+      unsecuredSavedObjectsClient.create.mockImplementation(async (_type, attributes) => ({
+        id: 'token-id-1',
+        type: 'user_connector_token',
+        attributes,
+        references: [],
+      }));
+
+      await userClient.updateWithRefreshToken({
+        id: 'per-user:token-id-1',
+        token: 'newtoken',
+        expiresIn: 3600,
+      });
+
+      expect(unsecuredSavedObjectsClient.create).toHaveBeenCalledWith(
+        'user_connector_token',
+        expect.objectContaining({
+          userCloudId: 'existing-cloud-id',
+        }),
+        expect.any(Object)
+      );
+    });
+
     test('throws error when given shared: prefix', async () => {
       await expect(
         userClient.updateWithRefreshToken({

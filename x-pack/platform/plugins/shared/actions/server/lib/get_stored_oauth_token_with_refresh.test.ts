@@ -209,14 +209,36 @@ describe('getStoredTokenWithRefresh', () => {
 
       await getStoredTokenWithRefresh(baseOpts);
 
-      expect(connectorTokenClient.updateWithRefreshToken).toHaveBeenCalledWith({
-        id: 'token-1',
-        token: 'Bearer new-access-token',
-        refreshToken: 'new-refresh-token',
-        expiresIn: 3600,
-        refreshTokenExpiresIn: 604800,
-        tokenType: 'access_token',
+      expect(connectorTokenClient.updateWithRefreshToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'token-1',
+          token: 'Bearer new-access-token',
+          refreshToken: 'new-refresh-token',
+          expiresIn: 3600,
+          refreshTokenExpiresIn: 604800,
+          tokenType: 'access_token',
+        })
+      );
+    });
+
+    it('passes userIdentifiers to updateWithRefreshToken for per-user refresh', async () => {
+      connectorTokenClient.get.mockResolvedValueOnce({
+        hasErrors: false,
+        connectorToken: expiredPerUserToken,
       });
+      refreshFn.mockResolvedValueOnce(refreshResponse);
+
+      await getStoredTokenWithRefresh({
+        ...baseOpts,
+        isPerUser: true,
+        userIdentifiers: { profileUid: 'profile-1', userCloudId: 'cloud-user-1' },
+      });
+
+      expect(connectorTokenClient.updateWithRefreshToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userIdentifiers: { profileUid: 'profile-1', userCloudId: 'cloud-user-1' },
+        })
+      );
     });
 
     it('falls back to the existing refresh token when the response omits one', async () => {

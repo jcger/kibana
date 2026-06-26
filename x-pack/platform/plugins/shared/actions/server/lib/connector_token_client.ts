@@ -279,6 +279,7 @@ export class ConnectorTokenClient {
    */
   public async updateWithRefreshToken(options: {
     id: string;
+    userIdentifiers?: UserIdentifiers;
     token: string;
     refreshToken?: string;
     expiresIn?: number;

@@ -217,6 +217,7 @@ export const getStoredTokenWithRefresh = async ({
         // Update stored token
         await connectorTokenClient.updateWithRefreshToken({
           id: connectorToken.id!,
+          userIdentifiers,
           token: newAccessToken,
           refreshToken: updatedRefreshToken,
           expiresIn: tokenResult.expiresIn,
