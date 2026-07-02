@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import React, { lazy } from 'react';
+import React from 'react';
 
 import { actionTypeRegistryMock } from '../../../action_type_registry.mock';
 import userEvent from '@testing-library/user-event';
@@ -21,55 +21,6 @@ jest.mock('../../../lib/action_connector_api', () => ({
 }));
 
 const { loadActionTypes } = jest.requireMock('../../../lib/action_connector_api');
-
-describe('spec connector', () => {
-  let appMockRenderer: AppMockRenderer;
-  const onClose = jest.fn();
-  const onConnectorCreated = jest.fn();
-  const onTestConnector = jest.fn();
-  const actionTypeRegistry = actionTypeRegistryMock.create();
-
-  const specActionTypeModel = actionTypeRegistryMock.createMockActionTypeModel({
-    id: 'spec-connector',
-    actionConnectorFields: lazy(() => import('../connector_mock')),
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    actionTypeRegistry.has.mockReturnValue(true);
-    actionTypeRegistry.get.mockReturnValue(specActionTypeModel);
-    appMockRenderer = createAppMockRenderer();
-    appMockRenderer.coreStart.application.capabilities = {
-      ...appMockRenderer.coreStart.application.capabilities,
-      actions: { save: true, show: true },
-    };
-    loadActionTypes.mockResolvedValue([
-      {
-        id: specActionTypeModel.id,
-        name: 'Test spec connector',
-        enabledInConfig: true,
-        enabledInLicense: true,
-        minimumLicenseRequired: 'basic' as const,
-        supportedFeatureIds: ['alerting', 'siem'],
-        source: 'spec',
-        testable: false,
-      },
-    ]);
-  });
-
-  it('does not show the save and test button for non-testable spec connectors', async () => {
-    appMockRenderer.render(
-      <CreateConnectorFlyout
-        actionTypeRegistry={actionTypeRegistry}
-        onClose={onClose}
-        onConnectorCreated={onConnectorCreated}
-        onTestConnector={onTestConnector}
-      />
-    );
-
-    expect(screen.queryByTestId('create-connector-flyout-save-test-btn')).not.toBeInTheDocument();
-  });
-});
 
 describe('spec connector with API fetch', () => {
   let appMockRenderer: AppMockRenderer;

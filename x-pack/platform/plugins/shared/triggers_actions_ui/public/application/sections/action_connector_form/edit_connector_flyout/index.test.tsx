@@ -386,6 +386,20 @@ describe('EditConnectorFlyout', () => {
       expect(await screen.findByTestId('testConnectorTab')).toBeInTheDocument();
     });
 
+    it('does not show the test tab when isTestable is not provided (defaults to false)', async () => {
+      const { getByTestId } = appMockRenderer.render(
+        <EditConnectorFlyout
+          actionTypeRegistry={actionTypeRegistry}
+          onClose={onClose}
+          connector={connector}
+          onConnectorUpdated={onConnectorUpdated}
+        />
+      );
+
+      expect(getByTestId('configureConnectorTab')).toBeInTheDocument();
+      expect(screen.queryByTestId('testConnectorTab')).not.toBeInTheDocument();
+    });
+
     it('navigates to the test form', async () => {
       const { getByTestId } = appMockRenderer.render(
         <EditConnectorFlyout
