@@ -446,7 +446,10 @@ describe('AwsLambdaConnector', () => {
       if (!AwsLambdaConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = await AwsLambdaConnector.test.handler(mockContext);
+      const result = (await AwsLambdaConnector.test.handler(mockContext)) as Record<
+        string,
+        unknown
+      >;
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Failed to connect');

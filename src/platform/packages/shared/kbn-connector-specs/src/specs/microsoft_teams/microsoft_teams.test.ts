@@ -31,11 +31,6 @@ interface SearchResponse {
   }>;
 }
 
-interface TestResult {
-  ok: boolean;
-  message?: string;
-}
-
 describe('MicrosoftTeams', () => {
   const mockClient = {
     get: jest.fn(),
@@ -877,7 +872,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(mockClient.get).toHaveBeenCalledWith(
         'https://graph.microsoft.com/v1.0/me/joinedTeams',
@@ -905,7 +900,10 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(oauthCodeContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(oauthCodeContext)) as Record<
+        string,
+        unknown
+      >;
 
       expect(mockClient.get).toHaveBeenCalledWith(
         'https://graph.microsoft.com/v1.0/me/joinedTeams',
@@ -936,7 +934,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(appOnlyContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(appOnlyContext)) as Record<string, unknown>;
 
       expect(mockClient.get).toHaveBeenCalledWith('https://graph.microsoft.com/v1.0/teams', {
         params: { $select: 'id,displayName' },
@@ -956,7 +954,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result).toEqual({
         ok: true,
@@ -970,7 +968,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -982,7 +980,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');
@@ -994,7 +992,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unknown error');
@@ -1006,7 +1004,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unexpected Graph API response: missing value array');
@@ -1018,7 +1016,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unexpected Graph API response: missing value array');

@@ -181,7 +181,7 @@ describe('AzureBlob', () => {
     const runTestHandler = async (ctx: ActionContext) => {
       const testDef = AzureBlob.test;
       if (!testDef) throw new Error('AzureBlob.test is undefined');
-      return testDef.handler(ctx);
+      return (await testDef.handler(ctx)) as Record<string, unknown>;
     };
 
     it('should succeed when list containers returns', async () => {

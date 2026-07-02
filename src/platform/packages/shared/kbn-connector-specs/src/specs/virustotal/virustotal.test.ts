@@ -848,7 +848,10 @@ describe('VirusTotalConnector', () => {
       if (!VirusTotalConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = await VirusTotalConnector.test.handler(mockContext);
+      const result = (await VirusTotalConnector.test.handler(mockContext)) as Record<
+        string,
+        unknown
+      >;
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Failed to connect');

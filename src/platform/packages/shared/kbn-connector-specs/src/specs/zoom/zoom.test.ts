@@ -19,11 +19,6 @@ interface ZoomPaginatedResponse<T = unknown> {
   registrants?: T[];
 }
 
-interface TestResult {
-  ok: boolean;
-  message?: string;
-}
-
 describe('Zoom', () => {
   const mockClient = {
     get: jest.fn(),
@@ -785,7 +780,7 @@ describe('Zoom', () => {
       if (!Zoom.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Zoom.test.handler(mockContext)) as TestResult;
+      const result = (await Zoom.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(mockClient.get).toHaveBeenCalledWith('https://api.zoom.us/v2/users/me');
       expect(result.ok).toBe(true);
@@ -801,7 +796,7 @@ describe('Zoom', () => {
       if (!Zoom.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Zoom.test.handler(mockContext)) as TestResult;
+      const result = (await Zoom.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(true);
       expect(result.message).toBe('Successfully connected to Zoom as: user@example.com');
@@ -814,7 +809,7 @@ describe('Zoom', () => {
       if (!Zoom.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Zoom.test.handler(mockContext)) as TestResult;
+      const result = (await Zoom.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(true);
       expect(result.message).toBe('Successfully connected to Zoom as: Unknown');
@@ -826,7 +821,7 @@ describe('Zoom', () => {
       if (!Zoom.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Zoom.test.handler(mockContext)) as TestResult;
+      const result = (await Zoom.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -838,7 +833,7 @@ describe('Zoom', () => {
       if (!Zoom.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Zoom.test.handler(mockContext)) as TestResult;
+      const result = (await Zoom.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');
@@ -850,7 +845,7 @@ describe('Zoom', () => {
       if (!Zoom.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Zoom.test.handler(mockContext)) as TestResult;
+      const result = (await Zoom.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unknown error');

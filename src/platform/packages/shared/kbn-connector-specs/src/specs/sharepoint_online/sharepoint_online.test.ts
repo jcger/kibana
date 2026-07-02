@@ -88,11 +88,6 @@ interface SharePointSearchResponse {
 /**
  * Test result structure
  */
-interface TestResult {
-  ok: boolean;
-  message?: string;
-}
-
 describe('SharepointOnline', () => {
   const mockClient = {
     get: jest.fn(),
@@ -1450,7 +1445,7 @@ describe('SharepointOnline', () => {
       if (!SharepointOnline.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointOnline.test.handler(mockContext)) as TestResult;
+      const result = (await SharepointOnline.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(mockClient.get).toHaveBeenCalledWith('https://graph.microsoft.com/v1.0/');
       expect(result.ok).toBe(true);
@@ -1469,7 +1464,7 @@ describe('SharepointOnline', () => {
       if (!SharepointOnline.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointOnline.test.handler(mockContext)) as TestResult;
+      const result = (await SharepointOnline.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(true);
       expect(result.message).toBe('Successfully connected to SharePoint Online: Unknown');
@@ -1481,7 +1476,7 @@ describe('SharepointOnline', () => {
       if (!SharepointOnline.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointOnline.test.handler(mockContext)) as TestResult;
+      const result = (await SharepointOnline.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -1493,7 +1488,7 @@ describe('SharepointOnline', () => {
       if (!SharepointOnline.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointOnline.test.handler(mockContext)) as TestResult;
+      const result = (await SharepointOnline.test.handler(mockContext)) as Record<string, unknown>;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');
