@@ -29,7 +29,8 @@ import { paths } from '../../../constants';
 import { RuleActionsMenu } from '../../../pages/rules_list_page/rule_actions_menu';
 import { RuleProvider } from '../../rule_details/rule_context';
 import {
-  RuleHeaderDescription,
+  RuleDescription,
+  RuleTags,
   RuleTitleWithBadges,
 } from '../../rule_details/rule_header_description';
 import { RuleConditions } from '../../rule_details/sidebar/rule_conditions';
@@ -157,7 +158,10 @@ export const RuleSummaryFlyout = ({
               </h2>
             </EuiTitle>
             <EuiSpacer size="s" />
-            <RuleHeaderDescription />
+            <EuiFlexGroup direction="column" gutterSize="m">
+              <RuleDescription />
+              <RuleTags />
+            </EuiFlexGroup>
           </EuiPanel>
           <EuiHorizontalRule margin="xs" />
           <EuiPanel

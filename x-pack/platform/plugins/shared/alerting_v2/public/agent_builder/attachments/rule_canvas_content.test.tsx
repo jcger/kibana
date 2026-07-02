@@ -35,7 +35,8 @@ jest.mock('../../components/rule_details/rule_context', () => ({
 }));
 
 jest.mock('../../components/rule_details/rule_header_description', () => ({
-  RuleHeaderDescription: () => <div data-test-subj="mockRuleHeaderDescription" />,
+  RuleDescription: () => <div data-test-subj="mockRuleDescription" />,
+  RuleTags: () => <div data-test-subj="mockRuleTags" />,
 }));
 
 jest.mock('../../components/rule_details/sidebar/rule_sidebar', () => ({
@@ -109,9 +110,10 @@ describe('RuleCanvasContent', () => {
       expect(getByTestId('mockRuleSidebar')).toBeDefined();
     });
 
-    it('renders the RuleHeaderDescription', () => {
+    it('renders the RuleDescription and RuleTags', () => {
       const { getByTestId } = renderCanvas();
-      expect(getByTestId('mockRuleHeaderDescription')).toBeDefined();
+      expect(getByTestId('mockRuleDescription')).toBeDefined();
+      expect(getByTestId('mockRuleTags')).toBeDefined();
     });
   });
 

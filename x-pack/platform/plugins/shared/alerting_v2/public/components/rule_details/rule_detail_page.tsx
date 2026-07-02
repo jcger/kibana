@@ -6,6 +6,7 @@
  */
 
 import {
+  EuiFlexGroup,
   EuiPanel,
   EuiSplitPanel,
   logicalCSS,
@@ -27,7 +28,7 @@ import { useComposeDiscoverFlyout } from '../../hooks/use_compose_discover_flyou
 import { useToggleRuleEnabled } from '../../hooks/use_toggle_rule_enabled';
 import { paths } from '../../constants';
 import { DeleteConfirmationModal } from '../rule/modals/delete_confirmation_modal';
-import { RuleHeaderDescription, RuleKindBadge } from './rule_header_description';
+import { RuleDescription, RuleKindBadge } from './rule_header_description';
 import { RuleOverviewSection } from './overview';
 import { RuleSidebar } from './sidebar/rule_sidebar';
 import { useRule } from './rule_context';
@@ -206,7 +207,9 @@ export const RuleDetailPage: React.FunctionComponent = () => {
           `,
         }}
       >
-        <RuleHeaderDescription showTags={false} />
+        <EuiFlexGroup direction="column" gutterSize="m">
+          <RuleDescription />
+        </EuiFlexGroup>
         <EuiSplitPanel.Outer
           direction="row"
           hasBorder={false}
