@@ -422,3 +422,156 @@ describe('spec connector edit flyout Test tab', () => {
     expect(appMockRenderer.coreStart.http.get).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('default (no isTestable prop) — embedder path', () => {
+  let appMockRenderer: AppMockRenderer;
+  const onClose = jest.fn();
+  const onConnectorUpdated = jest.fn();
+  const actionTypeRegistry = actionTypeRegistryMock.create();
+
+  const stackConnector = createMockActionConnector({
+    id: 'stack-connector-id',
+    name: 'Stack Connector',
+    actionTypeId: '.test',
+    config: {},
+    secrets: {},
+  });
+
+  const stackConnectorType: ActionType = {
+    id: '.test',
+    name: 'Test',
+    enabled: true,
+    enabledInConfig: true,
+    enabledInLicense: true,
+    minimumLicenseRequired: 'basic',
+    supportedFeatureIds: ['alerting'],
+    source: ACTION_TYPE_SOURCES.stack,
+    isSystemActionType: false,
+    isDeprecated: false,
+  };
+
+  const specConnector = createMockActionConnector({
+    id: 'spec-connector-id',
+    name: 'Spec Connector Test',
+    actionTypeId: 'spec-connector-test',
+    config: {},
+    secrets: {},
+  });
+
+  const actionTypeModel = actionTypeRegistryMock.createMockActionTypeModel();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    appMockRenderer = createAppMockRenderer();
+    appMockRenderer.coreStart.application.capabilities = {
+      ...appMockRenderer.coreStart.application.capabilities,
+      actions: { save: true, show: true, execute: true },
+    };
+    actionTypeRegistry.has.mockImplementation((id: string) => id === '.test');
+    actionTypeRegistry.get.mockReturnValue(actionTypeModel);
+  });
+
+  const renderEmbedderFlyout = (connector: typeof stackConnector) =>
+    appMockRenderer.render(
+      <EditConnectorFlyout
+        actionTypeRegistry={actionTypeRegistry}
+        connector={connector}
+        onClose={onClose}
+        onConnectorUpdated={onConnectorUpdated}
+      />
+    );
+
+  it('shows the test tab for a stack connector', async () => {
+    loadActionTypes.mockResolvedValue([stackConnectorType]);
+
+    renderEmbedderFlyout(stackConnector);
+
+    expect(await screen.findByTestId('testConnectorTab')).toBeInTheDocument();
+  });
+
+  it('hides the test tab for a non-testable spec connector', async () => {
+    loadActionTypes.mockResolvedValue([
+      {
+        ...stackConnectorType,
+        id: 'spec-connector-test',
+        source: ACTION_TYPE_SOURCES.spec,
+        testable: false,
+      },
+    ]);
+
+    renderEmbedderFlyout(specConnector);
+
+    expect(await screen.findByTestId('configureConnectorTab')).toBeInTheDocument();
+    expect(screen.queryByTestId('testConnectorTab')).not.toBeInTheDocument();
+  });
+
+  it('shows the test tab for a testable spec connector', async () => {
+    loadActionTypes.mockResolvedValue([
+      {
+        ...stackConnectorType,
+        id: 'spec-connector-test',
+        source: ACTION_TYPE_SOURCES.spec,
+        testable: true,
+      },
+    ]);
+    actionTypeRegistry.has.mockReturnValue(false);
+    appMockRenderer.coreStart.http.get = jest.fn().mockResolvedValue({
+      metadata: {
+        id: 'spec-connector-test',
+        display_name: 'Spec Connector Test',
+        description: 'Connect to Test API',
+        minimum_license: 'basic',
+        supported_feature_ids: ['workflows'],
+      },
+      schema: {
+        type: 'object',
+        properties: {
+          config: { type: 'object', properties: {} },
+          secrets: {
+            anyOf: [
+              {
+                type: 'object',
+                properties: {
+                  authType: { const: 'api_key_header', type: 'string' },
+                  apiKey: { type: 'string', minLength: 1, label: 'API key', sensitive: true },
+                },
+                required: ['authType', 'apiKey'],
+                label: 'API key header authentication',
+              },
+            ],
+            label: 'Authentication',
+          },
+        },
+        required: ['config', 'secrets'],
+      },
+    });
+    appMockRenderer.coreStart.uiSettings.get = jest.fn().mockImplementation((key: string) => {
+      if (key === 'workflows:ui:enabled') {
+        return true;
+      }
+      return undefined;
+    });
+
+    renderEmbedderFlyout(specConnector);
+
+    expect(await screen.findByTestId('testConnectorTab')).toBeInTheDocument();
+  });
+
+  it('hides the test tab when connector types are unavailable', async () => {
+    loadActionTypes.mockResolvedValue([]);
+
+    renderEmbedderFlyout(stackConnector);
+
+    expect(await screen.findByTestId('configureConnectorTab')).toBeInTheDocument();
+    expect(screen.queryByTestId('testConnectorTab')).not.toBeInTheDocument();
+  });
+
+  it('hides the test tab when connector types fail to load', async () => {
+    loadActionTypes.mockRejectedValue(new Error('Failed to load connector types'));
+
+    expect(() => renderEmbedderFlyout(stackConnector)).not.toThrow();
+
+    expect(await screen.findByTestId('configureConnectorTab')).toBeInTheDocument();
+    expect(screen.queryByTestId('testConnectorTab')).not.toBeInTheDocument();
+  });
+});
