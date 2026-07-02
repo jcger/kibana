@@ -23,7 +23,6 @@ import {
   useEuiMaxBreakpoint,
   useEuiTheme,
 } from '@elastic/eui';
-import moment from 'moment';
 import { AppHeader } from '@kbn/app-header';
 import { useQueryClient } from '@kbn/react-query';
 import { getBreachEsqlQuery } from '@kbn/alerting-v2-schemas';
@@ -53,7 +52,6 @@ import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
 import { getDiscoverHrefForRuleAndEpisodeTimestamp } from '../../utils/discover_href_for_episode';
 import { getEpisodeHeaderBadges } from './utils/get_episode_header_badges';
 import { getEpisodeHeaderMenu } from './utils/get_episode_header_menu';
-import { getEpisodeHeaderMetadata } from './utils/get_episode_header_metadata';
 import { getEpisodeHeaderTabs } from './utils/get_episode_header_tabs';
 import * as i18n from './translations';
 
@@ -215,17 +213,6 @@ export function EpisodeDetailsPage() {
         onSuccess: invalidateEpisodeQueries,
       }),
     [applicableActions, episode, invalidateEpisodeQueries]
-  );
-
-  const dateFormat = services.uiSettings.get('dateFormat') ?? undefined;
-  const headerMetadata = useMemo(
-    () =>
-      getEpisodeHeaderMetadata({
-        triggeredAt: episode?.triggered_at,
-        durationMs: episode?.duration,
-        formatDate: (isoDate: string) => moment(isoDate).format(dateFormat),
-      }),
-    [episode?.triggered_at, episode?.duration, dateFormat]
   );
 
   const ruleDescription = showRuleDependentUi ? ruleState.rule.metadata.description : undefined;
@@ -397,7 +384,6 @@ export function EpisodeDetailsPage() {
         }}
         badges={headerBadges}
         menu={headerMenu}
-        metadata={headerMetadata}
         tabs={headerTabs}
         padding={{ bleed: 'l' }}
       />

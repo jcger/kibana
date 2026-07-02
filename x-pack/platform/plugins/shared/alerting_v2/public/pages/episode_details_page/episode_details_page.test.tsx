@@ -244,18 +244,12 @@ describe('EpisodeDetailsPage', () => {
     expect(screen.getByTestId('alertingV2EpisodeSeverityBadge-high')).toHaveTextContent('High');
   });
 
-  it('renders the rule description and triggered/duration metadata in the header area', () => {
+  it('renders the rule description in the header area', () => {
     renderPage();
 
     expect(screen.getByTestId('alertingV2EpisodeDetailsHeaderDescription')).toHaveTextContent(
       'Rule description'
     );
-    expect(
-      screen.getByTestId('alertingV2EpisodeDetailsHeaderTriggeredMetadata')
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId('alertingV2EpisodeDetailsHeaderDurationMetadata')
-    ).toBeInTheDocument();
   });
 
   it('hides the metadata tab when the rule is not loaded', () => {
