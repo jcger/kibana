@@ -71,16 +71,16 @@ import { DEFAULT_EPISODES_LIST_FILTER } from './utils/episodes_list_url_state';
 const DEFAULT_SORT: EpisodesSortState = { sortField: '@timestamp', sortDirection: 'desc' };
 
 const getEpisodesListMenu = ({ manageRulesHref }: { manageRulesHref: string }): AppHeaderMenu => ({
-  items: [
-    {
-      id: 'manageRules',
-      label: i18n.EPISODES_LIST_MANAGE_RULES,
-      iconType: 'gear',
-      href: manageRulesHref,
-      order: 0,
-      testId: 'alertingV2EpisodesListManageRules',
-    },
-  ],
+  // A primary action item stays inline at every breakpoint, matching the always-visible
+  // "Manage rules" button the page had before the AppHeader migration. Regular `items` would
+  // collapse into the overflow "More" menu between the m and xl breakpoints.
+  primaryActionItem: {
+    id: 'manageRules',
+    label: i18n.EPISODES_LIST_MANAGE_RULES,
+    iconType: 'gear',
+    href: manageRulesHref,
+    testId: 'alertingV2EpisodesListManageRules',
+  },
 });
 
 const ALERT_EPISODES_TABLE_SETTINGS: UnifiedDataTableSettings = {

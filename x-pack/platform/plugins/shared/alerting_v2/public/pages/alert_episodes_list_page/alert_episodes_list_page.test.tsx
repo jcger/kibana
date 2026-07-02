@@ -7,12 +7,9 @@
 
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@kbn/react-query';
-import { I18nProvider } from '@kbn/i18n-react';
+import { QueryClient } from '@kbn/react-query';
 import { APP_HEADER_TEST_SUBJECTS } from '@kbn/app-header';
-import { openAppMenuOverflow } from '@kbn/app-header/test_helpers';
-import { MockChromeContextProvider } from '@kbn/core-chrome-browser-context-mocks';
+import { ListPageTestProviders } from '../../test_utils/test_providers';
 import { AlertEpisodesListPage } from './alert_episodes_list_page';
 import type { CustomBulkActions } from '@kbn/unified-data-table';
 import { httpServiceMock } from '@kbn/core-http-browser-mocks';
@@ -194,17 +191,10 @@ const getCapturedBulkActions = (): CustomBulkActions => {
 };
 
 const renderPage = () => {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MockChromeContextProvider>
-      <I18nProvider>
-        <MemoryRouter>
-          <QueryClientProvider client={queryClient}>
-            <AlertEpisodesListPage />
-          </QueryClientProvider>
-        </MemoryRouter>
-      </I18nProvider>
-    </MockChromeContextProvider>
+    <ListPageTestProviders>
+      <AlertEpisodesListPage />
+    </ListPageTestProviders>
   );
 };
 
@@ -229,8 +219,6 @@ describe('AlertEpisodesListPage', () => {
   });
 
   it('renders the manage rules link in the app header menu', async () => {
-    await openAppMenuOverflow();
-
     const manageRulesLink = await screen.findByTestId('alertingV2EpisodesListManageRules');
     expect(manageRulesLink).toHaveAttribute('href', '/app/management/alertingV2/rules');
   });

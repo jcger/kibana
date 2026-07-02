@@ -199,7 +199,12 @@ export const RulesListPage = () => {
     openCreateBuilderFlyout('threshold');
   };
 
+  // "Create with agent" is only offered when the agent-builder AB skill is available. Compute the
+  // gated handlers once so the header, empty-state panel, and options flyout stay in sync.
   const onCreateWithAgent = isRuleManagementABSkillAvailable ? navigateToAgentBuilder : undefined;
+  const onCreateWithAgentFromFlyout = isRuleManagementABSkillAvailable
+    ? onCreateWithAgentFromOptionsFlyout
+    : undefined;
   const showHeaderMenu = hasRules || hasActiveFilters;
   const headerMenu = showHeaderMenu
     ? getRulesListMenu({
@@ -247,7 +252,7 @@ export const RulesListPage = () => {
       {showEmptyState ? (
         <RuleCreateOptionsPanel
           onCreateEsqlRule={openCreateFlyout}
-          onCreateWithAgent={isRuleManagementABSkillAvailable ? navigateToAgentBuilder : undefined}
+          onCreateWithAgent={onCreateWithAgent}
           onCreateThresholdAlert={onCreateThresholdAlertFromOptionsFlyout}
         />
       ) : null}
@@ -300,9 +305,7 @@ export const RulesListPage = () => {
         <RuleCreateOptionsFlyout
           onClose={closeCreateOptionsFlyout}
           onCreateEsqlRule={onCreateEsqlRuleFromOptionsFlyout}
-          onCreateWithAgent={
-            isRuleManagementABSkillAvailable ? onCreateWithAgentFromOptionsFlyout : undefined
-          }
+          onCreateWithAgent={onCreateWithAgentFromFlyout}
           onCreateThresholdAlert={onCreateThresholdAlertFromOptionsFlyout}
         />
       ) : null}

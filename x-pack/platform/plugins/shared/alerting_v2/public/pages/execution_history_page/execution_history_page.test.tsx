@@ -8,8 +8,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { I18nProvider } from '@kbn/i18n-react';
-import { MockChromeContextProvider } from '@kbn/core-chrome-browser-context-mocks';
+import { ListPageTestProviders } from '../../test_utils/test_providers';
 import type { PolicyExecutionHistoryItem } from '../../services/execution_history_api';
 import type { useFetchRuleExecutions } from '../../hooks/use_fetch_rule_executions';
 import { ExecutionHistoryPage } from './execution_history_page';
@@ -141,11 +140,9 @@ const mockFetchResult = (
 
 const renderPage = () =>
   render(
-    <MockChromeContextProvider>
-      <I18nProvider>
-        <ExecutionHistoryPage />
-      </I18nProvider>
-    </MockChromeContextProvider>
+    <ListPageTestProviders>
+      <ExecutionHistoryPage />
+    </ListPageTestProviders>
   );
 
 const mockRuleFetchResult = (
