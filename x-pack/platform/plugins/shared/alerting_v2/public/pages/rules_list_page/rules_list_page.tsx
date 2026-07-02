@@ -64,7 +64,7 @@ const getRulesListMenu = ({
     iconType: 'plusInCircle',
     run: onCreateRule,
     testId: 'createRuleButton',
-    popoverTestId: 'createRulePopoverButton',
+    popoverTestId: 'createRulePopoverPanel',
     splitButtonProps: {
       iconType: 'arrowDown',
       secondaryButtonAriaLabel: i18n.translate('xpack.alertingV2.rulesList.createRuleMoreOptions', {
@@ -206,13 +206,17 @@ export const RulesListPage = () => {
     ? onCreateWithAgentFromOptionsFlyout
     : undefined;
   const showHeaderMenu = hasRules || hasActiveFilters;
-  const headerMenu = showHeaderMenu
-    ? getRulesListMenu({
-        onCreateRule: openCreateOptionsFlyout,
-        onCreateEsqlRule: openCreateFlyout,
-        onCreateWithAgent,
-      })
-    : undefined;
+  const headerMenu = useMemo(
+    () =>
+      showHeaderMenu
+        ? getRulesListMenu({
+            onCreateRule: openCreateOptionsFlyout,
+            onCreateEsqlRule: openCreateFlyout,
+            onCreateWithAgent,
+          })
+        : undefined,
+    [showHeaderMenu, openCreateOptionsFlyout, openCreateFlyout, onCreateWithAgent]
+  );
 
   return (
     <div>

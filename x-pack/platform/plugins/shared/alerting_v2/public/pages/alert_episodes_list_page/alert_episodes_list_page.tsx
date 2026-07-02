@@ -384,6 +384,14 @@ export const AlertEpisodesListPage = () => {
     [rulesCache, isLoadingRules, rowHeight, services.userProfile]
   );
 
+  const episodesMenu = useMemo(
+    () =>
+      getEpisodesListMenu({
+        manageRulesHref: services.http.basePath.prepend(paths.ruleList),
+      }),
+    [services.http.basePath]
+  );
+
   return (
     <div
       data-test-subj="alertingV2EpisodesListPage"
@@ -400,9 +408,7 @@ export const AlertEpisodesListPage = () => {
         title={i18n.EPISODES_LIST_PAGE_TITLE}
         titleAppend={<ExperimentalBadge />}
         padding={{ bleed: 'l' }}
-        menu={getEpisodesListMenu({
-          manageRulesHref: services.http.basePath.prepend(paths.ruleList),
-        })}
+        menu={episodesMenu}
       />
       <EuiSpacer size="m" />
 

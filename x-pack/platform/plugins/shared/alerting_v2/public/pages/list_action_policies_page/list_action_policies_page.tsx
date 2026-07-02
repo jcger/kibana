@@ -142,9 +142,9 @@ export const ListActionPoliciesPage = () => {
     setSelectedPolicies([]);
   }, []);
 
-  const navigateToCreate = () => {
+  const navigateToCreate = useCallback(() => {
     navigateToUrl(basePath.prepend(paths.actionPolicyCreate));
-  };
+  }, [navigateToUrl, basePath]);
 
   const navigateToEdit = (id: string) => {
     navigateToUrl(basePath.prepend(paths.actionPolicyEdit(id)));
@@ -452,6 +452,11 @@ export const ListActionPoliciesPage = () => {
 
   const errorMessage = isError && error ? error.message : null;
 
+  const actionPoliciesMenu = useMemo(
+    () => getActionPoliciesListMenu({ navigateToCreate }),
+    [navigateToCreate]
+  );
+
   return (
     <>
       <AppHeader
@@ -459,7 +464,7 @@ export const ListActionPoliciesPage = () => {
         title={ACTION_POLICIES_LIST_PAGE_TITLE}
         titleAppend={<ExperimentalBadge />}
         padding={{ bleed: 'l' }}
-        menu={getActionPoliciesListMenu({ navigateToCreate })}
+        menu={actionPoliciesMenu}
       />
       <EuiFlexGroup direction="column" gutterSize="m" responsive={false}>
         <EuiSpacer size="m" />

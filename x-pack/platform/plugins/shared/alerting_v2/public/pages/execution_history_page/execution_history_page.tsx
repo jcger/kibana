@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { EuiSpacer } from '@elastic/eui';
 import { AppHeader } from '@kbn/app-header';
 import type { AppHeaderTab } from '@kbn/app-header';
@@ -83,6 +83,11 @@ export const ExecutionHistoryPage = () => {
     setRuleToViewId(ruleId);
   };
 
+  const tabs = useMemo(
+    () => getExecutionHistoryTabs({ selectedTabId, onSelect: setSelectedTabId }),
+    [selectedTabId]
+  );
+
   return (
     <>
       <AppHeader
@@ -90,10 +95,7 @@ export const ExecutionHistoryPage = () => {
         title={EXECUTION_HISTORY_PAGE_TITLE}
         titleAppend={<ExperimentalBadge />}
         padding={{ bleed: 'l' }}
-        tabs={getExecutionHistoryTabs({
-          selectedTabId,
-          onSelect: setSelectedTabId,
-        })}
+        tabs={tabs}
       />
       <EuiSpacer size="m" />
       {selectedTabId === RULES_TAB_ID ? (
