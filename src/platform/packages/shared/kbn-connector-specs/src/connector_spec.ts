@@ -258,9 +258,13 @@ export const TEST_CONNECTOR_SUB_ACTION = '_test';
 export type ConnectorTestHandlerResult = void | Record<string, unknown>;
 
 export interface ConnectorTest {
+  /**
+   * Test-tab handler. Throw on failure; do not return an `{ ok }` flag.
+   * A resolved value is treated as success by the executor.
+   */
   handler: (ctx: ActionContext) => Promise<ConnectorTestHandlerResult>;
   description?: string;
-  /** Transitional per-team consent marker: owning team opted this Test tab into the product UI. */
+  /** Transitional per-team consent marker: owning team opted this Test tab into the product UI. Requires throw-on-failure handler contract. */
   enabled?: boolean;
 }
 

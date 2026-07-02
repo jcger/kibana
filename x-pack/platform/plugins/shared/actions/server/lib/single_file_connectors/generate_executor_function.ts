@@ -10,6 +10,7 @@ import {
   getConnectorActionErrorMeta,
   getFinitePositiveNumber,
   getHeaderValue,
+  TEST_CONNECTOR_SUB_ACTION,
 } from '@kbn/connector-specs';
 import type { ExecutorParams } from '../../sub_action_framework/types';
 import type {
@@ -61,6 +62,18 @@ const getErrorMeta = ({
 
   return Object.keys(errorMeta).length > 0 ? errorMeta : undefined;
 };
+
+const LEGACY_TEST_FAILURE_DEFAULT_MESSAGE = 'Connector test failed';
+
+const isLegacyTestFailure = (
+  subAction: string,
+  res: unknown
+): res is { ok: false; message?: string } =>
+  subAction === TEST_CONNECTOR_SUB_ACTION &&
+  typeof res === 'object' &&
+  res !== null &&
+  'ok' in res &&
+  (res as { ok: unknown }).ok === false;
 
 export const generateExecutorFunction = ({
   actions,
@@ -120,6 +133,12 @@ export const generateExecutorFunction = ({
 
       if (res != null) {
         data = res as Record<string, unknown>;
+      }
+
+      if (isLegacyTestFailure(subAction, res)) {
+        const message =
+          typeof res.message === 'string' ? res.message : LEGACY_TEST_FAILURE_DEFAULT_MESSAGE;
+        return { status: 'error', message, actionId: connectorId };
       }
 
       return { status: 'ok', data, actionId: connectorId };
