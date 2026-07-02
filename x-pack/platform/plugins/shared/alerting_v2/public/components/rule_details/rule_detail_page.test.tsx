@@ -45,8 +45,9 @@ jest.mock('../../hooks/use_delete_rule', () => ({
 }));
 
 const mockToggleRuleEnabled = jest.fn();
+let mockIsToggling = false;
 jest.mock('../../hooks/use_toggle_rule_enabled', () => ({
-  useToggleRuleEnabled: () => ({ mutate: mockToggleRuleEnabled }),
+  useToggleRuleEnabled: () => ({ mutate: mockToggleRuleEnabled, isLoading: mockIsToggling }),
 }));
 
 const mockOpenEditFlyout = jest.fn();
@@ -110,6 +111,7 @@ const renderPage = (rule: RuleApiResponse) =>
 describe('RuleDetailPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsToggling = false;
   });
 
   it('wires breadcrumbs with the rule name', () => {
@@ -119,7 +121,7 @@ describe('RuleDetailPage', () => {
     });
   });
 
-  it('renders the app header title and description in the body', () => {
+  it('renders the app header title and description in the body', async () => {
     renderPage(baseRule);
     expect(screen.getByTestId(APP_HEADER_TEST_SUBJECTS.title)).toHaveTextContent(
       'Test Signal Rule'
@@ -128,6 +130,7 @@ describe('RuleDetailPage', () => {
     expect(screen.queryByTestId('ruleTags')).not.toBeInTheDocument();
     expect(screen.getByTestId('ruleConditionsSection')).toBeInTheDocument();
     expect(screen.getByTestId('ruleMetadataSection')).toBeInTheDocument();
+    expect(await screen.findByTestId('ruleDetailsEnabledSwitch')).toBeInTheDocument();
   });
 
   it('renders a back link to the rules list', () => {
@@ -136,25 +139,20 @@ describe('RuleDetailPage', () => {
     expect(backButton).toHaveAttribute('href', expect.stringContaining(paths.ruleList));
   });
 
-  it('renders native kind, status, and tag badges in the app header', () => {
+  it('renders native kind and tag badges in the app header', () => {
     renderPage(baseRule);
     const kindBadge = screen.getByTestId('kindBadge');
     expect(kindBadge).toHaveTextContent('Signal');
     expect(kindBadge.querySelector('[data-euiicon-type="radar"]')).toBeInTheDocument();
-    expect(screen.getByTestId('enabledBadge')).toHaveTextContent('Enabled');
-    expect(screen.queryByTestId('disabledBadge')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText('+2'));
     expect(screen.getByText('prod')).toBeInTheDocument();
     expect(screen.getByText('infra')).toBeInTheDocument();
   });
 
-  it('renders alert kind badge with its icon and disabled status badge', () => {
+  it('renders alert kind badge with its icon', () => {
     renderPage({ ...baseRule, kind: 'alert', enabled: false });
     const kindBadge = screen.getByTestId('kindBadge');
     expect(kindBadge).toHaveTextContent('Alert');
     expect(kindBadge.querySelector('[data-euiicon-type="bell"]')).toBeInTheDocument();
-    expect(screen.getByTestId('disabledBadge')).toHaveTextContent('Disabled');
-    expect(screen.queryByTestId('enabledBadge')).not.toBeInTheDocument();
   });
 
   it('renders kind-specific tooltip on the kind badge', async () => {
@@ -171,18 +169,35 @@ describe('RuleDetailPage', () => {
     expect(mockOpenEditFlyout).toHaveBeenCalledWith(baseRule);
   });
 
-  it('calls toggleRuleEnabled with enabled=false when disable is clicked', async () => {
+  it('does not render enable/disable options in the overflow menu', async () => {
     renderPage(baseRule);
     await openAppMenuOverflow();
-    fireEvent.click(await screen.findByTestId('ruleDetailsDisableButton'));
+    expect(screen.queryByTestId('ruleDetailsDisableButton')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('ruleDetailsEnableButton')).not.toBeInTheDocument();
+  });
+
+  it('renders a checked enabled switch for enabled rules and disables the rule when toggled off', async () => {
+    renderPage(baseRule);
+    const toggle = await screen.findByTestId('ruleDetailsEnabledSwitch');
+    expect(toggle).toBeChecked();
+    expect(screen.getByText('Enabled')).toBeInTheDocument();
+    fireEvent.click(toggle);
     expect(mockToggleRuleEnabled).toHaveBeenCalledWith({ id: 'rule-1', enabled: false });
   });
 
-  it('calls toggleRuleEnabled with enabled=true when enable is clicked', async () => {
+  it('renders an unchecked enabled switch for disabled rules and enables the rule when toggled on', async () => {
     renderPage({ ...baseRule, enabled: false });
-    await openAppMenuOverflow();
-    fireEvent.click(await screen.findByTestId('ruleDetailsEnableButton'));
+    const toggle = await screen.findByTestId('ruleDetailsEnabledSwitch');
+    expect(toggle).not.toBeChecked();
+    expect(screen.getByText('Disabled')).toBeInTheDocument();
+    fireEvent.click(toggle);
     expect(mockToggleRuleEnabled).toHaveBeenCalledWith({ id: 'rule-1', enabled: true });
+  });
+
+  it('disables the switch while the toggle mutation is in flight', async () => {
+    mockIsToggling = true;
+    renderPage(baseRule);
+    expect(await screen.findByTestId('ruleDetailsEnabledSwitch')).toBeDisabled();
   });
 
   it('opens the clone flyout when clone is clicked', async () => {

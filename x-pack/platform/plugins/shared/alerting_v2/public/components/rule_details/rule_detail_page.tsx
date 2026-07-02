@@ -39,17 +39,6 @@ const getRuleDetailBadges = (rule: RuleApiResponse): AppHeaderBadge[] => {
       label: RULE_KIND_LABELS[rule.kind] ?? rule.kind,
       renderCustomBadge: () => <RuleKindBadge kind={rule.kind} />,
     },
-    {
-      label: rule.enabled
-        ? i18n.translate('xpack.alertingV2.ruleDetails.enabled', {
-            defaultMessage: 'Enabled',
-          })
-        : i18n.translate('xpack.alertingV2.ruleDetails.disabled', {
-            defaultMessage: 'Disabled',
-          }),
-      color: rule.enabled ? 'success' : 'default',
-      'data-test-subj': rule.enabled ? 'enabledBadge' : 'disabledBadge',
-    },
   ];
 
   for (const tag of rule.metadata.tags ?? []) {
@@ -63,12 +52,14 @@ const getRuleDetailMenu = ({
   rule,
   onEdit,
   onToggleEnabled,
+  isToggleLoading,
   onClone,
   onDelete,
 }: {
   rule: RuleApiResponse;
   onEdit: () => void;
-  onToggleEnabled: () => void;
+  onToggleEnabled: (enabled: boolean) => void;
+  isToggleLoading: boolean;
   onClone: () => void;
   onDelete: () => void;
 }): AppHeaderMenu => ({
@@ -81,30 +72,32 @@ const getRuleDetailMenu = ({
     run: onEdit,
     testId: 'openEditRuleFlyoutButton',
   },
+  switch: {
+    id: 'ruleEnabled',
+    label: rule.enabled
+      ? i18n.translate('xpack.alertingV2.ruleDetails.enabled', {
+          defaultMessage: 'Enabled',
+        })
+      : i18n.translate('xpack.alertingV2.ruleDetails.disabled', {
+          defaultMessage: 'Disabled',
+        }),
+    labelProps: undefined,
+    checked: rule.enabled,
+    onChange: onToggleEnabled,
+    disabled: isToggleLoading,
+    'data-test-subj': 'ruleDetailsEnabledSwitch',
+  },
   items: [
-    {
-      id: rule.enabled ? 'disableRule' : 'enableRule',
-      label: rule.enabled
-        ? i18n.translate('xpack.alertingV2.ruleDetails.disableRuleButtonLabel', {
-            defaultMessage: 'Disable rule',
-          })
-        : i18n.translate('xpack.alertingV2.ruleDetails.enableRuleButtonLabel', {
-            defaultMessage: 'Enable rule',
-          }),
-      iconType: rule.enabled ? 'stop' : 'play',
-      order: 0,
-      run: onToggleEnabled,
-      testId: rule.enabled ? 'ruleDetailsDisableButton' : 'ruleDetailsEnableButton',
-    },
     {
       id: 'cloneRule',
       label: i18n.translate('xpack.alertingV2.ruleDetails.cloneRuleButtonLabel', {
         defaultMessage: 'Clone rule',
       }),
       iconType: 'copy',
-      order: 1,
+      order: 0,
       run: onClone,
       testId: 'ruleDetailsCloneButton',
+      overflow: true,
     },
     {
       id: 'deleteRule',
@@ -112,7 +105,7 @@ const getRuleDetailMenu = ({
         defaultMessage: 'Delete rule',
       }),
       iconType: 'trash',
-      order: 2,
+      order: 1,
       run: onDelete,
       testId: 'ruleDetailsDeleteButton',
       overflow: true,
@@ -131,7 +124,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
 
   const history = useHistory();
   const { mutate: deleteRule, isLoading: isDeleting } = useDeleteRule();
-  const { mutate: toggleRuleEnabled } = useToggleRuleEnabled();
+  const { mutate: toggleRuleEnabled, isLoading: isToggling } = useToggleRuleEnabled();
   const { flyout, openEditFlyout, openCloneFlyout } = useComposeDiscoverFlyout();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = React.useState(false);
 
@@ -151,11 +144,8 @@ export const RuleDetailPage: React.FunctionComponent = () => {
     );
   };
 
-  const handleToggleEnabled = () => {
-    toggleRuleEnabled({
-      id: rule.id,
-      enabled: !rule.enabled,
-    });
+  const handleToggleEnabled = (enabled: boolean) => {
+    toggleRuleEnabled({ id: rule.id, enabled });
   };
 
   return (
@@ -184,10 +174,11 @@ export const RuleDetailPage: React.FunctionComponent = () => {
           rule,
           onEdit: () => openEditFlyout(rule),
           onToggleEnabled: handleToggleEnabled,
+          isToggleLoading: isToggling,
           onClone: () => openCloneFlyout(rule),
           onDelete: showDeleteConfirmationModal,
         })}
-        padding={{ bleed: 'l' }}
+        padding="none"
         sticky={false}
       />
       <KibanaPageTemplate.Section
