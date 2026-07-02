@@ -206,6 +206,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
           `,
         }}
       >
+        {/* Tags render as header badges above (see getRuleDetailBadges), so skip them here. */}
         <RuleHeaderDescription showTags={false} />
         <EuiSplitPanel.Outer
           direction="row"
