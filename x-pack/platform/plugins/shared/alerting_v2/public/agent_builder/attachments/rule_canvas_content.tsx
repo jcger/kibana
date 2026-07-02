@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { EuiFlexGroup, EuiPanel, EuiSpacer } from '@elastic/eui';
+import { EuiPanel, EuiSpacer } from '@elastic/eui';
 import {
   ActionButtonType,
   type AttachmentRenderProps,
@@ -15,7 +15,7 @@ import {
 import { CoreStart, useService } from '@kbn/core-di-browser';
 import { i18n } from '@kbn/i18n';
 import { RuleProvider } from '../../components/rule_details/rule_context';
-import { RuleDescription, RuleTags } from '../../components/rule_details/rule_header_description';
+import { RuleHeaderDescription } from '../../components/rule_details/rule_header_description';
 import { RuleSidebar } from '../../components/rule_details/sidebar/rule_sidebar';
 import { paths } from '../../constants';
 import { RulesApi, type RuleApiResponse } from '../../services/rules_api';
@@ -120,10 +120,7 @@ export const RuleCanvasContent = ({
   return (
     <RuleProvider rule={data as unknown as RuleApiResponse}>
       <EuiPanel paddingSize="l" hasShadow={false}>
-        <EuiFlexGroup direction="column" gutterSize="m">
-          <RuleDescription />
-          <RuleTags />
-        </EuiFlexGroup>
+        <RuleHeaderDescription />
         <EuiSpacer size="m" />
         <RuleSidebar showQueryPreview />
       </EuiPanel>

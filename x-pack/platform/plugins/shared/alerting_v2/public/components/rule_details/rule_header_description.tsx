@@ -12,41 +12,49 @@ import { RULE_KIND_ICONS, RULE_KIND_LABELS, RULE_KIND_TOOLTIPS } from '@kbn/aler
 import { useRule } from './rule_context';
 import type { RuleApiResponse } from '../../services/rules_api';
 
-export const RuleDescription: React.FC = () => {
-  const rule = useRule();
-  const { description } = rule.metadata;
+/**
+ * Renders the description and tags row below the page title.
+ */
+export interface RuleHeaderDescriptionProps {
+  /**
+   * When false, only the description is rendered (tags are omitted). Defaults to true so flyout and
+   * canvas callers keep showing tags.
+   */
+  showTags?: boolean;
+}
 
-  if (!description) {
+export const RuleHeaderDescription: React.FC<RuleHeaderDescriptionProps> = ({
+  showTags = true,
+}) => {
+  const rule = useRule();
+  const { description, tags } = rule.metadata;
+  const hasTags = showTags && tags && tags.length > 0;
+
+  if (!description && !hasTags) {
     return null;
   }
 
   return (
-    <EuiFlexItem grow={false}>
-      <EuiText size="s" color="subdued" data-test-subj="ruleDescription">
-        {description}
-      </EuiText>
-    </EuiFlexItem>
-  );
-};
-
-export const RuleTags: React.FC = () => {
-  const rule = useRule();
-  const { tags } = rule.metadata;
-
-  if (!tags || tags.length === 0) {
-    return null;
-  }
-
-  return (
-    <EuiFlexItem grow={false}>
-      <EuiFlexGroup gutterSize="xs" wrap responsive={false} data-test-subj="ruleTags">
-        {tags.map((tag) => (
-          <EuiFlexItem key={tag} grow={false}>
-            <EuiBadge color="hollow">{tag}</EuiBadge>
-          </EuiFlexItem>
-        ))}
-      </EuiFlexGroup>
-    </EuiFlexItem>
+    <EuiFlexGroup direction="column" gutterSize="m">
+      {description && (
+        <EuiFlexItem grow={false}>
+          <EuiText size="s" color="subdued" data-test-subj="ruleDescription">
+            {description}
+          </EuiText>
+        </EuiFlexItem>
+      )}
+      {hasTags && (
+        <EuiFlexItem grow={false}>
+          <EuiFlexGroup gutterSize="xs" wrap responsive={false} data-test-subj="ruleTags">
+            {tags!.map((tag) => (
+              <EuiFlexItem key={tag} grow={false}>
+                <EuiBadge color="hollow">{tag}</EuiBadge>
+              </EuiFlexItem>
+            ))}
+          </EuiFlexGroup>
+        </EuiFlexItem>
+      )}
+    </EuiFlexGroup>
   );
 };
 

@@ -9,7 +9,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { I18nProvider } from '@kbn/i18n-react';
 import { RULE_KIND_TOOLTIPS } from '@kbn/alerting-v2-constants';
-import { RuleDescription, RuleTags, RuleTitleWithBadges } from './rule_header_description';
+import { RuleHeaderDescription, RuleTitleWithBadges } from './rule_header_description';
 import { RuleProvider } from './rule_context';
 import type { RuleApiResponse } from '../../services/rules_api';
 
@@ -27,47 +27,81 @@ const wrap = (ui: React.ReactElement, rule: RuleApiResponse = baseRule) =>
     </I18nProvider>
   );
 
-describe('RuleDescription', () => {
-  it('renders description text', () => {
-    const rule = {
-      ...baseRule,
-      metadata: { name: 'My Rule', description: 'Alert when errors exceed threshold.' },
-    } as RuleApiResponse;
-    wrap(<RuleDescription />, rule);
-    expect(screen.getByTestId('ruleDescription')).toHaveTextContent(
-      'Alert when errors exceed threshold.'
-    );
-  });
-
-  it('returns null when no description', () => {
-    const { container } = wrap(<RuleDescription />, {
-      ...baseRule,
-      metadata: { name: 'No Description' },
-    } as RuleApiResponse);
-    expect(container.innerHTML).toBe('');
-  });
-});
-
-describe('RuleTags', () => {
+describe('RuleHeaderDescription', () => {
   it('renders tags as badges', () => {
-    wrap(<RuleTags />);
+    wrap(<RuleHeaderDescription />);
     expect(screen.getByTestId('ruleTags')).toBeInTheDocument();
     expect(screen.getByText('prod')).toBeInTheDocument();
     expect(screen.getByText('infra')).toBeInTheDocument();
   });
 
-  it('returns null when tags are empty', () => {
-    const { container } = wrap(<RuleTags />, {
+  it('renders description text', () => {
+    const rule = {
+      ...baseRule,
+      metadata: { name: 'My Rule', description: 'Alert when errors exceed threshold.' },
+    } as RuleApiResponse;
+    wrap(<RuleHeaderDescription />, rule);
+    expect(screen.getByTestId('ruleDescription')).toHaveTextContent(
+      'Alert when errors exceed threshold.'
+    );
+  });
+
+  it('renders both description and tags when both are present', () => {
+    const rule = {
+      ...baseRule,
+      metadata: {
+        name: 'My Rule',
+        description: 'Some description',
+        tags: ['prod', 'infra'],
+      },
+    } as RuleApiResponse;
+    wrap(<RuleHeaderDescription />, rule);
+    expect(screen.getByTestId('ruleDescription')).toBeInTheDocument();
+    expect(screen.getByTestId('ruleTags')).toBeInTheDocument();
+  });
+
+  it('returns null when tags are empty and no description', () => {
+    const { container } = wrap(<RuleHeaderDescription />, {
       ...baseRule,
       metadata: { name: 'No Tags' },
     } as RuleApiResponse);
     expect(container.innerHTML).toBe('');
   });
 
-  it('returns null when tags are undefined', () => {
+  it('returns null when tags are undefined and no description', () => {
     const rule = { ...baseRule, metadata: { name: 'No Tags' } } as RuleApiResponse;
-    const { container } = wrap(<RuleTags />, rule);
+    const { container } = wrap(<RuleHeaderDescription />, rule);
     expect(container.innerHTML).toBe('');
+  });
+
+  it('renders description but not tags when showTags is false', () => {
+    const rule = {
+      ...baseRule,
+      metadata: {
+        name: 'My Rule',
+        description: 'Alert when errors exceed threshold.',
+        tags: ['prod', 'infra'],
+      },
+    } as RuleApiResponse;
+    wrap(<RuleHeaderDescription showTags={false} />, rule);
+    expect(screen.getByTestId('ruleDescription')).toHaveTextContent(
+      'Alert when errors exceed threshold.'
+    );
+    expect(screen.queryByTestId('ruleTags')).not.toBeInTheDocument();
+  });
+
+  it('renders both description and tags by default', () => {
+    const rule = {
+      ...baseRule,
+      metadata: {
+        name: 'My Rule',
+        description: 'Some description',
+        tags: ['prod', 'infra'],
+      },
+    } as RuleApiResponse;
+    wrap(<RuleHeaderDescription />, rule);
+    expect(screen.getByTestId('ruleDescription')).toBeInTheDocument();
+    expect(screen.getByTestId('ruleTags')).toBeInTheDocument();
   });
 });
 

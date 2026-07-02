@@ -42,8 +42,7 @@ jest.mock('../../components/rule_details/rule_context', () => ({
 }));
 
 jest.mock('../../components/rule_details/rule_header_description', () => ({
-  RuleDescription: () => <div data-test-subj="mockRuleDescription" />,
-  RuleTags: () => <div data-test-subj="mockRuleTags" />,
+  RuleHeaderDescription: () => <div data-test-subj="mockRuleHeaderDescription" />,
 }));
 
 jest.mock('../../components/rule_details/sidebar/rule_sidebar', () => ({
@@ -194,8 +193,7 @@ describe('createRuleAttachmentDefinition', () => {
       );
 
       expect(getByTestId('mockRuleSidebar')).toBeDefined();
-      expect(getByTestId('mockRuleDescription')).toBeDefined();
-      expect(getByTestId('mockRuleTags')).toBeDefined();
+      expect(getByTestId('mockRuleHeaderDescription')).toBeDefined();
     });
 
     it('registers Create rule button for unsaved attachment', () => {

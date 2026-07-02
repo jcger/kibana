@@ -41,8 +41,7 @@ jest.mock('../../../pages/rules_list_page/rule_actions_menu', () => ({
 }));
 
 jest.mock('../../rule_details/rule_header_description', () => ({
-  RuleDescription: () => <div data-test-subj="mockRuleDescription" />,
-  RuleTags: () => <div data-test-subj="mockRuleTags" />,
+  RuleHeaderDescription: () => <div data-test-subj="mockRuleHeaderDescription" />,
   RuleTitleWithBadges: ({ variant }: { variant?: string }) => (
     <span data-test-subj="mockRuleTitleWithBadges" data-variant={variant}>
       Rule title
@@ -98,8 +97,7 @@ describe('RuleSummaryFlyout', () => {
       'data-variant',
       'summary'
     );
-    expect(screen.getByTestId('mockRuleDescription')).toBeInTheDocument();
-    expect(screen.getByTestId('mockRuleTags')).toBeInTheDocument();
+    expect(screen.getByTestId('mockRuleHeaderDescription')).toBeInTheDocument();
     expect(screen.getByTestId('mockRuleConditions')).toHaveAttribute('data-variant', 'summary');
     expect(screen.getByTestId('mockRuleMetadata')).toBeInTheDocument();
   });
