@@ -14,7 +14,12 @@ import { coreMock } from '@kbn/core/public/mocks';
 import { actionTypeRegistryMock } from '../../../action_type_registry.mock';
 import { useKibana } from '../../../../common/lib/kibana';
 import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
-import type { ActionConnector, GenericValidationResult } from '../../../../types';
+import type {
+  ActionConnector,
+  ActionType,
+  ActionTypeIndex,
+  GenericValidationResult,
+} from '../../../../types';
 import { EditConnectorTabs } from '../../../../types';
 import { times } from 'lodash';
 import { useHistory, useParams } from 'react-router-dom';
@@ -46,7 +51,6 @@ jest.mock('@kbn/response-ops-oauth-hooks', () => ({
 }));
 jest.mock('../../../lib/action_connector_api', () => ({
   loadAllActions: jest.fn(),
-  loadActionTypes: jest.fn(),
 }));
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -71,12 +75,22 @@ jest.mock('@kbn/response-ops-oauth-hooks', () => ({
 const useKibanaMock = useKibana as jest.Mocked<typeof useKibana>;
 const actionTypeRegistry = actionTypeRegistryMock.create();
 const mocks = coreMock.createSetup();
-const { loadActionTypes } = jest.requireMock('../../../lib/action_connector_api');
+
+function buildActionTypesIndex(
+  actionTypes: Array<Partial<ActionType> & Pick<ActionType, 'id' | 'name'>>
+): ActionTypeIndex {
+  return actionTypes.reduce<ActionTypeIndex>((index, actionType) => {
+    index[actionType.id] = actionType as ActionType;
+    return index;
+  }, {});
+}
 
 describe('actions_connectors_list', () => {
   describe('component empty', () => {
+    let actionTypesIndex: ActionTypeIndex;
+
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         { id: 'test', name: 'Test', supportedFeatureIds: ['alerting'] },
         { id: 'test2', name: 'Test2', supportedFeatureIds: ['alerting'] },
       ]);
@@ -103,6 +117,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={[]}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -124,6 +140,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={[]}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -178,9 +196,10 @@ describe('actions_connectors_list', () => {
       }),
     ];
     let mockedEditItem: jest.Mock;
+    let actionTypesIndex: ActionTypeIndex;
 
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         { id: 'test', name: 'Test', enabled: true, supportedFeatureIds: ['alerting'] },
         { id: 'test2', name: 'Test2', enabled: true, supportedFeatureIds: ['alerting', 'cases'] },
         {
@@ -229,6 +248,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={mockedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -246,6 +267,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={mockedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -263,6 +286,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={mockedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -295,6 +320,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actionsWithAuth}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -325,6 +352,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actionsWithAuth}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -345,6 +374,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={mockedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -379,6 +410,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={pagedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -406,6 +439,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={mockedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -438,6 +473,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={mockedActions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -452,8 +489,10 @@ describe('actions_connectors_list', () => {
   });
 
   describe('component empty with show only capability', () => {
+    let actionTypesIndex: ActionTypeIndex;
+
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         { id: 'test', name: 'Test', supportedFeatureIds: ['alerting'] },
         { id: 'test2', name: 'Test2', supportedFeatureIds: ['alerting'] },
       ]);
@@ -479,6 +518,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={[]}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -488,8 +529,10 @@ describe('actions_connectors_list', () => {
   });
 
   describe('with show only capability', () => {
+    let actionTypesIndex: ActionTypeIndex;
+
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         { id: 'test', name: 'Test', supportedFeatureIds: ['alerting'] },
         { id: 'test2', name: 'Test2', supportedFeatureIds: ['alerting'] },
       ]);
@@ -534,6 +577,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -545,8 +590,10 @@ describe('actions_connectors_list', () => {
   });
 
   describe('component with disabled items', () => {
+    let actionTypesIndex: ActionTypeIndex;
+
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         {
           id: 'test',
           name: 'Test',
@@ -592,6 +639,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -614,8 +663,10 @@ describe('actions_connectors_list', () => {
   });
 
   describe('component with deprecated connectors', () => {
+    let actionTypesIndex: ActionTypeIndex;
+
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         {
           id: 'test',
           name: '.servicenow',
@@ -701,13 +752,14 @@ describe('actions_connectors_list', () => {
               isLoadingActions={false}
               actions={actions}
               setActions={() => {}}
+              actionTypesIndex={actionTypesIndex}
+              isLoadingActionTypes={false}
             />
           </IntlProvider>
         </ThemeProvider>
       );
 
       expect(await screen.findByTestId('actionsTable')).toBeInTheDocument();
-      expect(loadActionTypes).toHaveBeenCalled();
       expect(screen.getAllByTestId('connectorsTableCell-actionType')).toHaveLength(2);
       expect(screen.getByTestId('edit1')).toBeInTheDocument();
       expect(screen.getByTestId('edit2')).toBeInTheDocument();
@@ -720,8 +772,10 @@ describe('actions_connectors_list', () => {
   });
 
   describe('component with spec connectors', () => {
+    let actionTypesIndex: ActionTypeIndex;
+
     beforeEach(async () => {
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         {
           id: 'spec.connector',
           name: 'Spec Connector',
@@ -765,6 +819,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -776,8 +832,7 @@ describe('actions_connectors_list', () => {
     });
 
     it('should enable the test play button for testable spec connectors', async () => {
-      loadActionTypes.mockReset();
-      loadActionTypes.mockResolvedValueOnce([
+      const testableActionTypesIndex = buildActionTypesIndex([
         {
           id: 'spec.connector',
           name: 'Spec Connector',
@@ -809,6 +864,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={testableActionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -823,6 +880,7 @@ describe('actions_connectors_list', () => {
     let useConnectorOAuthConnect: jest.Mock;
     let useConnectorOAuthDisconnect: jest.Mock;
     let useConnectorContext: jest.Mock;
+    let actionTypesIndex: ActionTypeIndex;
 
     beforeEach(async () => {
       useConnectorOAuthConnect = jest.requireMock('@kbn/response-ops-oauth-hooks')
@@ -850,7 +908,7 @@ describe('actions_connectors_list', () => {
         isDisconnecting: false,
       });
 
-      loadActionTypes.mockResolvedValueOnce([
+      actionTypesIndex = buildActionTypesIndex([
         {
           id: 'google-drive',
           name: 'Google Drive',
@@ -908,6 +966,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -938,6 +998,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -975,6 +1037,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -1019,6 +1083,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -1060,6 +1126,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -1101,6 +1169,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={initialActions}
             setActions={setActions}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -1141,6 +1211,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -1171,6 +1243,8 @@ describe('actions_connectors_list', () => {
             isLoadingActions={false}
             actions={actions}
             setActions={() => {}}
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
@@ -1203,6 +1277,8 @@ describe('actions_connectors_list', () => {
             actions={actions}
             setActions={() => {}}
             connectorAuthStatusError="Auth status endpoint failed"
+            actionTypesIndex={actionTypesIndex}
+            isLoadingActionTypes={false}
           />
         </IntlProvider>
       );
