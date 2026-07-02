@@ -139,9 +139,9 @@ export const RuleDetailPage: React.FunctionComponent = () => {
   const { flyout, openEditFlyout, openCloneFlyout } = useComposeDiscoverFlyout();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = React.useState(false);
 
-  const showDeleteConfirmationModal = () => {
+  const showDeleteConfirmationModal = React.useCallback(() => {
     setShowDeleteConfirmation(true);
-  };
+  }, []);
 
   const handleRuleDelete = () => {
     setShowDeleteConfirmation(false);
@@ -155,9 +155,35 @@ export const RuleDetailPage: React.FunctionComponent = () => {
     );
   };
 
-  const handleToggleEnabled = (enabled: boolean) => {
-    toggleRuleEnabled({ id: rule.id, enabled });
-  };
+  const handleToggleEnabled = React.useCallback(
+    (enabled: boolean) => {
+      toggleRuleEnabled({ id: rule.id, enabled });
+    },
+    [toggleRuleEnabled, rule.id]
+  );
+
+  const onEdit = React.useCallback(() => {
+    openEditFlyout(rule);
+  }, [openEditFlyout, rule]);
+
+  const onClone = React.useCallback(() => {
+    openCloneFlyout(rule);
+  }, [openCloneFlyout, rule]);
+
+  const badges = React.useMemo(() => getRuleDetailBadges(rule), [rule]);
+
+  const menu = React.useMemo(
+    () =>
+      getRuleDetailMenu({
+        rule,
+        onEdit,
+        onToggleEnabled: handleToggleEnabled,
+        isToggleLoading: isToggling,
+        onClone,
+        onDelete: showDeleteConfirmationModal,
+      }),
+    [rule, onEdit, handleToggleEnabled, isToggling, onClone, showDeleteConfirmationModal]
+  );
 
   return (
     <KibanaPageTemplate
@@ -180,15 +206,8 @@ export const RuleDetailPage: React.FunctionComponent = () => {
             defaultMessage: 'Rules',
           }),
         }}
-        badges={getRuleDetailBadges(rule)}
-        menu={getRuleDetailMenu({
-          rule,
-          onEdit: () => openEditFlyout(rule),
-          onToggleEnabled: handleToggleEnabled,
-          isToggleLoading: isToggling,
-          onClone: () => openCloneFlyout(rule),
-          onDelete: showDeleteConfirmationModal,
-        })}
+        badges={badges}
+        menu={menu}
         padding="none"
         sticky={false}
       />
