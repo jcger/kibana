@@ -39,6 +39,17 @@ const getRuleDetailBadges = (rule: RuleApiResponse): AppHeaderBadge[] => {
       label: RULE_KIND_LABELS[rule.kind] ?? rule.kind,
       renderCustomBadge: () => <RuleKindBadge kind={rule.kind} />,
     },
+    {
+      label: rule.enabled
+        ? i18n.translate('xpack.alertingV2.ruleDetails.enabled', {
+            defaultMessage: 'Enabled',
+          })
+        : i18n.translate('xpack.alertingV2.ruleDetails.disabled', {
+            defaultMessage: 'Disabled',
+          }),
+      color: rule.enabled ? 'success' : 'default',
+      'data-test-subj': rule.enabled ? 'enabledBadge' : 'disabledBadge',
+    },
   ];
 
   for (const tag of rule.metadata.tags ?? []) {

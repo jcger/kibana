@@ -139,20 +139,25 @@ describe('RuleDetailPage', () => {
     expect(backButton).toHaveAttribute('href', expect.stringContaining(paths.ruleList));
   });
 
-  it('renders native kind and tag badges in the app header', () => {
+  it('renders native kind, status, and tag badges in the app header', () => {
     renderPage(baseRule);
     const kindBadge = screen.getByTestId('kindBadge');
     expect(kindBadge).toHaveTextContent('Signal');
     expect(kindBadge.querySelector('[data-euiicon-type="radar"]')).toBeInTheDocument();
+    expect(screen.getByTestId('enabledBadge')).toHaveTextContent('Enabled');
+    expect(screen.queryByTestId('disabledBadge')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText('+2'));
     expect(screen.getByText('prod')).toBeInTheDocument();
     expect(screen.getByText('infra')).toBeInTheDocument();
   });
 
-  it('renders alert kind badge with its icon', () => {
+  it('renders alert kind badge with its icon and disabled status badge', () => {
     renderPage({ ...baseRule, kind: 'alert', enabled: false });
     const kindBadge = screen.getByTestId('kindBadge');
     expect(kindBadge).toHaveTextContent('Alert');
     expect(kindBadge.querySelector('[data-euiicon-type="bell"]')).toBeInTheDocument();
+    expect(screen.getByTestId('disabledBadge')).toHaveTextContent('Disabled');
+    expect(screen.queryByTestId('enabledBadge')).not.toBeInTheDocument();
   });
 
   it('renders kind-specific tooltip on the kind badge', async () => {
@@ -180,7 +185,6 @@ describe('RuleDetailPage', () => {
     renderPage(baseRule);
     const toggle = await screen.findByTestId('ruleDetailsEnabledSwitch');
     expect(toggle).toBeChecked();
-    expect(screen.getByText('Enabled')).toBeInTheDocument();
     fireEvent.click(toggle);
     expect(mockToggleRuleEnabled).toHaveBeenCalledWith({ id: 'rule-1', enabled: false });
   });
@@ -189,7 +193,6 @@ describe('RuleDetailPage', () => {
     renderPage({ ...baseRule, enabled: false });
     const toggle = await screen.findByTestId('ruleDetailsEnabledSwitch');
     expect(toggle).not.toBeChecked();
-    expect(screen.getByText('Disabled')).toBeInTheDocument();
     fireEvent.click(toggle);
     expect(mockToggleRuleEnabled).toHaveBeenCalledWith({ id: 'rule-1', enabled: true });
   });
