@@ -78,6 +78,7 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
   const [connectorAuthStatusError, setConnectorAuthStatusError] =
     useState<ConnectorAuthStatusError>(undefined);
   const [actionTypesIndex, setActionTypesIndex] = useState<ActionTypeIndex | undefined>(undefined);
+  const [isLoadingActionTypes, setIsLoadingActionTypes] = useState<boolean>(true);
 
   const editItem = useCallback(
     (actionConnector: ActionConnector, tab: EditConnectorTabs, isFix?: boolean) => {
@@ -137,20 +138,30 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const actionTypes = await loadActionTypes({ http });
-        const index: ActionTypeIndex = {};
-        for (const actionTypeItem of actionTypes) {
-          index[actionTypeItem.id] = actionTypeItem;
-        }
-        setActionTypesIndex(index);
-      } catch {
-        // Connector types are only needed for test-tab gating; the list view loads them separately.
+  const loadActionTypesIndex = useCallback(async () => {
+    setIsLoadingActionTypes(true);
+    try {
+      const actionTypes = await loadActionTypes({ http });
+      const index: ActionTypeIndex = {};
+      for (const actionTypeItem of actionTypes) {
+        index[actionTypeItem.id] = actionTypeItem;
       }
-    })();
-  }, [http]);
+      setActionTypesIndex(index);
+    } catch {
+      toasts.addDanger({
+        title: i18n.translate(
+          'xpack.triggersActionsUI.sections.actionsConnectorsList.unableToLoadConnectorTypesMessage',
+          { defaultMessage: 'Unable to load connector types' }
+        ),
+      });
+    } finally {
+      setIsLoadingActionTypes(false);
+    }
+  }, [http, toasts]);
+
+  useEffect(() => {
+    loadActionTypesIndex();
+  }, [loadActionTypesIndex]);
 
   const tabs: Array<{
     id: Section;
@@ -213,6 +224,8 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
       loadActions,
       setActions,
       connectorAuthStatusError,
+      actionTypesIndex,
+      isLoadingActionTypes,
     });
   };
 
