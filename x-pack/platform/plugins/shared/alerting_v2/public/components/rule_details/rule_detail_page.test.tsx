@@ -6,7 +6,6 @@
  */
 
 import React from 'react';
-import moment from 'moment';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { I18nProvider } from '@kbn/i18n-react';
 import { MemoryRouter } from 'react-router-dom';
@@ -48,10 +47,6 @@ jest.mock('../../hooks/use_delete_rule', () => ({
 const mockToggleRuleEnabled = jest.fn();
 jest.mock('../../hooks/use_toggle_rule_enabled', () => ({
   useToggleRuleEnabled: () => ({ mutate: mockToggleRuleEnabled }),
-}));
-
-jest.mock('../../hooks/use_bulk_get_user_profiles', () => ({
-  useBulkGetUserProfiles: () => ({ data: undefined }),
 }));
 
 const mockOpenEditFlyout = jest.fn();
@@ -133,16 +128,6 @@ describe('RuleDetailPage', () => {
     expect(screen.queryByTestId('ruleTags')).not.toBeInTheDocument();
     expect(screen.getByTestId('ruleConditionsSection')).toBeInTheDocument();
     expect(screen.getByTestId('ruleMetadataSection')).toBeInTheDocument();
-  });
-
-  it('renders created and last-updated metadata in the app header', () => {
-    renderPage(baseRule);
-    expect(screen.getByTestId('ruleCreatedByMetadata')).toHaveTextContent(
-      `Created by alice@example.com on ${moment('2026-03-01T12:00:00.000Z').format('ll')}`
-    );
-    expect(screen.getByTestId('ruleUpdatedByMetadata')).toHaveTextContent(
-      `Last update by bob@example.com on ${moment('2026-03-04T12:00:00.000Z').format('ll')}`
-    );
   });
 
   it('renders a back link to the rules list', () => {

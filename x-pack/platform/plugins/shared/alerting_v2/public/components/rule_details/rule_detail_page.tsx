@@ -14,20 +14,17 @@ import {
   useEuiTheme,
 } from '@elastic/eui';
 import { AppHeader } from '@kbn/app-header';
-import type { AppHeaderBadge, AppHeaderMenu, AppHeaderMetadataItems } from '@kbn/app-header';
+import type { AppHeaderBadge, AppHeaderMenu } from '@kbn/app-header';
 import { RULE_KIND_LABELS } from '@kbn/alerting-v2-constants';
 import { KibanaPageTemplate } from '@kbn/shared-ux-page-kibana-template';
 import { css } from '@emotion/react';
 import { i18n } from '@kbn/i18n';
-import moment from 'moment';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
 import { useDeleteRule } from '../../hooks/use_delete_rule';
 import { useComposeDiscoverFlyout } from '../../hooks/use_compose_discover_flyout';
 import { useToggleRuleEnabled } from '../../hooks/use_toggle_rule_enabled';
-import { useBulkGetUserProfiles } from '../../hooks/use_bulk_get_user_profiles';
-import { resolveDisplayName } from '../../utils/resolve_display_name';
 import { paths } from '../../constants';
 import { DeleteConfirmationModal } from '../rule/modals/delete_confirmation_modal';
 import { RuleHeaderDescription, RuleKindBadge } from './rule_header_description';
@@ -60,45 +57,6 @@ const getRuleDetailBadges = (rule: RuleApiResponse): AppHeaderBadge[] => {
   }
 
   return badges;
-};
-
-const getRuleDetailMetadata = ({
-  createdByName,
-  createdAt,
-  updatedByName,
-  updatedAt,
-  formatDate,
-}: {
-  createdByName: string;
-  createdAt: string;
-  updatedByName: string;
-  updatedAt: string;
-  formatDate: (isoDate: string) => string;
-}): AppHeaderMetadataItems => {
-  const userOnDate = (name: string, isoDate: string) =>
-    i18n.translate('xpack.alertingV2.ruleDetails.header.userOnDate', {
-      defaultMessage: '{name} on {date}',
-      values: { name, date: formatDate(isoDate) },
-    });
-
-  return [
-    {
-      type: 'text',
-      label: i18n.translate('xpack.alertingV2.ruleDetails.header.createdByLabel', {
-        defaultMessage: 'Created by',
-      }),
-      value: userOnDate(createdByName, createdAt),
-      'data-test-subj': 'ruleCreatedByMetadata',
-    },
-    {
-      type: 'text',
-      label: i18n.translate('xpack.alertingV2.ruleDetails.header.lastUpdateByLabel', {
-        defaultMessage: 'Last update by',
-      }),
-      value: userOnDate(updatedByName, updatedAt),
-      'data-test-subj': 'ruleUpdatedByMetadata',
-    },
-  ];
 };
 
 const getRuleDetailMenu = ({
@@ -177,20 +135,6 @@ export const RuleDetailPage: React.FunctionComponent = () => {
   const { flyout, openEditFlyout, openCloneFlyout } = useComposeDiscoverFlyout();
   const [showDeleteConfirmation, setShowDeleteConfirmation] = React.useState(false);
 
-  const profileUids = React.useMemo(
-    () => [rule.createdBy, rule.updatedBy].filter((uid): uid is string => Boolean(uid)),
-    [rule.createdBy, rule.updatedBy]
-  );
-  const { data: profileByUid } = useBulkGetUserProfiles({ uids: profileUids });
-
-  const headerMetadata = getRuleDetailMetadata({
-    createdByName: resolveDisplayName(rule.createdBy, profileByUid),
-    createdAt: rule.createdAt,
-    updatedByName: resolveDisplayName(rule.updatedBy, profileByUid),
-    updatedAt: rule.updatedAt,
-    formatDate: (isoDate) => moment(isoDate).format('ll'),
-  });
-
   const showDeleteConfirmationModal = () => {
     setShowDeleteConfirmation(true);
   };
@@ -236,7 +180,6 @@ export const RuleDetailPage: React.FunctionComponent = () => {
           }),
         }}
         badges={getRuleDetailBadges(rule)}
-        metadata={headerMetadata}
         menu={getRuleDetailMenu({
           rule,
           onEdit: () => openEditFlyout(rule),
