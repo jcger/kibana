@@ -61,6 +61,18 @@ jest.mock('../../hooks/use_compose_discover_flyout', () => ({
   }),
 }));
 
+const mockAppHeaderRender = jest.fn();
+jest.mock('@kbn/app-header', () => {
+  const actual = jest.requireActual('@kbn/app-header');
+  return {
+    ...actual,
+    AppHeader: (props: React.ComponentProps<typeof actual.AppHeader>) => {
+      mockAppHeaderRender(props.menu);
+      return <actual.AppHeader {...props} />;
+    },
+  };
+});
+
 const mockRuleKindBadgeRender = jest.fn();
 jest.mock('./rule_header_description', () => {
   const actual = jest.requireActual('./rule_header_description');
@@ -68,7 +80,7 @@ jest.mock('./rule_header_description', () => {
     ...actual,
     RuleKindBadge: (props: { kind: string }) => {
       mockRuleKindBadgeRender();
-      return actual.RuleKindBadge(props);
+      return <actual.RuleKindBadge {...props} />;
     },
   };
 });
@@ -258,6 +270,8 @@ describe('RuleDetailPage', () => {
   it('does not re-render the header badges when the delete modal opens and closes', async () => {
     renderPage(baseRule);
     const renderCountBeforeToggle = mockRuleKindBadgeRender.mock.calls.length;
+    const menuBeforeToggle =
+      mockAppHeaderRender.mock.calls[mockAppHeaderRender.mock.calls.length - 1][0];
 
     await openAppMenuOverflow();
     fireEvent.click(await screen.findByTestId('ruleDetailsDeleteButton'));
@@ -266,5 +280,8 @@ describe('RuleDetailPage', () => {
     expect(screen.queryByTestId('deleteRuleConfirmationModal')).not.toBeInTheDocument();
 
     expect(mockRuleKindBadgeRender.mock.calls.length).toBe(renderCountBeforeToggle);
+    const menuAfterToggle =
+      mockAppHeaderRender.mock.calls[mockAppHeaderRender.mock.calls.length - 1][0];
+    expect(menuAfterToggle).toBe(menuBeforeToggle);
   });
 });
