@@ -185,15 +185,19 @@ describe('ExecutionHistoryPage', () => {
     expect(screen.getByTestId('alertingV2ExperimentalBadge')).toBeInTheDocument();
   });
 
-  it('renders the denormalization info tooltip next to the Policies tab', () => {
+  it('renders the denormalization info tooltip next to the Policies tab', async () => {
     mockFetchResult();
     renderPage();
 
     const policiesTab = screen.getByTestId('executionHistoryPoliciesTab');
-    expect(policiesTab).toBeInTheDocument();
+    const infoIcon = policiesTab.querySelector('[data-euiicon-type="info"]');
+    expect(infoIcon).not.toBeNull();
+
+    await userEvent.hover(infoIcon!);
+
     expect(
-      policiesTab.querySelector('[data-euiicon-type="info"], .euiIcon[data-type="info"]')
-    ).toBeTruthy();
+      await screen.findByText(/A single event may show as multiple rows/i)
+    ).toBeInTheDocument();
   });
 
   describe('Rules tab (default)', () => {
