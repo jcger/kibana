@@ -16,13 +16,13 @@ import {
   EuiPanel,
   EuiSpacer,
   EuiSplitPanel,
-  EuiText,
   EuiTitle,
   logicalCSS,
   useEuiMinBreakpoint,
   useEuiMaxBreakpoint,
   useEuiTheme,
 } from '@elastic/eui';
+import type { AppHeaderMetadataItems } from '@kbn/app-header';
 import { AppHeader } from '@kbn/app-header';
 import { useQueryClient } from '@kbn/react-query';
 import { getBreachEsqlQuery } from '@kbn/alerting-v2-schemas';
@@ -359,6 +359,8 @@ export function EpisodeDetailsPage() {
     </EuiSplitPanel.Inner>
   );
 
+  const metadata: AppHeaderMetadataItems = [{ type: 'text', label: ruleDescription || '' }];
+
   return (
     <KibanaPageTemplate
       paddingSize="none"
@@ -375,6 +377,7 @@ export function EpisodeDetailsPage() {
       <AppHeader
         sticky={false}
         title={episodeBreadcrumbTitle}
+        metadata={metadata}
         back={{
           href: episodesListHref,
           label: i18n.EPISODES_LIST_BACK_LABEL,
@@ -384,6 +387,7 @@ export function EpisodeDetailsPage() {
         tabs={headerTabs}
         padding={{ bleed: 'l' }}
       />
+      <EuiSpacer size="xs" />
       {isLoading ? (
         <KibanaPageTemplate.Section grow>
           <CenterJustifiedSpinner />
