@@ -52,7 +52,10 @@ import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
 import { getDiscoverHrefForRuleAndEpisodeTimestamp } from '../../utils/discover_href_for_episode';
 import { getEpisodeHeaderBadges } from './utils/get_episode_header_badges';
 import { getEpisodeHeaderMenu } from './utils/get_episode_header_menu';
-import { getEpisodeHeaderTabs } from './utils/get_episode_header_tabs';
+import {
+  getEpisodeHeaderTabs,
+  type EpisodeDetailsMainPanel,
+} from './utils/get_episode_header_tabs';
 import * as i18n from './translations';
 
 interface EpisodeRouteParams {
@@ -60,8 +63,6 @@ interface EpisodeRouteParams {
 }
 
 type EpisodeDetailsSidebarPanel = 'episode_details' | 'runbook';
-
-type EpisodeDetailsMainPanel = 'overview' | 'metadata';
 
 export function EpisodeDetailsPage() {
   const { euiTheme } = useEuiTheme();
