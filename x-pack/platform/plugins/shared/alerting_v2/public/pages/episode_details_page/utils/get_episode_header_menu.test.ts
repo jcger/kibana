@@ -48,7 +48,7 @@ describe('getEpisodeHeaderMenu', () => {
       onSuccess,
     });
 
-    expect(menu.items).toHaveLength(3);
+    expect(menu.items).toHaveLength(2);
     expect(menu.items?.[0]).toMatchObject({
       id: 'ALERTING_V2_ACK_EPISODE',
       order: 10,
@@ -62,14 +62,13 @@ describe('getEpisodeHeaderMenu', () => {
       testId: 'episodeActionsBar-overflow-ALERTING_V2_EDIT_EPISODE_TAGS',
       separator: 'above',
     });
-    expect(menu.items?.[2]).toMatchObject({
+
+    // Discover is rendered as the dedicated primaryActionItem, not among the ordered items, so
+    // it always sits to the far right of the header, after the overflow trigger.
+    expect(menu.primaryActionItem).toMatchObject({
       id: 'ALERTING_V2_OPEN_EPISODE_IN_DISCOVER',
-      order: 50,
-      overflow: true,
-      testId: 'episodeActionsBar-overflow-ALERTING_V2_OPEN_EPISODE_IN_DISCOVER',
+      testId: 'episodeActionsBar-primaryAction-ALERTING_V2_OPEN_EPISODE_IN_DISCOVER',
     });
-    // Only the first secondary item carries the divider.
-    expect(menu.items?.[2]).not.toHaveProperty('separator');
   });
 
   it('invokes execute with the episode and onSuccess callback', async () => {
@@ -106,6 +105,27 @@ describe('getEpisodeHeaderMenu', () => {
 
     expect(execute).toHaveBeenCalledWith({
       episodes: [],
+      onSuccess,
+    });
+  });
+
+  it('invokes execute for the primary action item', async () => {
+    const execute = jest.fn(async () => {});
+    const onSuccess = jest.fn();
+    const actions = [
+      createAction({ id: 'ALERTING_V2_OPEN_EPISODE_IN_DISCOVER', order: 50, execute }),
+    ];
+
+    const menu = getEpisodeHeaderMenu({
+      actions,
+      episode: mockEpisode,
+      onSuccess,
+    });
+
+    await menu.primaryActionItem?.run?.();
+
+    expect(execute).toHaveBeenCalledWith({
+      episodes: [mockEpisode],
       onSuccess,
     });
   });

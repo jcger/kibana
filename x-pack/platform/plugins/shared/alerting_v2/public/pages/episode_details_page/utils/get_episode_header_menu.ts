@@ -18,8 +18,11 @@ export interface EpisodeHeaderMenuArgs {
 const SECONDARY_ACTION_IDS = new Set([
   'ALERTING_V2_EDIT_EPISODE_TAGS',
   'ALERTING_V2_EDIT_EPISODE_ASSIGNEE',
-  'ALERTING_V2_OPEN_EPISODE_IN_DISCOVER',
 ]);
+
+// Rendered as the app menu's dedicated primaryActionItem, which always sits to the far right of
+// the header (after the overflow trigger) instead of among the ordered items.
+const PRIMARY_ACTION_ITEM_ID = 'ALERTING_V2_OPEN_EPISODE_IN_DISCOVER';
 
 export const getEpisodeHeaderMenu = ({
   actions,
@@ -28,32 +31,49 @@ export const getEpisodeHeaderMenu = ({
 }: EpisodeHeaderMenuArgs): AppHeaderMenu => {
   let isFirstSecondary = true;
 
-  return {
-    items: actions.map((action) => {
-      const isSecondary = SECONDARY_ACTION_IDS.has(action.id);
-      // Divide the primary actions from the secondary group with a single separator above the
-      // first secondary item in the overflow popover.
-      const separator = isSecondary && isFirstSecondary ? ('above' as const) : undefined;
-      if (isSecondary) {
-        isFirstSecondary = false;
-      }
+  const runAction = (action: EpisodeAction) => () =>
+    action.execute({
+      episodes: episode ? [episode] : [],
+      onSuccess,
+    });
 
-      return {
-        id: action.id,
-        label: action.displayName,
-        iconType: action.iconType,
-        run: () =>
-          action.execute({
-            episodes: episode ? [episode] : [],
-            onSuccess,
-          }),
-        testId: isSecondary
-          ? `episodeActionsBar-overflow-${action.id}`
-          : `episodeActionsBar-primary-${action.id}`,
-        order: action.order,
-        overflow: isSecondary,
-        ...(separator ? { separator } : {}),
-      };
-    }),
+  const primaryAction = actions.find((action) => action.id === PRIMARY_ACTION_ITEM_ID);
+
+  return {
+    items: actions
+      .filter((action) => action.id !== PRIMARY_ACTION_ITEM_ID)
+      .map((action) => {
+        const isSecondary = SECONDARY_ACTION_IDS.has(action.id);
+        // Divide the primary actions from the secondary group with a single separator above the
+        // first secondary item in the overflow popover.
+        const separator = isSecondary && isFirstSecondary ? ('above' as const) : undefined;
+        if (isSecondary) {
+          isFirstSecondary = false;
+        }
+
+        return {
+          id: action.id,
+          label: action.displayName,
+          iconType: action.iconType,
+          run: runAction(action),
+          testId: isSecondary
+            ? `episodeActionsBar-overflow-${action.id}`
+            : `episodeActionsBar-primary-${action.id}`,
+          order: action.order,
+          overflow: isSecondary,
+          ...(separator ? { separator } : {}),
+        };
+      }),
+    ...(primaryAction
+      ? {
+          primaryActionItem: {
+            id: primaryAction.id,
+            label: primaryAction.displayName,
+            iconType: primaryAction.iconType,
+            run: runAction(primaryAction),
+            testId: `episodeActionsBar-primaryAction-${primaryAction.id}`,
+          },
+        }
+      : {}),
   };
 };
