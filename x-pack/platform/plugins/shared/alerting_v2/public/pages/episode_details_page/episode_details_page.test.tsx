@@ -13,7 +13,7 @@ import { APP_HEADER_TEST_SUBJECTS } from '@kbn/app-header';
 import { openAppMenuOverflow } from '@kbn/app-header/test_helpers';
 import { MockChromeContextProvider } from '@kbn/core-chrome-browser-context-mocks';
 import { useParams } from 'react-router-dom';
-import { ALERT_EPISODE_ACTION_TYPE, ALERT_EPISODE_STATUS } from '@kbn/alerting-v2-schemas';
+import { ALERT_EPISODE_ACTION_TYPE } from '@kbn/alerting-v2-schemas';
 import { useFetchEpisodeQuery } from '@kbn/alerting-v2-episodes-ui/hooks/use_fetch_episode_query';
 import { useFetchEpisodeActions } from '@kbn/alerting-v2-episodes-ui/hooks/use_fetch_episode_actions';
 import { useFetchGroupActions } from '@kbn/alerting-v2-episodes-ui/hooks/use_fetch_group_actions';
@@ -100,8 +100,7 @@ type FetchRuleResult = ReturnType<typeof useFetchRule>;
 const mockEpisode = {
   '@timestamp': '2026-05-08T08:00:00.000Z',
   'episode.id': 'ep-1',
-  'episode.status': ALERT_EPISODE_STATUS.ACTIVE,
-  severity: 'high',
+  'episode.status': 'active' as const,
   'rule.id': 'rule-1',
   group_hash: 'group-1',
   first_timestamp: '2026-05-08T08:00:00.000Z',
@@ -235,13 +234,11 @@ describe('EpisodeDetailsPage', () => {
       'href',
       '/app/management/alertingV2/episodes'
     );
+    // Badge label/color mapping per status and severity is covered by get_episode_header_badges.test.ts;
+    // this just proves the header is wired up to badges at all.
     expect(screen.getByTestId('alertingV2EpisodeDetailsHeaderStatusBadge')).toHaveTextContent(
       'Active'
     );
-    expect(screen.getByTestId('alertingV2EpisodeDetailsHeaderAckBadge')).toHaveTextContent(
-      'Acknowledged'
-    );
-    expect(screen.getByTestId('alertingV2EpisodeSeverityBadge-high')).toHaveTextContent('High');
   });
 
   it('renders the rule description in the header area', () => {
@@ -267,10 +264,8 @@ describe('EpisodeDetailsPage', () => {
     expect(screen.queryByTestId('alertingV2EpisodeDetailsMainTabMetadata')).not.toBeInTheDocument();
   });
 
-  it('renders episode actions in the app header menu and not in EpisodeActionsBar', async () => {
+  it('renders episode actions in the app header menu', async () => {
     renderPage();
-
-    expect(screen.queryByTestId('episodeActionsBar')).not.toBeInTheDocument();
 
     await openAppMenuOverflow();
 

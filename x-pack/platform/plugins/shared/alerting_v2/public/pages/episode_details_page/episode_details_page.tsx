@@ -366,10 +366,6 @@ export function EpisodeDetailsPage() {
       minHeight={0}
       grow={false}
       css={css`
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-
         ${largeMediaQuery} {
           block-size: calc(var(--kbn-application--content-height, 100vh) - ${euiTheme.size.l} * 2);
         }
