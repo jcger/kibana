@@ -109,6 +109,34 @@ describe('getEpisodeHeaderMenu', () => {
     });
   });
 
+  it('overflows resolve and unresolve like the removed EpisodeActionsBar did', () => {
+    const actions = [
+      createAction({ id: 'ALERTING_V2_ACK_EPISODE', order: 10 }),
+      createAction({ id: 'ALERTING_V2_RESOLVE_EPISODE', order: 20 }),
+      createAction({ id: 'ALERTING_V2_UNRESOLVE_EPISODE', order: 21 }),
+    ];
+    const onSuccess = jest.fn();
+
+    const menu = getEpisodeHeaderMenu({
+      actions,
+      episode: mockEpisode,
+      onSuccess,
+    });
+
+    expect(menu.items?.[0]).toMatchObject({ id: 'ALERTING_V2_ACK_EPISODE', overflow: false });
+    expect(menu.items?.[1]).toMatchObject({
+      id: 'ALERTING_V2_RESOLVE_EPISODE',
+      overflow: true,
+      testId: 'episodeActionsBar-overflow-ALERTING_V2_RESOLVE_EPISODE',
+      separator: 'above',
+    });
+    expect(menu.items?.[2]).toMatchObject({
+      id: 'ALERTING_V2_UNRESOLVE_EPISODE',
+      overflow: true,
+      testId: 'episodeActionsBar-overflow-ALERTING_V2_UNRESOLVE_EPISODE',
+    });
+  });
+
   it('invokes execute for the primary action item', async () => {
     const execute = jest.fn(async () => {});
     const onSuccess = jest.fn();
