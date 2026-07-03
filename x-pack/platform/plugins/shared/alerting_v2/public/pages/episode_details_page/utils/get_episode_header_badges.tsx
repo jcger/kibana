@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import type { EuiBadgeProps } from '@elastic/eui';
 import { EuiBadge, EuiToolTip } from '@elastic/eui';
 import type { AppHeaderBadge } from '@kbn/app-header';
 import {
@@ -108,6 +109,15 @@ const renderIconBadge =
       </EuiToolTip>
     );
 
+const renderFilledBadge =
+  (color: EuiBadgeProps['color'], dataTestSubj: string) =>
+  ({ badgeText }: { badgeText: string }) =>
+    (
+      <EuiBadge color={color} fill data-test-subj={dataTestSubj}>
+        {badgeText}
+      </EuiBadge>
+    );
+
 export const getEpisodeHeaderBadges = ({
   status,
   severity,
@@ -157,10 +167,15 @@ export const getEpisodeHeaderBadges = ({
 
   if (isSupportedEpisodeSeverity(severity)) {
     const normalized = normalizeEpisodeSeverity(severity);
+    const severityColor = getSeverityBadgeColor(severity);
     badges.push({
       label: getEpisodeSeverityLabel(normalized),
-      color: getSeverityBadgeColor(severity),
-      'data-test-subj': `alertingV2EpisodeSeverityBadge-${normalized}`,
+      color: severityColor,
+      // `renderCustomBadge` is used here to ensure the badge is filled with the appropriate severity color, as native AppHeader badges do not support "fill" styling.
+      renderCustomBadge: renderFilledBadge(
+        severityColor,
+        `alertingV2EpisodeSeverityBadge-${normalized}`
+      ),
     });
   }
 

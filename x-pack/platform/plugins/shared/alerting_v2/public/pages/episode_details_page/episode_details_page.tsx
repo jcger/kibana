@@ -407,20 +407,6 @@ export function EpisodeDetailsPage() {
             `,
           }}
         >
-          {ruleDescription ? (
-            <EuiText
-              size="s"
-              color="subdued"
-              data-test-subj="alertingV2EpisodeDetailsHeaderDescription"
-              css={css`
-                flex-grow: 0;
-                ${logicalCSS('padding-horizontal', euiTheme.size.l)}
-                ${logicalCSS('padding-top', euiTheme.size.l)}
-              `}
-            >
-              {ruleDescription}
-            </EuiText>
-          ) : null}
           <EuiSplitPanel.Outer
             direction="row"
             hasBorder={false}
