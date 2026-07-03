@@ -13,11 +13,13 @@ export async function createOpenAIConnector({
   requestHeader = {},
   apiKeyHeader = {},
   proxy,
+  name = 'myConnector',
 }: {
   supertest: SuperTest.Agent;
   requestHeader?: Record<string, string>;
   apiKeyHeader?: Record<string, string>;
   proxy: LlmProxy;
+  name?: string;
 }): Promise<() => Promise<void>> {
   const config = {
     apiProvider: 'OpenAI',
@@ -31,7 +33,7 @@ export async function createOpenAIConnector({
       .set(requestHeader)
       .set(apiKeyHeader)
       .send({
-        name: 'myConnector',
+        name,
         connector_type_id: '.gen-ai',
         config,
         secrets: {

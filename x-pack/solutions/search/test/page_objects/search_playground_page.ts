@@ -176,11 +176,12 @@ export function SearchPlaygroundPageProvider({ getService }: FtrProviderContext)
         await testSubjects.existOrFail('createIndexButton');
         await testSubjects.existOrFail('uploadFileButton');
       },
-      async expectPlaygroundLLMConnectorOptionsExists() {
+      async expectDeprecatedLLMConnectorCardsMissing() {
         await testSubjects.existOrFail('create-connector-flyout');
-        await testSubjects.existOrFail('.gemini-card');
-        await testSubjects.existOrFail('.bedrock-card');
-        await testSubjects.existOrFail('.gen-ai-card');
+        await testSubjects.missingOrFail('.gemini-card');
+        await testSubjects.missingOrFail('.bedrock-card');
+        await testSubjects.missingOrFail('.gen-ai-card');
+        await testSubjects.missingOrFail('.inference-card');
       },
 
       async expectPlaygroundStartChatPageIndexCalloutExists() {
@@ -227,29 +228,6 @@ export function SearchPlaygroundPageProvider({ getService }: FtrProviderContext)
       },
       async createConnectorFlyoutIsVisible() {
         await testSubjects.existOrFail('create-connector-flyout');
-        await testSubjects.existOrFail('.inference-card');
-        await testSubjects.existOrFail('.bedrock-card');
-        await testSubjects.existOrFail('.gemini-card');
-        await testSubjects.existOrFail('.gen-ai-card');
-      },
-      async createOpenAiConnector(connectorName: string) {
-        await testSubjects.existOrFail('.gen-ai-card');
-        await testSubjects.click('.gen-ai-card');
-
-        await testSubjects.existOrFail('create-connector-flyout-header');
-        const headerValue = await testSubjects.getVisibleText('create-connector-flyout-header');
-        expect(headerValue).to.contain('OpenAI connector');
-        await testSubjects.existOrFail('nameInput');
-        await testSubjects.setValue('nameInput', connectorName);
-
-        const openaiProvider = await testSubjects.getVisibleText('config.apiProvider-select');
-        expect(openaiProvider).to.contain('OpenAI');
-
-        await testSubjects.existOrFail('secrets.apiKey-input');
-        await testSubjects.setValue('secrets.apiKey-input', 'apiKey');
-        await testSubjects.existOrFail('create-connector-flyout-save-btn');
-        await testSubjects.click('create-connector-flyout-save-btn');
-        await testSubjects.existOrFail('euiToastHeader__title');
       },
       async clickCreateIndex() {
         await testSubjects.existOrFail('createIndexButton');
