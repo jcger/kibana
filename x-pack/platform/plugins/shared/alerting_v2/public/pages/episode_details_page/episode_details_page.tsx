@@ -56,6 +56,7 @@ import {
   getEpisodeHeaderTabs,
   type EpisodeDetailsMainPanel,
 } from './utils/get_episode_header_tabs';
+import { EpisodeTimelineTab } from './components/episode_timeline_tab';
 import * as i18n from './translations';
 
 interface EpisodeRouteParams {
@@ -429,6 +430,8 @@ export function EpisodeDetailsPage() {
               grow
               paddingSize="none"
               css={css`
+                min-width: 0;
+
                 ${smallMediaQuery} {
                   [class*='InternalDocViewerTable'] {
                     display: block;
@@ -451,7 +454,13 @@ export function EpisodeDetailsPage() {
                 }
               `}
             >
-              {actualMainPanel === 'metadata' ? (
+              {actualMainPanel === 'timeline' ? (
+                <EpisodeTimelineTab
+                  episodeId={episodeId}
+                  groupHash={groupHash}
+                  services={{ data, spaces, userProfile: services.userProfile }}
+                />
+              ) : actualMainPanel === 'metadata' ? (
                 <AlertEpisodeMetadataSection episodeId={episodeId} services={metadataServices} />
               ) : (
                 <EuiPanel

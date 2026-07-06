@@ -29,6 +29,49 @@ export const METADATA_TAB_TITLE = i18n.translate(
   }
 );
 
+export const TIMELINE_TAB_TITLE = i18n.translate(
+  'xpack.alertingV2.episodeDetails.mainTabTimeline',
+  {
+    defaultMessage: 'Timeline',
+  }
+);
+
+/** --- Duration (sidebar) --- */
+export const FORMAT_EPISODE_DURATION_MS = (ms: number): string => {
+  if (ms < 1000) {
+    return i18n.translate('xpack.alertingV2.episodeDetails.durationMs', {
+      defaultMessage: '{ms} ms',
+      values: { ms: Math.round(ms) },
+    });
+  }
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  if (days > 0) {
+    return i18n.translate('xpack.alertingV2.episodeDetails.durationDays', {
+      defaultMessage: '{days} d',
+      values: { days },
+    });
+  }
+  if (hours > 0) {
+    return i18n.translate('xpack.alertingV2.episodeDetails.durationHours', {
+      defaultMessage: '{hours} h',
+      values: { hours },
+    });
+  }
+  if (minutes > 0) {
+    return i18n.translate('xpack.alertingV2.episodeDetails.durationMinutes', {
+      defaultMessage: '{minutes} min',
+      values: { minutes },
+    });
+  }
+  return i18n.translate('xpack.alertingV2.episodeDetails.durationSeconds', {
+    defaultMessage: '{seconds} s',
+    values: { seconds },
+  });
+};
+
 /** --- Error state --- */
 export const EPISODE_NOT_FOUND_TITLE = i18n.translate(
   'xpack.alertingV2.episodes.episodeNotFoundTitle',
