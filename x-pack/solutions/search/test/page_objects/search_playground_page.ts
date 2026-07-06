@@ -229,6 +229,25 @@ export function SearchPlaygroundPageProvider({ getService }: FtrProviderContext)
       async createConnectorFlyoutIsVisible() {
         await testSubjects.existOrFail('create-connector-flyout');
       },
+      async createOpenAiConnector(connectorName: string) {
+        await testSubjects.existOrFail('.gen-ai-card');
+        await testSubjects.click('.gen-ai-card');
+
+        await testSubjects.existOrFail('create-connector-flyout-header');
+        const headerValue = await testSubjects.getVisibleText('create-connector-flyout-header');
+        expect(headerValue).to.contain('OpenAI connector');
+        await testSubjects.existOrFail('nameInput');
+        await testSubjects.setValue('nameInput', connectorName);
+
+        const openaiProvider = await testSubjects.getVisibleText('config.apiProvider-select');
+        expect(openaiProvider).to.contain('OpenAI');
+
+        await testSubjects.existOrFail('secrets.apiKey-input');
+        await testSubjects.setValue('secrets.apiKey-input', 'apiKey');
+        await testSubjects.existOrFail('create-connector-flyout-save-btn');
+        await testSubjects.click('create-connector-flyout-save-btn');
+        await testSubjects.existOrFail('euiToastHeader__title');
+      },
       async clickCreateIndex() {
         await testSubjects.existOrFail('createIndexButton');
         expect(await testSubjects.isEnabled('createIndexButton')).equal(true);

@@ -534,6 +534,17 @@ describe('connector_add_flyout', () => {
           supportedFeatureIds: ['alerting'],
           isDeprecated: true,
         },
+        {
+          id: 'my-active-spec-connector',
+          source: ACTION_TYPE_SOURCES.spec,
+          enabled: true,
+          name: 'My Active Spec Connector',
+          enabledInConfig: true,
+          enabledInLicense: true,
+          minimumLicenseRequired: 'basic',
+          supportedFeatureIds: ['alerting'],
+          isDeprecated: false,
+        },
       ]);
 
       appMockRenderer.render(
@@ -543,7 +554,7 @@ describe('connector_add_flyout', () => {
         />
       );
 
-      await new Promise((r) => setTimeout(r, 0));
+      expect(await screen.findByTestId('my-active-spec-connector-card')).toBeInTheDocument();
       expect(screen.queryByTestId('my-deprecated-spec-connector-card')).not.toBeInTheDocument();
     });
   });

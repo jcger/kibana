@@ -7,17 +7,12 @@
 
 import expect from '@kbn/expect';
 import type { FtrProviderContext } from '../../ftr_provider_context';
-import { createOpenAIConnector } from './utils/create_openai_connector';
-import type { LlmProxy } from './utils/create_llm_proxy';
-import { createLlmProxy } from './utils/create_llm_proxy';
 
 const archivedBooksIndex = 'x-pack/solutions/search/test/functional_search/fixtures/search-books';
 
 export default function ({ getPageObjects, getService }: FtrProviderContext) {
   const pageObjects = getPageObjects(['common', 'searchPlayground', 'solutionNavigation']);
   const esArchiver = getService('esArchiver');
-  const supertest = getService('supertest');
-  const log = getService('log');
 
   const createIndices = async () => {
     await esArchiver.load(archivedBooksIndex);
@@ -29,27 +24,20 @@ export default function ({ getPageObjects, getService }: FtrProviderContext) {
   const testPlaygroundName = 'FTR Search Playground';
   const updatedPlaygroundName = 'Test Search Playground';
 
-  let proxy: LlmProxy;
-  let removeOpenAIConnector: () => Promise<void>;
-
   // Failing: See https://github.com/elastic/kibana/issues/237715
   describe.skip('Saved Playgrounds', function () {
     before(async () => {
       await createIndices();
-      proxy = await createLlmProxy(log);
-      removeOpenAIConnector = await createOpenAIConnector({
-        supertest,
-        proxy,
-        name: openaiConnectorName,
-      });
     });
     after(async () => {
       try {
-        await removeOpenAIConnector?.();
+        await pageObjects.common.navigateToApp('connectors');
+        await pageObjects.searchPlayground.PlaygroundStartChatPage.deleteConnector(
+          openaiConnectorName
+        );
       } catch {
         // we can ignore  if this fails
       }
-      proxy.close();
       await deleteIndices();
     });
 
@@ -61,6 +49,13 @@ export default function ({ getPageObjects, getService }: FtrProviderContext) {
         await pageObjects.searchPlayground.expectDeprecationNoticeToExist();
         await pageObjects.searchPlayground.PlaygroundListPage.clickNewPlaygroundButton();
         await pageObjects.searchPlayground.PlaygroundStartChatPage.expectPlaygroundSetupPage();
+        // Add a connector to the playground
+        await pageObjects.searchPlayground.PlaygroundStartChatPage.clickConnectLLMButton();
+        await pageObjects.searchPlayground.PlaygroundStartChatPage.createConnectorFlyoutIsVisible();
+        await pageObjects.searchPlayground.PlaygroundStartChatPage.createOpenAiConnector(
+          openaiConnectorName
+        );
+        await pageObjects.searchPlayground.PlaygroundStartChatPage.expectAndCloseSuccessLLMText();
 
         // Select indices
         await pageObjects.searchPlayground.PlaygroundStartChatPage.expectToSelectIndicesAndLoadChat();
