@@ -120,7 +120,6 @@ const getRuleDetailMenu = ({
       run: onDelete,
       testId: 'ruleDetailsDeleteButton',
       overflow: true,
-      separator: 'above',
     },
   ],
 });
