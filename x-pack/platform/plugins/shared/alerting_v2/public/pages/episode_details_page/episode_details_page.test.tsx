@@ -251,13 +251,19 @@ describe('EpisodeDetailsPage', () => {
   });
 
   it('omits the header metadata row when the rule has no description', () => {
+    const loadedRuleState = fetchRuleResult.ruleState as unknown as {
+      status: RuleStateStatus;
+      ruleId: string;
+      rule: { metadata: Record<string, unknown> };
+    };
+
     mockUseFetchRule.mockReturnValue({
       ...fetchRuleResult,
       ruleState: {
-        ...fetchRuleResult.ruleState,
+        ...loadedRuleState,
         rule: {
-          ...fetchRuleResult.ruleState.rule,
-          metadata: { ...fetchRuleResult.ruleState.rule.metadata, description: undefined },
+          ...loadedRuleState.rule,
+          metadata: { ...loadedRuleState.rule.metadata, description: undefined },
         },
       },
     } as unknown as FetchRuleResult);
