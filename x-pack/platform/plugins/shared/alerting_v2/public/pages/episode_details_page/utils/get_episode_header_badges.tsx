@@ -171,6 +171,7 @@ export const getEpisodeHeaderBadges = ({
     badges.push({
       label: getEpisodeSeverityLabel(normalized),
       color: severityColor,
+      'data-test-subj': `alertingV2EpisodeSeverityBadge-${normalized}`,
       // `renderCustomBadge` is used here to ensure the badge is filled with the appropriate severity color, as native AppHeader badges do not support "fill" styling.
       renderCustomBadge: renderFilledBadge(
         severityColor,
