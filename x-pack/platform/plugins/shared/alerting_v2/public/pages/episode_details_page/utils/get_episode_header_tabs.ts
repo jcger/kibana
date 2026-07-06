@@ -8,7 +8,7 @@
 import type { AppHeaderTab } from '@kbn/app-header';
 import * as i18n from '../translations';
 
-export type EpisodeDetailsMainPanel = 'overview' | 'metadata';
+export type EpisodeDetailsMainPanel = 'overview' | 'metadata' | 'timeline';
 
 export const getEpisodeHeaderTabs = ({
   actualMainPanel,
@@ -37,4 +37,11 @@ export const getEpisodeHeaderTabs = ({
         },
       ]
     : []),
+  {
+    id: 'timeline',
+    'data-test-subj': 'alertingV2EpisodeDetailsMainTabTimeline',
+    label: i18n.TIMELINE_TAB_TITLE,
+    isSelected: actualMainPanel === 'timeline',
+    onClick: () => onSelect('timeline'),
+  },
 ];

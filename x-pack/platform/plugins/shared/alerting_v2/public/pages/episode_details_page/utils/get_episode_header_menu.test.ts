@@ -61,6 +61,7 @@ describe('getEpisodeHeaderMenu', () => {
       overflow: true,
       testId: 'episodeActionsBar-overflow-ALERTING_V2_EDIT_EPISODE_TAGS',
     });
+    expect(menu.items?.[1]).not.toHaveProperty('separator');
 
     // Discover is rendered as the dedicated primaryActionItem, not among the ordered items, so
     // it always sits to the far right of the header, after the overflow trigger.
@@ -128,6 +129,7 @@ describe('getEpisodeHeaderMenu', () => {
       overflow: true,
       testId: 'episodeActionsBar-overflow-ALERTING_V2_RESOLVE_EPISODE',
     });
+    expect(menu.items?.[1]).not.toHaveProperty('separator');
 
     expect(menu.items?.[2]).toMatchObject({
       id: 'ALERTING_V2_UNRESOLVE_EPISODE',
