@@ -244,9 +244,30 @@ describe('EpisodeDetailsPage', () => {
   it('renders the rule description in the header area', () => {
     renderPage();
 
+    expect(screen.getByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).toBeInTheDocument();
     expect(screen.getByTestId('alertingV2EpisodeDetailsHeaderDescription')).toHaveTextContent(
       'Rule description'
     );
+  });
+
+  it('omits the header metadata row when the rule has no description', () => {
+    mockUseFetchRule.mockReturnValue({
+      ...fetchRuleResult,
+      ruleState: {
+        ...fetchRuleResult.ruleState,
+        rule: {
+          ...fetchRuleResult.ruleState.rule,
+          metadata: { ...fetchRuleResult.ruleState.rule.metadata, description: undefined },
+        },
+      },
+    } as unknown as FetchRuleResult);
+
+    renderPage();
+
+    expect(screen.queryByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('alertingV2EpisodeDetailsHeaderDescription')
+    ).not.toBeInTheDocument();
   });
 
   it('hides the metadata tab when the rule is not loaded', () => {

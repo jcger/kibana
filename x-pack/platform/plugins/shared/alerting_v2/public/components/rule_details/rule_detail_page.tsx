@@ -185,9 +185,11 @@ export const RuleDetailPage: React.FunctionComponent = () => {
     [rule, onEdit, handleToggleEnabled, isToggling, onClone, showDeleteConfirmationModal]
   );
 
-  const metadata: AppHeaderMetadataItems = [
-    { type: 'text', label: rule.metadata?.description || '' },
-  ];
+  const metadata = rule.metadata?.description
+    ? ([
+        { type: 'text', label: rule.metadata.description, 'data-test-subj': 'ruleDescription' },
+      ] as AppHeaderMetadataItems)
+    : undefined;
 
   return (
     <KibanaPageTemplate

@@ -60,7 +60,6 @@ describe('getEpisodeHeaderMenu', () => {
       order: 40,
       overflow: true,
       testId: 'episodeActionsBar-overflow-ALERTING_V2_EDIT_EPISODE_TAGS',
-      separator: 'above',
     });
 
     // Discover is rendered as the dedicated primaryActionItem, not among the ordered items, so
@@ -128,8 +127,8 @@ describe('getEpisodeHeaderMenu', () => {
       id: 'ALERTING_V2_RESOLVE_EPISODE',
       overflow: true,
       testId: 'episodeActionsBar-overflow-ALERTING_V2_RESOLVE_EPISODE',
-      separator: 'above',
     });
+
     expect(menu.items?.[2]).toMatchObject({
       id: 'ALERTING_V2_UNRESOLVE_EPISODE',
       overflow: true,

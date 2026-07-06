@@ -359,7 +359,15 @@ export function EpisodeDetailsPage() {
     </EuiSplitPanel.Inner>
   );
 
-  const metadata: AppHeaderMetadataItems = [{ type: 'text', label: ruleDescription || '' }];
+  const metadata = ruleDescription
+    ? ([
+        {
+          type: 'text',
+          label: ruleDescription,
+          'data-test-subj': 'alertingV2EpisodeDetailsHeaderDescription',
+        },
+      ] as AppHeaderMetadataItems)
+    : undefined;
 
   return (
     <KibanaPageTemplate
@@ -387,7 +395,7 @@ export function EpisodeDetailsPage() {
         tabs={headerTabs}
         padding={{ bleed: 'l' }}
       />
-      <EuiSpacer size="xs" />
+      <EuiSpacer size="m" />
       {isLoading ? (
         <KibanaPageTemplate.Section grow>
           <CenterJustifiedSpinner />

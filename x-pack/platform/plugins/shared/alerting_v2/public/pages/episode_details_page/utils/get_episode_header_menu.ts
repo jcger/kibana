@@ -31,8 +31,6 @@ export const getEpisodeHeaderMenu = ({
   episode,
   onSuccess,
 }: EpisodeHeaderMenuArgs): AppHeaderMenu => {
-  let isFirstSecondary = true;
-
   const runAction = (action: EpisodeAction) => () =>
     action.execute({
       episodes: episode ? [episode] : [],
@@ -46,12 +44,6 @@ export const getEpisodeHeaderMenu = ({
       .filter((action) => action.id !== PRIMARY_ACTION_ITEM_ID)
       .map((action) => {
         const isSecondary = SECONDARY_ACTION_IDS.has(action.id);
-        // Divide the primary actions from the secondary group with a single separator above the
-        // first secondary item in the overflow popover.
-        const separator = isSecondary && isFirstSecondary ? ('above' as const) : undefined;
-        if (isSecondary) {
-          isFirstSecondary = false;
-        }
 
         return {
           id: action.id,
@@ -63,7 +55,6 @@ export const getEpisodeHeaderMenu = ({
             : `episodeActionsBar-primary-${action.id}`,
           order: action.order,
           overflow: isSecondary,
-          ...(separator ? { separator } : {}),
         };
       }),
     ...(primaryAction
