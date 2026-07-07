@@ -28,55 +28,55 @@ import type { RuleApiResponse } from '../../services/rules_api';
 const { overflowSize: TAGS_OVERFLOW_SIZE, maxVisible: TAGS_MAX_VISIBLE_ON_OVERFLOW } =
   getTagsOverflowLimits(2);
 
-export interface RuleHeaderDescriptionProps {
-  /**
-   * Set to `false` when tags are already rendered elsewhere, e.g. alongside the summary badges
-   * row. Unrelated to whether the rule actually has tags — that's `hasTags` below.
-   */
-  renderTags?: boolean;
-}
-
-export const RuleHeaderDescription: React.FC<RuleHeaderDescriptionProps> = ({
-  renderTags = true,
-}) => {
+/**
+ * Rule description text. Renders nothing when the rule has no description.
+ */
+export const RuleHeaderDescription: React.FC = () => {
   const rule = useRule();
   const { euiTheme } = useEuiTheme();
-  const { description, tags } = rule.metadata;
-  const hasTags = renderTags && tags && tags.length > 0;
+  const { description } = rule.metadata;
 
-  if (!description && !hasTags) {
+  if (!description) {
     return null;
   }
 
   return (
-    <EuiFlexGroup direction="column" gutterSize="m">
-      {description && (
-        <EuiFlexItem grow={false}>
-          {/* EuiText has no font-weight prop, so a lighter-than-bold weight for the
-              description has to be set via css instead of a design-token size/color prop. */}
-          <EuiText
-            size="s"
-            color="subdued"
-            css={css`
-              font-weight: ${euiTheme.font.weight.medium};
-            `}
-            data-test-subj="ruleDescription"
-          >
-            {description}
-          </EuiText>
+    // EuiText has no font-weight prop, so a lighter-than-bold weight for the description
+    // has to be set via css instead of a design-token size/color prop.
+    <EuiText
+      size="s"
+      color="subdued"
+      css={css`
+        font-weight: ${euiTheme.font.weight.medium};
+      `}
+      data-test-subj="ruleDescription"
+    >
+      {description}
+    </EuiText>
+  );
+};
+
+/**
+ * Rule tags as plain hollow badges. Renders nothing when the rule has no tags.
+ *
+ * Only used standalone (e.g. the agent builder rule attachment) where tags aren't already shown
+ * alongside the kind/status badges — see `RuleTitleWithBadges`'s `'summary'` variant for that.
+ */
+export const RuleTagsList: React.FC = () => {
+  const rule = useRule();
+  const { tags } = rule.metadata;
+
+  if (!tags || tags.length === 0) {
+    return null;
+  }
+
+  return (
+    <EuiFlexGroup gutterSize="xs" wrap responsive={false} data-test-subj="ruleTags">
+      {tags.map((tag) => (
+        <EuiFlexItem key={tag} grow={false}>
+          <EuiBadge color="hollow">{tag}</EuiBadge>
         </EuiFlexItem>
-      )}
-      {hasTags && (
-        <EuiFlexItem grow={false}>
-          <EuiFlexGroup gutterSize="xs" wrap responsive={false} data-test-subj="ruleTags">
-            {tags!.map((tag) => (
-              <EuiFlexItem key={tag} grow={false}>
-                <EuiBadge color="hollow">{tag}</EuiBadge>
-              </EuiFlexItem>
-            ))}
-          </EuiFlexGroup>
-        </EuiFlexItem>
-      )}
+      ))}
     </EuiFlexGroup>
   );
 };
