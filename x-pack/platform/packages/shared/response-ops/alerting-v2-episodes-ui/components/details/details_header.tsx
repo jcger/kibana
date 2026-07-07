@@ -62,7 +62,7 @@ export const AlertEpisodeDetailsHeader = ({
       <EuiFlexGroup alignItems="center" gutterSize="s" responsive={false} wrap>
         <EuiFlexItem grow={false}>
           <EuiTitle size={titleSize}>
-            <h1 data-test-subj="alertingV2EpisodeDetailsHeaderTitle">{titleContent}</h1>
+            <h2 data-test-subj="alertingV2EpisodeDetailsHeaderTitle">{titleContent}</h2>
           </EuiTitle>
         </EuiFlexItem>
         {showBadgeRow ? (
