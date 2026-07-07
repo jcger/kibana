@@ -5,7 +5,14 @@
  * 2.0.
  */
 
-import { EuiBadge, EuiFlexGroup, EuiFlexItem, EuiText, EuiToolTip } from '@elastic/eui';
+import {
+  EuiBadge,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiText,
+  EuiToolTip,
+  useEuiTheme,
+} from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { css } from '@emotion/react';
 import React from 'react';
@@ -22,16 +29,20 @@ const { overflowSize: TAGS_OVERFLOW_SIZE, maxVisible: TAGS_MAX_VISIBLE_ON_OVERFL
   getTagsOverflowLimits(2);
 
 export interface RuleHeaderDescriptionProps {
-  /** Set to `false` when tags are already rendered elsewhere, e.g. alongside the summary badges row. */
-  showTags?: boolean;
+  /**
+   * Set to `false` when tags are already rendered elsewhere, e.g. alongside the summary badges
+   * row. Unrelated to whether the rule actually has tags — that's `hasTags` below.
+   */
+  renderTags?: boolean;
 }
 
 export const RuleHeaderDescription: React.FC<RuleHeaderDescriptionProps> = ({
-  showTags = true,
+  renderTags = true,
 }) => {
   const rule = useRule();
+  const { euiTheme } = useEuiTheme();
   const { description, tags } = rule.metadata;
-  const hasTags = showTags && tags && tags.length > 0;
+  const hasTags = renderTags && tags && tags.length > 0;
 
   if (!description && !hasTags) {
     return null;
@@ -47,7 +58,7 @@ export const RuleHeaderDescription: React.FC<RuleHeaderDescriptionProps> = ({
             size="s"
             color="subdued"
             css={css`
-              font-weight: 450;
+              font-weight: ${euiTheme.font.weight.medium};
             `}
             data-test-subj="ruleDescription"
           >

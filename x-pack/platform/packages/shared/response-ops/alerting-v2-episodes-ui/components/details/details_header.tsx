@@ -7,7 +7,7 @@
 
 import React from 'react';
 import type { EuiTitleSize } from '@elastic/eui';
-import { EuiFlexGroup, EuiFlexItem, EuiSpacer, EuiText, EuiTitle } from '@elastic/eui';
+import { EuiFlexGroup, EuiFlexItem, EuiSpacer, EuiText, EuiTitle, useEuiTheme } from '@elastic/eui';
 import { css } from '@emotion/react';
 import type { AlertEpisodeStatus } from '@kbn/alerting-v2-schemas';
 import { AlertEpisodeStatusBadges } from '../status/status_badges';
@@ -39,6 +39,7 @@ export const AlertEpisodeDetailsHeader = ({
   groupAction,
   titleSize = 'l',
 }: AlertEpisodeDetailsHeaderProps) => {
+  const { euiTheme } = useEuiTheme();
   const isLoading = isLoadingEpisode || isRuleLoading(ruleState);
   const titleContent = isLoading
     ? i18n.HEADER_LOADING_TITLE
@@ -103,7 +104,7 @@ export const AlertEpisodeDetailsHeader = ({
             size="s"
             color="subdued"
             css={css`
-              font-weight: 450;
+              font-weight: ${euiTheme.font.weight.medium};
             `}
           >
             {description}
