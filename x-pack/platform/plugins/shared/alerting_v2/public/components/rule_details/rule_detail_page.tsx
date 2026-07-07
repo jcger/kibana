@@ -184,9 +184,17 @@ export const RuleDetailPage: React.FunctionComponent = () => {
     [rule, onEdit, handleToggleEnabled, isToggling, onClone, showDeleteConfirmationModal]
   );
 
+  // AppHeaderMetadata bolds `label` (it's meant to be the key of a label/value pair) and renders
+  // `value` at a lighter weight, so the description is passed as `value` with an empty `label`
+  // to get the lighter weight without touching the shared app-header component.
   const metadata = rule.metadata?.description
     ? ([
-        { type: 'text', label: rule.metadata.description, 'data-test-subj': 'ruleDescription' },
+        {
+          type: 'text',
+          label: '',
+          value: rule.metadata.description,
+          'data-test-subj': 'ruleDescription',
+        },
       ] as AppHeaderMetadataItems)
     : undefined;
 

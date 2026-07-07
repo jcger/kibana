@@ -157,7 +157,7 @@ export const RuleSummaryFlyout = ({
               </h2>
             </EuiTitle>
             <EuiSpacer size="s" />
-            <RuleHeaderDescription />
+            <RuleHeaderDescription showTags={false} />
           </EuiPanel>
           <EuiHorizontalRule margin="xs" />
           <EuiPanel
