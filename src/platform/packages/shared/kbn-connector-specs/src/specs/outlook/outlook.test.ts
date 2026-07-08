@@ -408,7 +408,7 @@ describe('Outlook', () => {
       if (!Outlook.test?.handler) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Outlook.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await Outlook.test.handler(mockContext)) as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith(`${GRAPH_BASE}/me`, {
         params: { $select: 'displayName,mail,userPrincipalName' },
@@ -427,7 +427,7 @@ describe('Outlook', () => {
       if (!Outlook.test?.handler) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Outlook.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await Outlook.test.handler(mockContext)) as TestResult;
 
       expect(result).toEqual({
         ok: true,
@@ -441,7 +441,7 @@ describe('Outlook', () => {
       if (!Outlook.test?.handler) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Outlook.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await Outlook.test.handler(mockContext)) as TestResult;
 
       expect(result).toEqual({
         ok: true,
@@ -455,7 +455,7 @@ describe('Outlook', () => {
       if (!Outlook.test?.handler) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Outlook.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await Outlook.test.handler(mockContext)) as TestResult;
 
       expect(result).toEqual({
         ok: false,
@@ -469,7 +469,7 @@ describe('Outlook', () => {
       if (!Outlook.test?.handler) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Outlook.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await Outlook.test.handler(mockContext)) as TestResult;
 
       expect(result).toEqual({
         ok: false,

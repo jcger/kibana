@@ -334,7 +334,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await SharepointServer.test.handler(mockContext)) as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith(`${SITE_URL}/_api/web/title`, {
         headers: ODATA_HEADERS,
@@ -349,7 +349,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await SharepointServer.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(true);
       expect(result.message).toBe('Successfully connected to SharePoint Server: Unknown');
@@ -361,7 +361,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await SharepointServer.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -373,7 +373,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await SharepointServer.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');

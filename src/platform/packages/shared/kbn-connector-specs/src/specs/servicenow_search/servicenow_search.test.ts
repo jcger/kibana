@@ -709,7 +709,7 @@ describe('ServicenowSearch', () => {
       if (!ServicenowSearch.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await ServicenowSearch.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await ServicenowSearch.test.handler(mockContext)) as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith(
         'https://test-instance.service-now.com/api/now/table/sys_user',
@@ -736,7 +736,7 @@ describe('ServicenowSearch', () => {
       if (!ServicenowSearch.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await ServicenowSearch.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await ServicenowSearch.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(true);
       expect(result.message).toBe('Successfully connected to ServiceNow (no user records visible)');
@@ -748,7 +748,7 @@ describe('ServicenowSearch', () => {
       if (!ServicenowSearch.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await ServicenowSearch.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await ServicenowSearch.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -760,7 +760,7 @@ describe('ServicenowSearch', () => {
       if (!ServicenowSearch.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await ServicenowSearch.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await ServicenowSearch.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');

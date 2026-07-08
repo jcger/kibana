@@ -254,8 +254,17 @@ export interface Transformations {
 
 export const TEST_CONNECTOR_SUB_ACTION = '_test';
 
-/** Success = return data; failure = throw (mapped to error by the executor). */
-export type ConnectorTestHandlerResult = Record<string, unknown>;
+/**
+ * Success = return data; failure = throw (mapped to error by the executor).
+ *
+ * Transitional union: new handlers return arbitrary data (`Record<string, unknown>`,
+ * use `{}` when there's nothing to report), while not-yet-migrated handlers may still
+ * return the legacy `{ ok, message }` shape. Once every handler follows the
+ * throw-on-failure contract this can be narrowed to `Record<string, unknown>`.
+ */
+export type ConnectorTestHandlerResult =
+  | Record<string, unknown>
+  | { ok: boolean; message?: string };
 
 export interface ConnectorTest {
   /**

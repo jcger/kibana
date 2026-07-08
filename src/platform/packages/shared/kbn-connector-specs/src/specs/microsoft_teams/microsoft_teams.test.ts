@@ -930,7 +930,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith(
         'https://graph.microsoft.com/v1.0/me/joinedTeams',
@@ -958,7 +958,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(oauthCodeContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(oauthCodeContext)) as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith(
         'https://graph.microsoft.com/v1.0/me/joinedTeams',
@@ -989,7 +989,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(appOnlyContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(appOnlyContext)) as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith('https://graph.microsoft.com/v1.0/teams', {
         params: { $select: 'id,displayName' },
@@ -1009,7 +1009,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(result).toEqual({
         ok: true,
@@ -1023,7 +1023,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -1035,7 +1035,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');
@@ -1047,7 +1047,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unknown error');
@@ -1059,7 +1059,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unexpected Graph API response: missing value array');
@@ -1071,7 +1071,7 @@ describe('MicrosoftTeams', () => {
       if (!MicrosoftTeams.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await MicrosoftTeams.test.handler(mockContext)) as unknown as TestResult;
+      const result = (await MicrosoftTeams.test.handler(mockContext)) as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Unexpected Graph API response: missing value array');
