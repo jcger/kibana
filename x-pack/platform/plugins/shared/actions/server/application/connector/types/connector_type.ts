@@ -25,5 +25,5 @@ export interface ConnectorType {
   allowMultipleSystemActions?: ConnectorTypeSchemaType['allowMultipleSystemActions'];
   description?: ConnectorTypeSchemaType['description'];
   isExperimental?: ConnectorTypeSchemaType['isExperimental'];
-  testable?: ConnectorTypeSchemaType['testable'];
+  isTestable: ConnectorTypeSchemaType['isTestable'];
 }

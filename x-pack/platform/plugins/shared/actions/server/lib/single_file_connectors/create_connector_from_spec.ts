@@ -82,6 +82,6 @@ export const createConnectorTypeFromSpec = (
     source: ACTION_TYPE_SOURCES.spec,
     description: spec.metadata.description,
     isExperimental: spec.metadata.isTechnicalPreview,
-    testable: Boolean(spec.test?.enabled),
+    isTestable: Boolean(spec.test?.enabled),
   };
 };

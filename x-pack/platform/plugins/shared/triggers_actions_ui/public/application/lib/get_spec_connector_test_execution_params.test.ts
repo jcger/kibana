@@ -16,7 +16,7 @@ describe('getSpecConnectorTestExecutionParams', () => {
     name: 'Spec',
     enabled: true,
     source: ACTION_TYPE_SOURCES.spec,
-    testable: true,
+    isTestable: true,
   } as ActionType;
 
   it('seeds _test subAction for opted-in spec connectors', () => {
@@ -29,7 +29,7 @@ describe('getSpecConnectorTestExecutionParams', () => {
   it('returns params unchanged for spec connectors that are not testable', () => {
     const nonTestableSpecActionType = {
       ...specActionType,
-      testable: false,
+      isTestable: false,
     } as ActionType;
 
     expect(getSpecConnectorTestExecutionParams(nonTestableSpecActionType, {})).toEqual({});

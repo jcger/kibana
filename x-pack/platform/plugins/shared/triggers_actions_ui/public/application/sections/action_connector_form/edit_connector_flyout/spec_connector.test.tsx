@@ -43,7 +43,7 @@ describe('spec connector edit flyout Test tab', () => {
     supportedFeatureIds: ['workflows'],
     source: ACTION_TYPE_SOURCES.spec,
     description: 'Test spec connector description',
-    testable: true,
+    isTestable: true,
     isSystemActionType: false,
     isDeprecated: false,
   };
@@ -275,7 +275,7 @@ describe('default (no isTestable prop) — embedder path', () => {
         ...stackConnectorType,
         id: 'spec-connector-test',
         source: ACTION_TYPE_SOURCES.spec,
-        testable: false,
+        isTestable: false,
       },
     ]);
 
@@ -291,7 +291,7 @@ describe('default (no isTestable prop) — embedder path', () => {
         ...stackConnectorType,
         id: 'spec-connector-test',
         source: ACTION_TYPE_SOURCES.spec,
-        testable: true,
+        isTestable: true,
       },
     ]);
     actionTypeRegistry.has.mockReturnValue(false);

@@ -841,7 +841,7 @@ describe('actions_connectors_list', () => {
           enabledInLicense: true,
           supportedFeatureIds: ['alerting'],
           source: 'spec',
-          testable: true,
+          isTestable: true,
         },
       ]);
 

@@ -35,7 +35,7 @@ export interface ActionType {
   };
   description?: string;
   isExperimental?: boolean;
-  testable?: boolean;
+  isTestable?: boolean;
 }
 
 export enum InvalidEmailReason {

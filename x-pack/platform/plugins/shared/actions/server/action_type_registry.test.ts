@@ -249,7 +249,7 @@ describe('actionTypeRegistry', () => {
           isSystemActionType: false,
           isDeprecated: false,
           source: 'stack',
-          testable: false,
+          isTestable: false,
         },
       ]);
       expect(mockedActionsConfig.isActionTypeEnabled).toHaveBeenCalled();
@@ -308,7 +308,7 @@ describe('actionTypeRegistry', () => {
           validate: { params: expect.any(Object) },
           isDeprecated: false,
           source: 'stack',
-          testable: false,
+          isTestable: false,
         },
         {
           id: 'my-connector-type-with-subaction',
@@ -322,7 +322,7 @@ describe('actionTypeRegistry', () => {
           validate: { params: expect.any(Object) },
           isDeprecated: false,
           source: 'stack',
-          testable: false,
+          isTestable: false,
         },
       ]);
 
@@ -461,7 +461,7 @@ describe('actionTypeRegistry', () => {
           isSystemActionType: false,
           isDeprecated: false,
           source: 'stack',
-          testable: false,
+          isTestable: false,
         },
       ]);
       expect(mockedActionsConfig.isActionTypeEnabled).toHaveBeenCalled();
@@ -495,7 +495,7 @@ describe('actionTypeRegistry', () => {
           isSystemActionType: true,
           isDeprecated: false,
           source: 'stack',
-          testable: false,
+          isTestable: false,
         },
       ]);
     });
@@ -530,7 +530,7 @@ describe('actionTypeRegistry', () => {
           supportedFeatureIds: ['siem'],
           isDeprecated: false,
           source: 'stack',
-          testable: false,
+          isTestable: false,
         },
       ]);
     });

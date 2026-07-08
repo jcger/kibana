@@ -105,7 +105,7 @@ describe('listTypes()', () => {
         isSystemActionType: false,
         isDeprecated: false,
         source: 'stack',
-        testable: false,
+        isTestable: false,
       },
     ]);
   });
@@ -144,7 +144,7 @@ describe('listTypes()', () => {
         isSystemActionType: false,
         isDeprecated: false,
         source: 'stack',
-        testable: false,
+        isTestable: false,
       },
       {
         id: 'my-connector-type-2',
@@ -157,7 +157,7 @@ describe('listTypes()', () => {
         enabledInLicense: true,
         isDeprecated: false,
         source: 'stack',
-        testable: false,
+        isTestable: false,
       },
     ]);
   });
@@ -189,7 +189,7 @@ describe('listTypes()', () => {
         isSystemActionType: false,
         isDeprecated: false,
         source: 'stack',
-        testable: false,
+        isTestable: false,
       },
       {
         id: '.cases',
@@ -202,7 +202,7 @@ describe('listTypes()', () => {
         enabledInLicense: true,
         isDeprecated: false,
         source: 'stack',
-        testable: false,
+        isTestable: false,
       },
     ]);
   });

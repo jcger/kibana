@@ -51,7 +51,7 @@ export function createMockConnectorType(overrides: Partial<ConnectorType> = {}):
     isSystemActionType: false,
     isDeprecated: false,
     source: 'stack',
-    testable: false,
+    isTestable: false,
     ...overrides,
   };
 }

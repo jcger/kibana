@@ -841,7 +841,7 @@ describe('is spec connector', () => {
           minimumLicenseRequired: 'basic',
           supportedFeatureIds: ['alerting'],
           source: ACTION_TYPE_SOURCES.spec,
-          testable: true,
+          isTestable: true,
           isSystemActionType: false,
           isDeprecated: false,
         }}

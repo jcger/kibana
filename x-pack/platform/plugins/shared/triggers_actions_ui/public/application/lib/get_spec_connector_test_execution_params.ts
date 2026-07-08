@@ -13,7 +13,11 @@ export function getSpecConnectorTestExecutionParams(
   actionType: ActionType | undefined,
   params: Record<string, unknown>
 ): Record<string, unknown> {
-  if (actionType?.source !== ACTION_TYPE_SOURCES.spec || !actionType.testable || params.subAction) {
+  if (
+    actionType?.source !== ACTION_TYPE_SOURCES.spec ||
+    !actionType.isTestable ||
+    params.subAction
+  ) {
     return params;
   }
 

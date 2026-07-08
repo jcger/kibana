@@ -14,10 +14,10 @@ export function isConnectorTypeTestable(actionType: ActionType | undefined): boo
   }
 
   if (actionType.source === ACTION_TYPE_SOURCES.spec) {
-    return Boolean(actionType.testable);
+    return Boolean(actionType.isTestable);
   }
 
   return Boolean(
-    actionType.testable || !actionType.source || actionType.source === ACTION_TYPE_SOURCES.stack
+    actionType.isTestable || !actionType.source || actionType.source === ACTION_TYPE_SOURCES.stack
   );
 }

@@ -27,7 +27,7 @@ export const transformListTypesResponse = (
       allowMultipleSystemActions,
       description,
       isExperimental,
-      testable,
+      isTestable,
     }) => ({
       id,
       name,
@@ -43,7 +43,7 @@ export const transformListTypesResponse = (
       allow_multiple_system_actions: allowMultipleSystemActions,
       description,
       is_experimental: isExperimental,
-      testable,
+      is_testable: Boolean(isTestable),
     })
   );
 };

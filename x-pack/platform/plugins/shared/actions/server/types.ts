@@ -249,7 +249,7 @@ export interface ActionTypeCoreFields<
   /**
    * When true, the connector type supports testing via the Test tab.
    */
-  testable?: boolean;
+  isTestable?: boolean;
   /**
    * When true, the connector type is shown as technical preview in the UI.
    */

@@ -45,7 +45,7 @@ const specConnectorType: ActionType = {
   minimumLicenseRequired: 'basic',
   supportedFeatureIds: ['workflows'],
   source: ACTION_TYPE_SOURCES.spec,
-  testable: true,
+  isTestable: true,
   isSystemActionType: false,
   isDeprecated: false,
 };

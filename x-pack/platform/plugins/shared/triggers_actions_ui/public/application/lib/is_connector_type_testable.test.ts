@@ -32,27 +32,27 @@ describe('isConnectorTypeTestable', () => {
     ).toBe(true);
   });
 
-  it('returns true for spec connectors with testable true', () => {
+  it('returns true for spec connectors with isTestable true', () => {
     expect(
       isConnectorTypeTestable({
         ...baseActionType(),
         source: ACTION_TYPE_SOURCES.spec,
-        testable: true,
+        isTestable: true,
       })
     ).toBe(true);
   });
 
-  it('returns false for spec connectors with testable false', () => {
+  it('returns false for spec connectors with isTestable false', () => {
     expect(
       isConnectorTypeTestable({
         ...baseActionType(),
         source: ACTION_TYPE_SOURCES.spec,
-        testable: false,
+        isTestable: false,
       })
     ).toBe(false);
   });
 
-  it('returns false for yml connectors without testable', () => {
+  it('returns false for yml connectors without isTestable', () => {
     expect(isConnectorTypeTestable({ ...baseActionType(), source: ACTION_TYPE_SOURCES.yml })).toBe(
       false
     );

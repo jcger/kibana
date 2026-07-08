@@ -64,6 +64,7 @@ describe('listTypesWithSystemRoute', () => {
             "is_deprecated": false,
             "is_experimental": undefined,
             "is_system_action_type": true,
+            "is_testable": false,
             "minimum_license_required": "gold",
             "name": "name",
             "source": "stack",
@@ -71,7 +72,6 @@ describe('listTypesWithSystemRoute', () => {
             "supported_feature_ids": Array [
               "alerting",
             ],
-            "testable": false,
           },
         ],
       }
@@ -91,7 +91,7 @@ describe('listTypesWithSystemRoute', () => {
           sub_feature: 'endpointSecurity',
           is_deprecated: false,
           source: 'stack',
-          testable: false,
+          is_testable: false,
         },
       ],
     });
@@ -141,6 +141,7 @@ describe('listTypesWithSystemRoute', () => {
             "is_deprecated": false,
             "is_experimental": undefined,
             "is_system_action_type": false,
+            "is_testable": false,
             "minimum_license_required": "gold",
             "name": "name",
             "source": "stack",
@@ -148,7 +149,6 @@ describe('listTypesWithSystemRoute', () => {
             "supported_feature_ids": Array [
               "alerting",
             ],
-            "testable": false,
           },
         ],
       }
@@ -177,7 +177,7 @@ describe('listTypesWithSystemRoute', () => {
           is_system_action_type: false,
           is_deprecated: false,
           source: 'stack',
-          testable: false,
+          is_testable: false,
         },
       ],
     });

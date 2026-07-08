@@ -209,7 +209,7 @@ describe('spec connector with API fetch', () => {
     loadActionTypes.mockResolvedValue([
       {
         ...specConnectorType,
-        testable: true,
+        isTestable: true,
       },
     ]);
 

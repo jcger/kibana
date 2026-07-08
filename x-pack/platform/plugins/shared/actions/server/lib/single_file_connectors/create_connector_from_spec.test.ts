@@ -350,7 +350,7 @@ describe('createConnectorTypeFromSpec', () => {
   });
 
   describe('test support', () => {
-    it('sets testable to true when spec defines an enabled test', () => {
+    it('sets isTestable to true when spec defines an enabled test', () => {
       const testHandler = jest.fn();
       const spec = createMockSpec({
         test: { handler: testHandler, enabled: true },
@@ -358,7 +358,7 @@ describe('createConnectorTypeFromSpec', () => {
 
       const connectorType = createConnectorTypeFromSpec(spec, mockActionsPlugin);
 
-      expect(connectorType.testable).toBe(true);
+      expect(connectorType.isTestable).toBe(true);
     });
 
     it('accepts _test params when spec defines an enabled test', () => {
@@ -373,10 +373,10 @@ describe('createConnectorTypeFromSpec', () => {
       expect(connectorType.validate.params!.schema.parse(testParams)).toEqual(testParams);
     });
 
-    it('sets testable to false when spec has no test', () => {
+    it('sets isTestable to false when spec has no test', () => {
       const connectorType = createConnectorTypeFromSpec(createMockSpec(), mockActionsPlugin);
 
-      expect(connectorType.testable).toBe(false);
+      expect(connectorType.isTestable).toBe(false);
     });
 
     it('does not enable test support when test is present but enabled is falsy', async () => {
@@ -395,7 +395,7 @@ describe('createConnectorTypeFromSpec', () => {
       });
       const connectorType = createConnectorTypeFromSpec(specWithActions, mockActionsPlugin);
 
-      expect(connectorType.testable).toBe(false);
+      expect(connectorType.isTestable).toBe(false);
 
       mockGetAxiosInstanceWithAuth.mockResolvedValue({ get: jest.fn() });
 
@@ -492,7 +492,7 @@ describe('createConnectorTypeFromSpec', () => {
 
       expect(connectorType.executor).toBeDefined();
       expect(connectorType.validate.params).toBeDefined();
-      expect(connectorType.testable).toBe(true);
+      expect(connectorType.isTestable).toBe(true);
 
       const testParams = { subAction: TEST_CONNECTOR_SUB_ACTION, subActionParams: {} };
       expect(() => connectorType.validate.params!.schema.parse(testParams)).not.toThrow();
