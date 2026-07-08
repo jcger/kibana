@@ -30,10 +30,15 @@ import { useKibana } from '../../../../common/lib/kibana';
 import ConnectorEventLogListTableWithApi from './actions_connectors_event_log_list_table';
 import type { ActionConnector } from '../../../../types';
 import { EditConnectorTabs } from '../../../../types';
+import type { ActionTypeIndex } from '../../../../types';
 import { CreateConnectorFlyout } from '../../action_connector_form/create_connector_flyout';
 import { EditConnectorFlyout } from '../../action_connector_form/edit_connector_flyout';
 import type { EditConnectorProps } from './types';
-import { loadAllActions, loadConnectorAuthStatus } from '../../../lib/action_connector_api';
+import {
+  loadAllActions,
+  loadConnectorAuthStatus,
+  loadActionTypes,
+} from '../../../lib/action_connector_api';
 import { hasSaveActionsCapability } from '../../../lib/capabilities';
 import { useSkippedPreconfiguredConnectorIds } from '../../../hooks/use_conflicted_connector_ids';
 
@@ -71,6 +76,8 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
   const [isLoadingActions, setIsLoadingActions] = useState<boolean>(true);
   const [connectorAuthStatusError, setConnectorAuthStatusError] =
     useState<ConnectorAuthStatusError>(undefined);
+  const [actionTypesIndex, setActionTypesIndex] = useState<ActionTypeIndex | undefined>(undefined);
+  const [isLoadingActionTypes, setIsLoadingActionTypes] = useState<boolean>(true);
 
   const editItem = useCallback(
     (actionConnector: ActionConnector, tab: EditConnectorTabs, isFix?: boolean) => {
@@ -129,6 +136,31 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
     loadActions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadActionTypesIndex = useCallback(async () => {
+    setIsLoadingActionTypes(true);
+    try {
+      const actionTypes = await loadActionTypes({ http });
+      const index: ActionTypeIndex = {};
+      for (const actionTypeItem of actionTypes) {
+        index[actionTypeItem.id] = actionTypeItem;
+      }
+      setActionTypesIndex(index);
+    } catch {
+      toasts.addDanger({
+        title: i18n.translate(
+          'xpack.triggersActionsUI.sections.actionsConnectorsList.unableToLoadConnectorTypesMessage',
+          { defaultMessage: 'Unable to load connector types' }
+        ),
+      });
+    } finally {
+      setIsLoadingActionTypes(false);
+    }
+  }, [http, toasts]);
+
+  useEffect(() => {
+    loadActionTypesIndex();
+  }, [loadActionTypesIndex]);
 
   const tabs: Array<{
     id: Section;
@@ -191,6 +223,8 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
       loadActions,
       setActions,
       connectorAuthStatusError,
+      actionTypesIndex,
+      isLoadingActionTypes,
     });
   };
 
@@ -305,6 +339,7 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
           }`}
           connector={editConnectorProps.initialConnector}
           tab={editConnectorProps.tab}
+          connectorActionType={actionTypesIndex?.[editConnectorProps.initialConnector.actionTypeId]}
           onClose={() => {
             setEditConnectorProps({
               tab: editConnectorProps?.tab,
