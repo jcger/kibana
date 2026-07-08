@@ -374,10 +374,7 @@ describe('FirecrawlConnector', () => {
       if (!FirecrawlConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await FirecrawlConnector.test.handler(mockContext)) as Record<
-        string,
-        unknown
-      >;
+      const result = await FirecrawlConnector.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Failed to connect');
@@ -392,10 +389,7 @@ describe('FirecrawlConnector', () => {
       if (!FirecrawlConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await FirecrawlConnector.test.handler(mockContext)) as Record<
-        string,
-        unknown
-      >;
+      const result = await FirecrawlConnector.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Invalid or missing API key');

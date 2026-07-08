@@ -195,10 +195,7 @@ describe('BraveSearchConnector', () => {
       if (!BraveSearchConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await BraveSearchConnector.test.handler(mockContext)) as Record<
-        string,
-        unknown
-      >;
+      const result = await BraveSearchConnector.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Failed to connect to Brave Search API');

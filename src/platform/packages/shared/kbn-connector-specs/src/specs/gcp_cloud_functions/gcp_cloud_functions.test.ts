@@ -405,10 +405,7 @@ describe('GcpCloudFunctionsConnector', () => {
       if (!GcpCloudFunctionsConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await GcpCloudFunctionsConnector.test.handler(mockContext)) as Record<
-        string,
-        unknown
-      >;
+      const result = await GcpCloudFunctionsConnector.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Failed to connect');

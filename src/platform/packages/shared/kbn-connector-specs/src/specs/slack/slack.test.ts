@@ -1507,7 +1507,7 @@ describe('Slack', () => {
       if (!Slack.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Slack.test.handler(mockContext)) as Record<string, unknown>;
+      const result = await Slack.test.handler(mockContext);
 
       expect(mockClient.get).toHaveBeenCalledWith('https://slack.com/api/auth.test');
       expect(result.ok).toBe(true);
@@ -1526,7 +1526,7 @@ describe('Slack', () => {
       if (!Slack.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Slack.test.handler(mockContext)) as Record<string, unknown>;
+      const result = await Slack.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('invalid_auth');
@@ -1538,7 +1538,7 @@ describe('Slack', () => {
       if (!Slack.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await Slack.test.handler(mockContext)) as Record<string, unknown>;
+      const result = await Slack.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');

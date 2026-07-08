@@ -13,6 +13,11 @@ import { SharepointServer } from './sharepoint_server';
 const SITE_URL = 'https://sharepoint.company.com';
 const ODATA_HEADERS = { Accept: 'application/json;odata=nometadata' };
 
+interface TestResult {
+  ok: boolean;
+  message?: string;
+}
+
 describe('SharepointServer', () => {
   const mockClient = {
     get: jest.fn(),
@@ -329,7 +334,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as Record<string, unknown>;
+      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
 
       expect(mockClient.get).toHaveBeenCalledWith(`${SITE_URL}/_api/web/title`, {
         headers: ODATA_HEADERS,
@@ -344,7 +349,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as Record<string, unknown>;
+      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
 
       expect(result.ok).toBe(true);
       expect(result.message).toBe('Successfully connected to SharePoint Server: Unknown');
@@ -356,7 +361,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as Record<string, unknown>;
+      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Invalid credentials');
@@ -368,7 +373,7 @@ describe('SharepointServer', () => {
       if (!SharepointServer.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await SharepointServer.test.handler(mockContext)) as Record<string, unknown>;
+      const result = (await SharepointServer.test.handler(mockContext)) as unknown as TestResult;
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Network timeout');

@@ -717,10 +717,7 @@ describe('JinaReaderConnector', () => {
       if (!JinaReaderConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await JinaReaderConnector.test.handler(mockContext)) as Record<
-        string,
-        unknown
-      >;
+      const result = await JinaReaderConnector.test.handler(mockContext);
 
       expect(mockClient.get).toHaveBeenCalledWith('https://r.jina.ai');
       expect(result.ok).toBe(false);

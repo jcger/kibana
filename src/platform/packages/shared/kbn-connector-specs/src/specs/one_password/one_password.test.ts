@@ -280,10 +280,7 @@ describe('OnePasswordConnector', () => {
       if (!OnePasswordConnector.test) {
         throw new Error('Test handler not defined');
       }
-      const result = (await OnePasswordConnector.test.handler(mockContext)) as Record<
-        string,
-        unknown
-      >;
+      const result = await OnePasswordConnector.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('Failed to connect to 1Password Users API');

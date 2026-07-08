@@ -254,12 +254,12 @@ export interface Transformations {
 
 export const TEST_CONNECTOR_SUB_ACTION = '_test';
 
-/** Success = return optional data; failure = throw (mapped to error by the executor). */
-export type ConnectorTestHandlerResult = void | Record<string, unknown>;
+/** Success = return data; failure = throw (mapped to error by the executor). */
+export type ConnectorTestHandlerResult = Record<string, unknown>;
 
 export interface ConnectorTest {
   /**
-   * Test-tab handler. Throw on failure; do not return an `{ ok }` flag.
+   * Test-tab handler. Return data (use `{}` when there's nothing to report); throw on failure.
    * A resolved value is treated as success by the executor.
    */
   handler: (ctx: ActionContext) => Promise<ConnectorTestHandlerResult>;

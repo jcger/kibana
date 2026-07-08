@@ -514,7 +514,7 @@ describe('HubSpotConnector', () => {
 
       const test = HubSpotConnector.test;
       if (!test) throw new Error('Expected HubSpotConnector.test to be defined');
-      const result = (await test.handler(mockContext)) as Record<string, unknown>;
+      const result = await test.handler(mockContext);
 
       expect(result.ok).toBe(false);
     });
@@ -524,7 +524,7 @@ describe('HubSpotConnector', () => {
 
       const test = HubSpotConnector.test;
       if (!test) throw new Error('Expected HubSpotConnector.test to be defined');
-      const result = (await test.handler(mockContext)) as Record<string, unknown>;
+      const result = await test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('403');
@@ -535,7 +535,7 @@ describe('HubSpotConnector', () => {
 
       const test = HubSpotConnector.test;
       if (!test) throw new Error('Expected HubSpotConnector.test to be defined');
-      const result = (await test.handler(mockContext)) as Record<string, unknown>;
+      const result = await test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('429');
@@ -546,7 +546,7 @@ describe('HubSpotConnector', () => {
 
       const test = HubSpotConnector.test;
       if (!test) throw new Error('Expected HubSpotConnector.test to be defined');
-      const result = (await test.handler(mockContext)) as Record<string, unknown>;
+      const result = await test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toBe('ECONNREFUSED');

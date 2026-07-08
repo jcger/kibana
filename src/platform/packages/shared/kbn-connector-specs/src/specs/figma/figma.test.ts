@@ -307,7 +307,7 @@ describe('FigmaConnector', () => {
       }
       mockClient.get.mockRejectedValue(new Error('Invalid token'));
 
-      const result = (await FigmaConnector.test.handler(mockContext)) as Record<string, unknown>;
+      const result = await FigmaConnector.test.handler(mockContext);
 
       expect(result.ok).toBe(false);
       expect(result.message).toContain('Failed to connect to Figma API');
