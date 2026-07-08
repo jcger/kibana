@@ -74,6 +74,84 @@ const getConnectorWithoutSecrets = (
   authMode: connector.authMode ?? 'shared',
 });
 
+interface ConnectorSpecLoadStateProps {
+  showLoadingSpinner: boolean;
+  actionTypeModelError: Error | null;
+  onRetry: () => void;
+}
+
+/**
+ * Loading spinner and load-error callout shared by the configuration and
+ * test tabs while the connector spec is being fetched.
+ */
+const ConnectorSpecLoadState: React.FC<ConnectorSpecLoadStateProps> = ({
+  showLoadingSpinner,
+  actionTypeModelError,
+  onRetry,
+}) => (
+  <>
+    {showLoadingSpinner && (
+      <EuiFlexGroup
+        direction="column"
+        justifyContent="center"
+        alignItems="center"
+        style={{ minHeight: 200 }}
+        aria-live="polite"
+      >
+        <EuiFlexItem grow={false}>
+          <EuiLoadingSpinner size="xl" />
+        </EuiFlexItem>
+        <EuiFlexItem grow={false}>
+          {i18n.translate(
+            'xpack.triggersActionsUI.sections.editConnectorForm.loadingConnectorConfiguration',
+            {
+              defaultMessage: 'Loading connector configuration...',
+            }
+          )}
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    )}
+
+    {actionTypeModelError && (
+      <>
+        <EuiCallOut
+          announceOnMount
+          size="s"
+          color="danger"
+          iconType="error"
+          data-test-subj="connector-spec-load-error"
+          title={i18n.translate(
+            'xpack.triggersActionsUI.sections.actionConnectorAdd.specLoadError',
+            {
+              defaultMessage: 'Failed to load connector configuration',
+            }
+          )}
+        >
+          <p>
+            {i18n.translate(
+              'xpack.triggersActionsUI.sections.editConnectorForm.specLoadErrorDescription',
+              {
+                defaultMessage:
+                  'The connector form could not be loaded. Try again, or contact your administrator if the problem persists.',
+              }
+            )}
+          </p>
+          <EuiSpacer size="s" />
+          <EuiButton color="danger" data-test-subj="connector-spec-load-retry" onClick={onRetry}>
+            {i18n.translate(
+              'xpack.triggersActionsUI.sections.editConnectorForm.specLoadErrorRetry',
+              {
+                defaultMessage: 'Retry',
+              }
+            )}
+          </EuiButton>
+        </EuiCallOut>
+        <EuiSpacer size="m" />
+      </>
+    )}
+  </>
+);
+
 const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   actionTypeRegistry,
   connector,
@@ -333,67 +411,11 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
                   <EuiSpacer size="m" />
                 </>
               )}
-              {showLoadingSpinner && (
-                <EuiFlexGroup
-                  direction="column"
-                  justifyContent="center"
-                  alignItems="center"
-                  style={{ minHeight: 200 }}
-                  aria-live="polite"
-                >
-                  <EuiFlexItem grow={false}>
-                    <EuiLoadingSpinner size="xl" />
-                  </EuiFlexItem>
-                  <EuiFlexItem grow={false}>
-                    {i18n.translate(
-                      'xpack.triggersActionsUI.sections.editConnectorForm.loadingConnectorConfiguration',
-                      {
-                        defaultMessage: 'Loading connector configuration...',
-                      }
-                    )}
-                  </EuiFlexItem>
-                </EuiFlexGroup>
-              )}
-
-              {actionTypeModelError && (
-                <>
-                  <EuiCallOut
-                    announceOnMount
-                    size="s"
-                    color="danger"
-                    iconType="error"
-                    data-test-subj="connector-spec-load-error"
-                    title={i18n.translate(
-                      'xpack.triggersActionsUI.sections.actionConnectorAdd.specLoadError',
-                      {
-                        defaultMessage: 'Failed to load connector configuration',
-                      }
-                    )}
-                  >
-                    <p>
-                      {i18n.translate(
-                        'xpack.triggersActionsUI.sections.editConnectorForm.specLoadErrorDescription',
-                        {
-                          defaultMessage:
-                            'The connector form could not be loaded. Try again, or contact your administrator if the problem persists.',
-                        }
-                      )}
-                    </p>
-                    <EuiSpacer size="s" />
-                    <EuiButton
-                      color="danger"
-                      data-test-subj="connector-spec-load-retry"
-                      onClick={() => refetchConnectorSpec()}
-                    >
-                      {i18n.translate(
-                        'xpack.triggersActionsUI.sections.editConnectorForm.specLoadErrorRetry',
-                        { defaultMessage: 'Retry' }
-                      )}
-                    </EuiButton>
-                  </EuiCallOut>
-                  <EuiSpacer size="m" />
-                </>
-              )}
+              <ConnectorSpecLoadState
+                showLoadingSpinner={showLoadingSpinner}
+                actionTypeModelError={actionTypeModelError}
+                onRetry={refetchConnectorSpec}
+              />
 
               {actionTypeModel && !isLoadingActionTypeModel && !actionTypeModelError && (
                 <>
@@ -439,67 +461,11 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   const renderTestTab = useCallback(() => {
     return (
       <>
-        {showLoadingSpinner && (
-          <EuiFlexGroup
-            direction="column"
-            justifyContent="center"
-            alignItems="center"
-            style={{ minHeight: 200 }}
-            aria-live="polite"
-          >
-            <EuiFlexItem grow={false}>
-              <EuiLoadingSpinner size="xl" />
-            </EuiFlexItem>
-            <EuiFlexItem grow={false}>
-              {i18n.translate(
-                'xpack.triggersActionsUI.sections.editConnectorForm.loadingConnectorConfiguration',
-                {
-                  defaultMessage: 'Loading connector configuration...',
-                }
-              )}
-            </EuiFlexItem>
-          </EuiFlexGroup>
-        )}
-
-        {actionTypeModelError && (
-          <>
-            <EuiCallOut
-              announceOnMount
-              size="s"
-              color="danger"
-              iconType="error"
-              data-test-subj="connector-spec-load-error"
-              title={i18n.translate(
-                'xpack.triggersActionsUI.sections.actionConnectorAdd.specLoadError',
-                {
-                  defaultMessage: 'Failed to load connector configuration',
-                }
-              )}
-            >
-              <p>
-                {i18n.translate(
-                  'xpack.triggersActionsUI.sections.editConnectorForm.specLoadErrorDescription',
-                  {
-                    defaultMessage:
-                      'The connector form could not be loaded. Try again, or contact your administrator if the problem persists.',
-                  }
-                )}
-              </p>
-              <EuiSpacer size="s" />
-              <EuiButton
-                color="danger"
-                data-test-subj="connector-spec-load-retry"
-                onClick={() => refetchConnectorSpec()}
-              >
-                {i18n.translate(
-                  'xpack.triggersActionsUI.sections.editConnectorForm.specLoadErrorRetry',
-                  { defaultMessage: 'Retry' }
-                )}
-              </EuiButton>
-            </EuiCallOut>
-            <EuiSpacer size="m" />
-          </>
-        )}
+        <ConnectorSpecLoadState
+          showLoadingSpinner={showLoadingSpinner}
+          actionTypeModelError={actionTypeModelError}
+          onRetry={refetchConnectorSpec}
+        />
 
         {actionTypeModel && !isLoadingActionTypeModel && !actionTypeModelError && (
           <TestConnectorForm
