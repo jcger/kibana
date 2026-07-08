@@ -39,7 +39,6 @@ import {
   loadConnectorAuthStatus,
   loadActionTypes,
 } from '../../../lib/action_connector_api';
-import { isConnectorTypeTestable } from '../../../lib/is_connector_type_testable';
 import { hasSaveActionsCapability } from '../../../lib/capabilities';
 import { useSkippedPreconfiguredConnectorIds } from '../../../hooks/use_conflicted_connector_ids';
 
@@ -341,9 +340,6 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
           connector={editConnectorProps.initialConnector}
           tab={editConnectorProps.tab}
           connectorActionType={actionTypesIndex?.[editConnectorProps.initialConnector.actionTypeId]}
-          isTestable={isConnectorTypeTestable(
-            actionTypesIndex?.[editConnectorProps.initialConnector.actionTypeId]
-          )}
           onClose={() => {
             setEditConnectorProps({
               tab: editConnectorProps?.tab,

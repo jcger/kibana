@@ -6,7 +6,7 @@
  */
 
 import * as React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import type { RouteComponentProps } from 'react-router-dom';
 import { Router } from '@kbn/shared-ux-router';
 import { __IntlProvider as IntlProvider } from '@kbn/i18n-react';
@@ -60,6 +60,17 @@ jest.mock('./actions_connectors_event_log_list_table', () => {
   );
 });
 
+let lastEditConnectorFlyoutProps: Record<string, unknown> | undefined;
+jest.mock('../../action_connector_form/edit_connector_flyout', () => ({
+  __esModule: true,
+  EditConnectorFlyout: (props: Record<string, unknown>) => {
+    lastEditConnectorFlyoutProps = props;
+    return (
+      <div data-test-subj="editConnectorFlyoutComponent">{'Render Edit connector flyout'}</div>
+    );
+  },
+}));
+
 const queryClient = new QueryClient();
 
 describe('ActionsConnectorsHome', () => {
@@ -67,6 +78,7 @@ describe('ActionsConnectorsHome', () => {
     jest.clearAllMocks();
     hasSaveActionsCapability.mockReturnValue(true);
     lastActionsConnectorsListProps = undefined;
+    lastEditConnectorFlyoutProps = undefined;
     loadAllActions.mockResolvedValue([]);
     loadActionTypes.mockResolvedValue([]);
     loadConnectorAuthStatus.mockResolvedValue({});
@@ -439,5 +451,64 @@ describe('ActionsConnectorsHome', () => {
     });
     expect(lastActionsConnectorsListProps?.isLoadingActionTypes).toBe(false);
     expect(loadActionTypes).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not force isTestable to false on the edit flyout when loadActionTypes fails', async () => {
+    loadActionTypes.mockRejectedValue(new Error('Failed to load connector types'));
+
+    const props: RouteComponentProps<MatchParams> = {
+      history: createMemoryHistory({
+        initialEntries: ['/connectors'],
+      }),
+      location: createLocation('/connectors'),
+      match: {
+        isExact: true,
+        path: '/connectors',
+        url: '',
+        params: {
+          section: 'connectors',
+        },
+      },
+    };
+
+    render(
+      <IntlProvider locale="en">
+        <Router history={props.history}>
+          <QueryClientProvider client={queryClient}>
+            <ActionsConnectorsHome {...props} />
+          </QueryClientProvider>
+        </Router>
+      </IntlProvider>
+    );
+
+    await screen.findByTestId('actionsConnectorsListComponent');
+    expect(lastActionsConnectorsListProps?.actionTypesIndex).toBeUndefined();
+
+    const editItem = lastActionsConnectorsListProps?.editItem as (
+      connector: unknown,
+      tab: unknown
+    ) => void;
+    act(() => {
+      editItem(
+        {
+          id: '1',
+          actionTypeId: '.email',
+          name: 'Email connector',
+          config: {},
+          secrets: {},
+          isPreconfigured: false,
+          isDeprecated: false,
+          isSystemAction: false,
+        },
+        'test'
+      );
+    });
+
+    expect(await screen.findByTestId('editConnectorFlyoutComponent')).toBeInTheDocument();
+    // With the action-types index unavailable, Home must not pin isTestable to
+    // false: that would permanently hide the Test tab instead of letting the
+    // flyout derive testability itself once it resolves the action type.
+    expect(lastEditConnectorFlyoutProps?.isTestable).toBeUndefined();
+    expect(lastEditConnectorFlyoutProps?.connectorActionType).toBeUndefined();
   });
 });
