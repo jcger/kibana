@@ -417,59 +417,7 @@ describe('generateExecutorFunction', () => {
       });
     });
 
-    it('returns status error when the test handler resolves with legacy ok:false and message', async () => {
-      const testHandler = jest.fn().mockResolvedValue({ ok: false, message: 'bad key' });
-      const actions: ConnectorSpec['actions'] = {
-        [TEST_CONNECTOR_SUB_ACTION]: {
-          isTool: false,
-          input: {} as never,
-          handler: testHandler,
-        },
-      };
-
-      const executor = generateExecutorFunction({
-        actions,
-        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
-      });
-
-      const result = await executor(
-        makeExecOptions({ subAction: TEST_CONNECTOR_SUB_ACTION, subActionParams: {} })
-      );
-
-      expect(result).toEqual({
-        status: 'error',
-        message: 'bad key',
-        actionId: connectorId,
-      });
-    });
-
-    it('returns status error with default message when the test handler resolves with legacy ok:false only', async () => {
-      const testHandler = jest.fn().mockResolvedValue({ ok: false });
-      const actions: ConnectorSpec['actions'] = {
-        [TEST_CONNECTOR_SUB_ACTION]: {
-          isTool: false,
-          input: {} as never,
-          handler: testHandler,
-        },
-      };
-
-      const executor = generateExecutorFunction({
-        actions,
-        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
-      });
-
-      const result = await executor(
-        makeExecOptions({ subAction: TEST_CONNECTOR_SUB_ACTION, subActionParams: {} })
-      );
-
-      expect(result).toEqual({
-        status: 'error',
-        message: 'Connector test failed',
-        actionId: connectorId,
-      });
-    });
-
-    it('does not map legacy ok:false to error for non-_test sub-actions', async () => {
+    it('passes through an ok:false handler result as data instead of mapping it to an error', async () => {
       mockHandler.mockResolvedValue({ ok: false, message: 'not a test failure' });
 
       const executor = generateExecutorFunction({
