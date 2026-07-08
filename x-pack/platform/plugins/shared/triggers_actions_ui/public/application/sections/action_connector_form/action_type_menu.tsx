@@ -34,7 +34,6 @@ import { shouldHideWorkflowsOnlyConnector } from '@kbn/alerts-ui-shared/src/comm
 import { TECH_PREVIEW_DESCRIPTION, TECH_PREVIEW_LABEL } from '../translations';
 import type { ActionType, ActionTypeIndex, ActionTypeRegistryContract } from '../../../types';
 import { loadActionTypes } from '../../lib/action_connector_api';
-import { actionTypeCompare } from '../../lib/action_type_compare';
 import { useKibana } from '../../../common/lib/kibana';
 import { SectionLoading } from '../../components/section_loading';
 
@@ -207,70 +206,63 @@ export const ActionTypeMenu = ({
     [registeredActionTypes, searchValue, selectedFeatureIds]
   );
 
-  const cardNodes = filteredConnectors
-    .sort((a, b) => actionTypeCompare(a.actionType, b.actionType))
-    .map((item, index) => {
-      const checkEnabledResult = checkActionTypeEnabled(item.actionType);
-      const isLLMConnector = isLLMConnectorTypeId(item.actionType.id);
-      const description = isLLMConnector ? (
-        <EuiFlexGroup
-          gutterSize="xs"
-          alignItems="center"
-          justifyContent="center"
-          responsive={false}
-        >
-          <EuiFlexItem grow={false}>
-            <EuiText size="s">{item.selectMessage}</EuiText>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiIconTip
-              type="info"
-              color="subdued"
-              content={DEPRECATED_LLM_CONNECTOR_INFO}
-              data-test-subj={`${item.actionType.id}-deprecation-info`}
-            />
-          </EuiFlexItem>
-        </EuiFlexGroup>
-      ) : (
-        item.selectMessage
-      );
-      const card = (
-        <EuiCard
-          betaBadgeProps={
-            item.isDeprecated
-              ? {
-                  label: DEPRECATED_LABEL,
-                  tooltipContent: DEPRECATED_CONNECTOR_TOOLTIP_CONTENT,
-                  color: 'warning',
-                }
-              : item.isExperimental
-              ? { label: TECH_PREVIEW_LABEL, tooltipContent: TECH_PREVIEW_DESCRIPTION }
-              : undefined
-          }
-          role="listitem"
-          titleSize="xs"
-          data-test-subj={`${item.actionType.id}-card`}
-          icon={<EuiIcon size="xl" type={item.iconClass} aria-hidden={true} />}
-          title={item.name}
-          description={description}
-          isDisabled={!checkEnabledResult.isEnabled}
-          onClick={() => {
-            onActionTypeChange(item.actionType);
-          }}
-        />
-      );
-
-      return (
-        <EuiFlexItem key={index}>
-          {checkEnabledResult.isEnabled && card}
-          {checkEnabledResult.isEnabled === false && (
-            <EuiToolTip position="top" content={checkEnabledResult.message}>
-              {card}
-            </EuiToolTip>
-          )}
+  const cardNodes = filteredConnectors.map((item, index) => {
+    const checkEnabledResult = checkActionTypeEnabled(item.actionType);
+    const isLLMConnector = isLLMConnectorTypeId(item.actionType.id);
+    const description = isLLMConnector ? (
+      <EuiFlexGroup gutterSize="xs" alignItems="center" justifyContent="center" responsive={false}>
+        <EuiFlexItem grow={false}>
+          <EuiText size="s">{item.selectMessage}</EuiText>
         </EuiFlexItem>
-      );
-    });
+        <EuiFlexItem grow={false}>
+          <EuiIconTip
+            type="info"
+            color="subdued"
+            content={DEPRECATED_LLM_CONNECTOR_INFO}
+            data-test-subj={`${item.actionType.id}-deprecation-info`}
+          />
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    ) : (
+      item.selectMessage
+    );
+    const card = (
+      <EuiCard
+        betaBadgeProps={
+          item.isDeprecated
+            ? {
+                label: DEPRECATED_LABEL,
+                tooltipContent: DEPRECATED_CONNECTOR_TOOLTIP_CONTENT,
+                color: 'warning',
+              }
+            : item.isExperimental
+            ? { label: TECH_PREVIEW_LABEL, tooltipContent: TECH_PREVIEW_DESCRIPTION }
+            : undefined
+        }
+        role="listitem"
+        titleSize="xs"
+        data-test-subj={`${item.actionType.id}-card`}
+        icon={<EuiIcon size="xl" type={item.iconClass} aria-hidden={true} />}
+        title={item.name}
+        description={description}
+        isDisabled={!checkEnabledResult.isEnabled}
+        onClick={() => {
+          onActionTypeChange(item.actionType);
+        }}
+      />
+    );
+
+    return (
+      <EuiFlexItem key={index}>
+        {checkEnabledResult.isEnabled && card}
+        {checkEnabledResult.isEnabled === false && (
+          <EuiToolTip position="top" content={checkEnabledResult.message}>
+            {card}
+          </EuiToolTip>
+        )}
+      </EuiFlexItem>
+    );
+  });
 
   return loadingActionTypes ? (
     <SectionLoading>
