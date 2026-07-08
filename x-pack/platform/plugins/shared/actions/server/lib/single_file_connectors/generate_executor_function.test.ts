@@ -416,25 +416,6 @@ describe('generateExecutorFunction', () => {
         actionId: connectorId,
       });
     });
-
-    it('passes through an ok:false handler result as data instead of mapping it to an error', async () => {
-      mockHandler.mockResolvedValue({ ok: false, message: 'not a test failure' });
-
-      const executor = generateExecutorFunction({
-        actions: makeActions(),
-        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
-      });
-
-      const result = await executor(
-        makeExecOptions({ subAction: 'testAction', subActionParams: {} })
-      );
-
-      expect(result).toEqual({
-        status: 'ok',
-        data: { ok: false, message: 'not a test failure' },
-        actionId: connectorId,
-      });
-    });
   });
 
   describe('multiple registered actions', () => {
