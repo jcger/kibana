@@ -231,15 +231,20 @@ export interface ActionDefinition<TInput = unknown, TOutput = unknown, TError = 
 
 export interface ActionContext {
   client: AxiosInstance;
+  /**
+   * Leases a pooled, ready-to-use client by id. The connection is built on the
+   * first request for a given connector and reused across calls. Building is an
+   * async, side-effecting operation, so this is an explicit call (not a property)
+   * and only the client types a handler actually asks for are ever built.
+   *
+   * PoC: replaces per-handler `withMcpClient` connect/disconnect; lifetime is governed
+   * by LeasePool on the actions plugin, not the action stack frame.
+   */
+  getClient: <K extends ClientTypeId>(id: K) => Promise<ClientRegistry[K]>;
   config?: Record<string, unknown>;
   connectorUsageCollector?: unknown;
   log: Logger;
   secrets?: Record<string, unknown>;
-  /**
-   * Resolves a client for the given client type id, building and leasing it
-   * on first use and reusing it for the lifetime of the lease.
-   */
-  getClient: <K extends ClientTypeId>(id: K) => Promise<ClientRegistry[K]>;
 }
 
 // ============================================================================

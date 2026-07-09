@@ -7,20 +7,25 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
+import { loggerMock } from '@kbn/logging-mocks';
 import type { AuthContext } from '../connector_spec';
 import { BearerAuth } from './bearer';
 
+const mockAuthContext: AuthContext = {
+  getCustomHostSettings: () => undefined,
+  getToken: async () => null,
+  logger: loggerMock.create(),
+  sslSettings: {},
+};
+
 describe('BearerAuth', () => {
-  it('getAuthHeaders returns the bearer Authorization header', async () => {
-    const mockCtx: AuthContext = {
-      logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } as never,
-      getCustomHostSettings: () => undefined,
-      getToken: async () => null,
-      sslSettings: {} as never,
-    };
-
-    const headers = await BearerAuth.getAuthHeaders?.(mockCtx, { token: 'my-secret-token' });
-
-    expect(headers).toEqual({ Authorization: 'Bearer my-secret-token' });
+  describe('getAuthHeaders', () => {
+    it('returns Authorization header with bearer token', async () => {
+      const { getAuthHeaders } = BearerAuth;
+      if (!getAuthHeaders) throw new Error('BearerAuth.getAuthHeaders is not defined');
+      await expect(getAuthHeaders(mockAuthContext, { token: 'tok' })).resolves.toEqual({
+        Authorization: 'Bearer tok',
+      });
+    });
   });
 });
