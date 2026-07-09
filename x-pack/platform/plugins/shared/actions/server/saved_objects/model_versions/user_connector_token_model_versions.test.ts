@@ -5,14 +5,12 @@
  * 2.0.
  */
 
-import type { SavedObject, SavedObjectsType } from '@kbn/core-saved-objects-server';
 import type {
-  SavedObjectModelTransformationContext,
+  SavedObject,
+  SavedObjectsType,
   SavedObjectsFullModelVersion,
 } from '@kbn/core-saved-objects-server';
-import type { Logger } from '@kbn/core/server';
 import { createModelVersionTestMigrator } from '@kbn/core-test-helpers-model-versions';
-import { encryptedSavedObjectsMock } from '@kbn/encrypted-saved-objects-plugin/server/mocks';
 import { USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE } from '../../constants/saved_objects';
 import { userConnectorTokenMappings } from '../mappings';
 import {
@@ -21,14 +19,12 @@ import {
 } from '../user_connector_token_encryption';
 import { userConnectorTokenModelVersions } from './user_connector_token_model_versions';
 
-const encryptedSavedObjects = encryptedSavedObjectsMock.createSetup({ canEncrypt: true });
-
 const userConnectorTokenType: SavedObjectsType = {
   name: USER_CONNECTOR_TOKEN_SAVED_OBJECT_TYPE,
   hidden: true,
   namespaceType: 'agnostic',
   mappings: userConnectorTokenMappings,
-  modelVersions: userConnectorTokenModelVersions(encryptedSavedObjects),
+  modelVersions: userConnectorTokenModelVersions,
 };
 
 const createV1TokenDocument = (): SavedObject => ({
@@ -59,23 +55,10 @@ describe('userConnectorTokenModelVersions', () => {
   });
 
   describe('version 2', () => {
-    const version2 = userConnectorTokenModelVersions(encryptedSavedObjects)[
-      '2'
-    ] as SavedObjectsFullModelVersion;
-    const context: SavedObjectModelTransformationContext = {
-      log: {
-        get: () => ({ debug: jest.fn(), info: jest.fn(), warn: jest.fn() }),
-      } as unknown as Logger,
-      modelVersion: 2,
-      namespaceType: 'agnostic',
-    };
+    const version2 = userConnectorTokenModelVersions['2'] as SavedObjectsFullModelVersion;
 
-    it('has a no-op backfill and userCloudId mappings addition', () => {
-      expect(version2.changes).toHaveLength(2);
-
-      const backfillChange = version2.changes.find((change) => change.type === 'data_backfill');
-      expect(backfillChange).toBeDefined();
-      expect(backfillChange?.type).toBe('data_backfill');
+    it('only adds the userCloudId mappings and does not re-encrypt existing documents', () => {
+      expect(version2.changes).toHaveLength(1);
 
       const mappingsChange = version2.changes.find((change) => change.type === 'mappings_addition');
       expect(mappingsChange).toBeDefined();
@@ -84,19 +67,8 @@ describe('userConnectorTokenModelVersions', () => {
           userCloudId: { type: 'keyword', ignore_above: 1024 },
         });
       }
-    });
 
-    it('preserves V1 attributes in the no-op backfill', () => {
-      const backfillChange = version2.changes.find((change) => change.type === 'data_backfill');
-      const backfillFn =
-        backfillChange && backfillChange.type === 'data_backfill'
-          ? backfillChange.backfillFn
-          : undefined;
-
-      const document = createV1TokenDocument();
-      const result = backfillFn!(document, context);
-
-      expect(result).toBe(document);
+      expect(version2.changes.some((change) => change.type === 'data_backfill')).toBe(false);
     });
   });
 

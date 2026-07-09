@@ -207,7 +207,7 @@ export function setupSavedObjects(
     management: {
       importableAndExportable: false,
     },
-    modelVersions: userConnectorTokenModelVersions(encryptedSavedObjects),
+    modelVersions: userConnectorTokenModelVersions,
   });
 
   encryptedSavedObjects.registerType(userConnectorTokenEncryptedRegistrationV2);
