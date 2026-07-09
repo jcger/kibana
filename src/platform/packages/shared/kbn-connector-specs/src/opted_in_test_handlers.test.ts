@@ -42,12 +42,14 @@ describe('opted-in connector test handlers', () => {
       const handler = spec.test.handler;
       const ctx = createFailingContext();
 
+      let result: unknown;
       try {
-        const result = await handler(ctx);
-        expect(result).not.toMatchObject({ ok: false });
+        result = await handler(ctx);
       } catch {
         // throw-on-failure contract satisfied
+        return;
       }
+      expect(result).not.toMatchObject({ ok: false });
     }
   );
 
