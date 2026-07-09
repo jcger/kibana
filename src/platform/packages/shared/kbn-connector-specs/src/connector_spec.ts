@@ -26,6 +26,7 @@ import type { Logger } from '@kbn/logging';
 import type { CustomHostSettings, ProxySettings, SSLSettings } from '@kbn/actions-utils';
 import type { LicenseType } from '@kbn/licensing-types';
 import type { AxiosHeaderValue, AxiosInstance } from 'axios';
+import type { ClientRegistry, ClientTypeId } from './lib/clients';
 
 export { UISchemas } from './connector_spec_ui';
 
@@ -133,6 +134,7 @@ export interface AuthTypeSpec<T extends Record<string, unknown>> {
   normalizeSchema?: (defaults?: Record<string, unknown>) => z.ZodObject<Record<string, z.ZodType>>;
   configure: (ctx: AuthContext, axiosInstance: AxiosInstance, secret: T) => Promise<AxiosInstance>;
   authMode?: AuthMode;
+  getAuthHeaders?(ctx: AuthContext, secret: T): Promise<Record<string, string>>;
 }
 
 export type NormalizedAuthType = AuthTypeSpec<Record<string, unknown>>;
@@ -233,6 +235,11 @@ export interface ActionContext {
   connectorUsageCollector?: unknown;
   log: Logger;
   secrets?: Record<string, unknown>;
+  /**
+   * Resolves a client for the given client type id, building and leasing it
+   * on first use and reusing it for the lifetime of the lease.
+   */
+  getClient: <K extends ClientTypeId>(id: K) => Promise<ClientRegistry[K]>;
 }
 
 // ============================================================================
