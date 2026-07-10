@@ -29,7 +29,7 @@ import { HealthCheck } from '../../../components/health_check';
 import { useKibana } from '../../../../common/lib/kibana';
 import ConnectorEventLogListTableWithApi from './actions_connectors_event_log_list_table';
 import type { ActionConnector } from '../../../../types';
-import { EditConnectorTabs } from '../../../../types';
+import type { EditConnectorTabs } from '../../../../types';
 import { CreateConnectorFlyout } from '../../action_connector_form/create_connector_flyout';
 import { EditConnectorFlyout } from '../../action_connector_form/edit_connector_flyout';
 import type { EditConnectorProps } from './types';
@@ -293,8 +293,9 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
           onClose={() => {
             setAddFlyoutVisibility(false);
           }}
-          onTestConnector={(connector) => editItem(connector, EditConnectorTabs.Test)}
+          enableSaveAndTest
           onConnectorCreated={loadActions}
+          onConnectorUpdated={loadActions}
           actionTypeRegistry={actionTypeRegistry}
         />
       )}

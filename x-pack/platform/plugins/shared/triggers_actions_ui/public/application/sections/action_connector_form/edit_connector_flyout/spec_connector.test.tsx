@@ -26,7 +26,6 @@ describe('spec connector with API fetch', () => {
   let appMockRenderer: AppMockRenderer;
   const onClose = jest.fn();
   const onConnectorCreated = jest.fn();
-  const onTestConnector = jest.fn();
 
   const actionTypeRegistry = actionTypeRegistryMock.create();
 
@@ -186,7 +185,7 @@ describe('spec connector with API fetch', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        onTestConnector={onTestConnector}
+        enableSaveAndTest
       />
     );
 
