@@ -247,7 +247,7 @@ export interface ActionTypeCoreFields<
    */
   description?: string;
   /**
-   * When true, the connector type supports testing via the Test tab.
+   * When true, the connector type supports testing.
    */
   isTestable?: boolean;
   /**
