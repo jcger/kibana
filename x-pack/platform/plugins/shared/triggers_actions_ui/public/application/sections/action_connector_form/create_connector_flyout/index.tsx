@@ -39,11 +39,13 @@ import type {
   ActionTypeIndex,
   ActionTypeRegistryContract,
 } from '../../../../types';
+import { EditConnectorTabs } from '../../../../types';
 import { ActionTypeMenu } from '../action_type_menu';
 import type { ResetForm } from '../connector_form';
 import { ConnectorForm } from '../connector_form';
 import { useConnectorCreateForm } from '../use_connector_create_form';
 import { useKibana } from '../../../../common/lib/kibana';
+import { EditConnectorFlyoutContent } from '../edit_connector_flyout/content';
 import { FlyoutHeader } from './header';
 import { FlyoutFooter } from './footer';
 import { UpgradeLicenseCallOut } from './upgrade_license_callout';
@@ -165,21 +167,20 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
 
   const resetActionType = useCallback(() => setActionType(null), []);
 
+  const [createdConnector, setCreatedConnector] = useState<ActionConnector | null>(null);
+  const editCloseAttemptRef = useRef<() => void>();
+
   const testConnector = useCallback(async () => {
-    const createdConnector = await validateAndCreateConnector();
+    const connector = await validateAndCreateConnector();
 
-    if (createdConnector) {
+    if (connector) {
       if (onConnectorCreated) {
-        onConnectorCreated(createdConnector);
+        onConnectorCreated(connector);
       }
 
-      if (onTestConnector) {
-        onTestConnector(createdConnector);
-      }
-
-      onClose();
+      setCreatedConnector(connector);
     }
-  }, [validateAndCreateConnector, onClose, onConnectorCreated, onTestConnector]);
+  }, [validateAndCreateConnector, onConnectorCreated]);
 
   const onSubmit = useCallback(async () => {
     const createdConnector = await validateAndCreateConnector();
@@ -229,6 +230,40 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
   const handleErrorFocus = useCallback((node: HTMLDivElement) => {
     node?.focus();
   }, []);
+
+  useEffect(() => {
+    if (createdConnector) {
+      document.getElementById('flyoutTitle')?.focus();
+    }
+  }, [createdConnector]);
+
+  const onFlyoutClose = useCallback(() => {
+    if (createdConnector) {
+      editCloseAttemptRef.current?.();
+      return;
+    }
+    onClose();
+  }, [createdConnector, onClose]);
+
+  if (createdConnector) {
+    return (
+      <EuiFlyout
+        onClose={onFlyoutClose}
+        aria-labelledby="flyoutActionEditTitle"
+        size="m"
+        data-test-subj="edit-connector-flyout"
+      >
+        <EditConnectorFlyoutContent
+          actionTypeRegistry={actionTypeRegistry}
+          connector={createdConnector}
+          onClose={onClose}
+          tab={EditConnectorTabs.Test}
+          icon={icon}
+          onCloseAttemptRef={editCloseAttemptRef}
+        />
+      </EuiFlyout>
+    );
+  }
 
   return (
     <EuiFlyout

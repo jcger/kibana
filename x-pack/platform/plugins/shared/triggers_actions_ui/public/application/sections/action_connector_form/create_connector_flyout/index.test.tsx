@@ -15,6 +15,7 @@ import type { AppMockRenderer } from '../../test_utils';
 import { createAppMockRenderer } from '../../test_utils';
 import { TECH_PREVIEW_LABEL } from '../../translations';
 import { AgentBuilderConnectorFeatureId } from '@kbn/actions-plugin/common';
+import type { GenericValidationResult } from '../../../../types';
 
 jest.mock('../../../lib/action_connector_api', () => ({
   ...(jest.requireActual('../../../lib/action_connector_api') as any),
@@ -42,6 +43,10 @@ describe('CreateConnectorFlyout', () => {
 
   const actionTypeModel = actionTypeRegistryMock.createMockActionTypeModel({
     actionConnectorFields: lazy(() => import('../connector_mock')),
+    validateParams: (): Promise<GenericValidationResult<unknown>> => {
+      const validationResult = { errors: {} };
+      return Promise.resolve(validationResult);
+    },
   });
 
   loadActionTypes.mockResolvedValue([
@@ -691,6 +696,11 @@ describe('CreateConnectorFlyout', () => {
 
   describe('Testing', () => {
     it('saves and test correctly', async () => {
+      appMockRenderer.coreStart.application.capabilities = {
+        ...appMockRenderer.coreStart.application.capabilities,
+        actions: { save: true, show: true, execute: true },
+      };
+
       appMockRenderer.render(
         <CreateConnectorFlyout
           actionTypeRegistry={actionTypeRegistry}
@@ -722,17 +732,14 @@ describe('CreateConnectorFlyout', () => {
         );
       });
 
-      expect(onClose).toHaveBeenCalled();
-      expect(onTestConnector).toHaveBeenCalledWith({
-        actionTypeId: 'test',
-        config: { testTextField: 'My text field' },
-        id: '123',
-        isDeprecated: false,
-        isMissingSecrets: undefined,
-        isPreconfigured: false,
-        name: 'My test',
-        secrets: {},
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-connector-flyout')).toBeInTheDocument();
       });
+
+      expect(screen.queryByTestId('create-connector-flyout')).not.toBeInTheDocument();
+      expect(screen.getByTestId('testConnectorTab')).toHaveAttribute('aria-selected', 'true');
+      expect(onClose).not.toHaveBeenCalled();
+      expect(onTestConnector).not.toHaveBeenCalled();
       expect(onConnectorCreated).toHaveBeenCalledWith({
         actionTypeId: 'test',
         config: { testTextField: 'My text field' },
