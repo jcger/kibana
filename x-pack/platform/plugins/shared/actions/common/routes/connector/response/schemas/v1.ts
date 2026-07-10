@@ -159,7 +159,7 @@ export const connectorTypeResponseSchema = schema.object(
     ),
     is_testable: schema.boolean({
       meta: {
-        description: 'Indicates whether the connector type supports testing via the Test tab.',
+        description: 'Indicates whether the connector type supports testing.',
       },
     }),
   },
