@@ -273,7 +273,7 @@ export interface ConnectorTest {
    */
   handler: (ctx: ActionContext) => Promise<ConnectorTestHandlerResult>;
   description?: string;
-  /** Transitional per-team consent marker: owning team opted this Test tab into the product UI. Requires throw-on-failure handler contract. */
+  /** Flag to opt-in for testing */
   enabled?: boolean;
 }
 
