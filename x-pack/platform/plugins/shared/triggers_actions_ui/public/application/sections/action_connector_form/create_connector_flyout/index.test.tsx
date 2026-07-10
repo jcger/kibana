@@ -693,6 +693,39 @@ describe('CreateConnectorFlyout', () => {
   });
 
   describe('Testing', () => {
+    const setupSaveAndTest = async () => {
+      appMockRenderer.coreStart.application.capabilities = {
+        ...appMockRenderer.coreStart.application.capabilities,
+        actions: { save: true, show: true, execute: true },
+      };
+
+      appMockRenderer.render(
+        <CreateConnectorFlyout
+          actionTypeRegistry={actionTypeRegistry}
+          onClose={onClose}
+          onConnectorCreated={onConnectorCreated}
+          enableSaveAndTest
+        />
+      );
+
+      await userEvent.click(await screen.findByTestId(`${actionTypeModel.id}-card`));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('test-connector-text-field')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByTestId('nameInput'));
+      await userEvent.paste('My test');
+      await userEvent.click(screen.getByTestId('test-connector-text-field'));
+      await userEvent.paste('My text field');
+
+      await userEvent.click(screen.getByTestId('create-connector-flyout-save-test-btn'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-connector-flyout')).toBeInTheDocument();
+      });
+    };
+
     it('saves and test correctly', async () => {
       appMockRenderer.coreStart.application.capabilities = {
         ...appMockRenderer.coreStart.application.capabilities,
@@ -747,6 +780,32 @@ describe('CreateConnectorFlyout', () => {
         name: 'My test',
         secrets: {},
       });
+    });
+
+    it('closes the flyout via chrome close after transition when form is clean', async () => {
+      await setupSaveAndTest();
+
+      await userEvent.click(screen.getByTestId('euiFlyoutCloseButton'));
+
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it('shows discard modal via chrome close after transition when form is dirty', async () => {
+      await setupSaveAndTest();
+
+      await userEvent.click(screen.getByTestId('configureConnectorTab'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('nameInput')).toBeInTheDocument();
+      });
+
+      await userEvent.clear(screen.getByTestId('nameInput'));
+      await userEvent.paste('Modified name');
+
+      await userEvent.click(screen.getByTestId('euiFlyoutCloseButton'));
+
+      expect(await screen.findByText('Discard unsaved changes to connector?')).toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
     });
   });
 

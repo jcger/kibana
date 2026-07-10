@@ -235,7 +235,7 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
 
   useEffect(() => {
     if (createdConnector) {
-      document.getElementById('flyoutTitle')?.focus();
+      document.getElementById('flyoutActionEditTitle')?.focus();
     }
   }, [createdConnector]);
 

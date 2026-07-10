@@ -140,6 +140,27 @@ describe('EditConnectorFlyout', () => {
     expect(getByText('Discard unsaved changes to connector?')).toBeInTheDocument();
   });
 
+  it('shows discard modal when closing via flyout chrome close button if form is dirty', async () => {
+    const { getByTestId } = appMockRenderer.render(
+      <EditConnectorFlyout
+        actionTypeRegistry={actionTypeRegistry}
+        onClose={onClose}
+        connector={connector}
+        onConnectorUpdated={onConnectorUpdated}
+      />
+    );
+
+    expect(await screen.findByTestId('nameInput')).toBeInTheDocument();
+
+    await userEvent.clear(getByTestId('nameInput'));
+    await userEvent.type(getByTestId('nameInput'), 'My new name', { delay: 10 });
+
+    await userEvent.click(getByTestId('euiFlyoutCloseButton'));
+
+    expect(await screen.findByText('Discard unsaved changes to connector?')).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('renders the connector form correctly', async () => {
     const { getByTestId, queryByText } = appMockRenderer.render(
       <EditConnectorFlyout
