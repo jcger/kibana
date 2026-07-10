@@ -6,7 +6,7 @@
  */
 
 import type { IconType } from '@elastic/eui';
-import React, { memo, useCallback, useRef } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { EuiFlyout } from '@elastic/eui';
 import type { ActionConnector, ActionTypeRegistryContract } from '../../../../types';
 import { EditConnectorTabs } from '../../../../types';
@@ -34,11 +34,20 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   hideRulesTab = false,
   isTestable,
 }) => {
-  const onCloseAttemptRef = useRef<() => void>();
+  const [isFormModified, setIsFormModified] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const onFormModifiedChange = useCallback((formModified: boolean) => {
+    setIsFormModified(formModified);
+  }, []);
 
   const onFlyoutClose = useCallback(() => {
-    onCloseAttemptRef.current?.();
-  }, []);
+    if (isFormModified) {
+      setShowConfirmModal(true);
+      return;
+    }
+    onClose();
+  }, [isFormModified, onClose]);
 
   return (
     <EuiFlyout
@@ -56,7 +65,11 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
         icon={icon}
         hideRulesTab={hideRulesTab}
         isTestable={isTestable}
-        onCloseAttemptRef={onCloseAttemptRef}
+        isFormModified={isFormModified}
+        onFormModifiedChange={onFormModifiedChange}
+        onCloseAttempt={onFlyoutClose}
+        showConfirmModal={showConfirmModal}
+        onConfirmModalCancel={() => setShowConfirmModal(false)}
       />
     </EuiFlyout>
   );

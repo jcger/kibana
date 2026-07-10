@@ -170,7 +170,8 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
   const resetActionType = useCallback(() => setActionType(null), []);
 
   const [createdConnector, setCreatedConnector] = useState<ActionConnector | null>(null);
-  const editCloseAttemptRef = useRef<() => void>();
+  const [isFormModified, setIsFormModified] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const testConnector = useCallback(async () => {
     const connector = await validateAndCreateConnector();
@@ -218,16 +219,13 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [allActionTypes]);
 
-  const [flyoutHeaderName, setFlyoutHeaderName] = useState<string>('Select a connector');
-  useEffect(() => {
-    if (actionType) {
-      if (!actionType.name.toLowerCase().includes('connector')) {
-        setFlyoutHeaderName(`${actionType.name} connector`);
-      } else {
-        setFlyoutHeaderName(actionType.name);
-      }
-    }
-  }, [actionType]);
+  const flyoutHeaderName = actionType
+    ? actionType.name.toLowerCase().includes('connector')
+      ? actionType.name
+      : `${actionType.name} connector`
+    : i18n.translate('xpack.triggersActionsUI.createConnectorFlyout.selectConnector', {
+        defaultMessage: 'Select a connector',
+      });
 
   const handleErrorFocus = useCallback((node: HTMLDivElement) => {
     node?.focus();
@@ -239,13 +237,17 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
     }
   }, [createdConnector]);
 
+  const onFormModifiedChange = useCallback((formModified: boolean) => {
+    setIsFormModified(formModified);
+  }, []);
+
   const onFlyoutClose = useCallback(() => {
-    if (createdConnector) {
-      editCloseAttemptRef.current?.();
+    if (createdConnector && isFormModified) {
+      setShowConfirmModal(true);
       return;
     }
     onClose();
-  }, [createdConnector, onClose]);
+  }, [createdConnector, isFormModified, onClose]);
 
   if (createdConnector) {
     return (
@@ -262,7 +264,11 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
           tab={EditConnectorTabs.Test}
           onConnectorUpdated={onConnectorUpdated}
           icon={icon}
-          onCloseAttemptRef={editCloseAttemptRef}
+          isFormModified={isFormModified}
+          onFormModifiedChange={onFormModifiedChange}
+          onCloseAttempt={onFlyoutClose}
+          showConfirmModal={showConfirmModal}
+          onConfirmModalCancel={() => setShowConfirmModal(false)}
         />
       </EuiFlyout>
     );

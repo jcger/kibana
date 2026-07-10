@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import type { MutableRefObject, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import React, { useCallback, useEffect, useRef, useMemo, useState } from 'react';
 import useDebounce from 'react-use/lib/useDebounce';
 import type { IconType } from '@elastic/eui';
@@ -56,7 +56,11 @@ export interface EditConnectorFlyoutContentProps {
   icon?: IconType;
   hideRulesTab?: boolean;
   isTestable?: boolean;
-  onCloseAttemptRef?: MutableRefObject<(() => void) | undefined>;
+  isFormModified: boolean;
+  onFormModifiedChange: (isModified: boolean) => void;
+  onCloseAttempt: () => void;
+  showConfirmModal: boolean;
+  onConfirmModalCancel: () => void;
 }
 
 const getConnectorWithoutSecrets = (
@@ -77,7 +81,11 @@ export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProp
   icon,
   hideRulesTab = false,
   isTestable: isTestableProp,
-  onCloseAttemptRef,
+  isFormModified,
+  onFormModifiedChange: onFormModifiedChangeProp,
+  onCloseAttempt,
+  showConfirmModal,
+  onConfirmModalCancel,
 }) => {
   const confirmModalTitleId = useGeneratedHtmlId();
 
@@ -134,8 +142,6 @@ export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProp
     [testExecutionResult, setTestExecutionResult]
   );
 
-  const [isFormModified, setIsFormModified] = useState<boolean>(false);
-  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(true);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const { preSubmitValidator, submit, isValid: isFormValid, isSubmitting } = formState;
@@ -208,25 +214,11 @@ export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProp
       if (formModified) {
         setIsSaved(false);
       }
-      setIsFormModified(formModified);
+      onFormModifiedChangeProp(formModified);
       setTestExecutionResult(none);
     },
-    [setIsFormModified]
+    [onFormModifiedChangeProp]
   );
-
-  const closeFlyout = useCallback(() => {
-    if (isFormModified) {
-      setShowConfirmModal(true);
-      return;
-    }
-    onClose();
-  }, [onClose, isFormModified, setShowConfirmModal]);
-
-  useEffect(() => {
-    if (onCloseAttemptRef) {
-      onCloseAttemptRef.current = closeFlyout;
-    }
-  }, [onCloseAttemptRef, closeFlyout]);
 
   const onClickSave = useCallback(async () => {
     setPreSubmitValidationErrorMessage(null);
@@ -490,7 +482,7 @@ export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProp
         {selectedTab === EditConnectorTabs.Rules && renderConnectorRulesList()}
       </EuiFlyoutBody>
       <FlyoutFooter
-        onClose={closeFlyout}
+        onClose={onCloseAttempt}
         isSaving={isSaving}
         isSaved={isSaved}
         disabled={disabled}
@@ -510,7 +502,7 @@ export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProp
             }
           )}
           onCancel={() => {
-            setShowConfirmModal(false);
+            onConfirmModalCancel();
           }}
           onConfirm={onClose}
           cancelButtonText={i18n.translate(
