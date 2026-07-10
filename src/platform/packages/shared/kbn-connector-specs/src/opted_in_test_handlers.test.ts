@@ -36,36 +36,10 @@ describe('opted-in connector test handlers', () => {
     }
   );
 
-  it.each(optedInSpecs)(
-    '%s test handler must throw on failure, not resolve with ok:false',
-    async (_exportName, spec) => {
-      const handler = spec.test.handler;
-      const ctx = createFailingContext();
-
-      let result: unknown;
-      try {
-        result = await handler(ctx);
-      } catch {
-        // throw-on-failure contract satisfied
-        return;
-      }
-      expect(result).not.toMatchObject({ ok: false });
-    }
-  );
-
-  it('would fail guard for legacy handlers that resolve with ok:false', async () => {
-    const legacyHandler = async (ctx: ActionContext) => {
-      void ctx;
-      return {
-        ok: false,
-        message: 'bad credentials',
-      };
-    };
+  it.each(optedInSpecs)('%s test handler must throw on failure', async (_exportName, spec) => {
+    const handler = spec.test.handler;
     const ctx = createFailingContext();
 
-    await expect(async () => {
-      const result = await legacyHandler(ctx);
-      expect(result).not.toMatchObject({ ok: false });
-    }).rejects.toThrow();
+    await expect(handler(ctx)).rejects.toThrow();
   });
 });
