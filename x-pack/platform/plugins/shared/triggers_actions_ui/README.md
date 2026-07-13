@@ -1594,7 +1594,7 @@ export interface ConnectorAddFlyoutProps {
   featureId?: string;
   onConnectorCreated?: (connector: ActionConnector) => void;
   onTestConnector?: (connector: ActionConnector) => void;
-  transitionToEditAfterSaveAndTest?: boolean;
+  enableSaveAndTest?: boolean;
 }
 ```
 
@@ -1604,8 +1604,8 @@ export interface ConnectorAddFlyoutProps {
 | onClose            | Called when closing the flyout                                                                                                                                                                                                                                             |
 | featureId          | Optional property that filters which action types are loaded when the flyout is opened. Each action type configures the feature ids it is available in during [server side registration](https://github.com/elastic/kibana/tree/main/x-pack/platform/plugins/shared/actions#action-types). |
 | onConnectorCreated | Optional property. Function to be called after the creation of the connector.                                                                                                                                                                                              |
-| onTestConnector    | Optional property. Function to be called when the user press the Save & Test button. Invoked and the flyout is closed after the connector is saved.                                                                                                                       |
-| transitionToEditAfterSaveAndTest | Optional property. When `true`, shows a Save & Test button that saves the connector and transitions the same flyout in-place to the Test step, instead of invoking `onTestConnector`. This is opt-in because embedded consumers can use the creation callbacks to close or replace the flyout. |
+| onTestConnector    | Optional property. Function to be called after the connector is saved via the Save & Test button. For backward compatibility, providing this callback also shows the button, but it does not affect the in-place transition to the Test tab.                              |
+| enableSaveAndTest  | Optional property. When `true`, shows a Save & Test button for connector types that support testing. Clicking it saves the connector and transitions the same flyout in-place to the Test step.                                                                          |
 
 ## Embed the Edit Connector flyout within any Kibana plugin
 

@@ -15,15 +15,13 @@ import {
 } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
 import { FormattedMessage } from '@kbn/i18n-react';
-import type { ActionConnector } from '../../../../types';
 
 interface Props {
   hasConnectorTypeSelected: boolean;
   onBack: () => void;
   onCancel: () => void;
   isUsingInitialConnector: boolean;
-  onTestConnector?: (connector: ActionConnector) => void;
-  transitionToEditAfterSaveAndTest?: boolean;
+  enableSaveAndTest?: boolean;
   testConnector: () => Promise<void>;
   isSaving: boolean;
   disabled: boolean;
@@ -36,8 +34,7 @@ const FlyoutFooterComponent: React.FC<Props> = ({
   onCancel,
   onBack,
   isUsingInitialConnector,
-  onTestConnector,
-  transitionToEditAfterSaveAndTest,
+  enableSaveAndTest,
   testConnector,
   isSaving,
   disabled,
@@ -72,7 +69,7 @@ const FlyoutFooterComponent: React.FC<Props> = ({
           <EuiFlexItem grow={false}>
             <EuiFlexGroup justifyContent="spaceBetween">
               <>
-                {isTestable && (onTestConnector || transitionToEditAfterSaveAndTest) && (
+                {isTestable && enableSaveAndTest && (
                   <EuiFlexItem grow={false}>
                     <EuiButton
                       color="primary"

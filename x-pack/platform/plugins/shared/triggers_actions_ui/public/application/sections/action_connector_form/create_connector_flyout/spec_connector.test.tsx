@@ -62,6 +62,7 @@ describe('spec connector', () => {
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
         onTestConnector={onTestConnector}
+        enableSaveAndTest
       />
     );
 
@@ -237,6 +238,7 @@ describe('spec connector with API fetch', () => {
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
         onTestConnector={onTestConnector}
+        enableSaveAndTest
       />
     );
 

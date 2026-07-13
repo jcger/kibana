@@ -56,7 +56,7 @@ export interface CreateConnectorFlyoutProps {
   featureId?: string;
   onConnectorCreated?: (connector: ActionConnector) => void;
   onTestConnector?: (connector: ActionConnector) => void;
-  transitionToEditAfterSaveAndTest?: boolean;
+  enableSaveAndTest?: boolean;
   isServerless?: boolean;
   initialConnector?: Partial<Omit<ActionConnector, 'secrets'>> & { actionTypeId: string };
   icon?: IconType;
@@ -68,7 +68,7 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
   onClose,
   onConnectorCreated,
   onTestConnector,
-  transitionToEditAfterSaveAndTest,
+  enableSaveAndTest,
   initialConnector,
   icon,
 }) => {
@@ -181,24 +181,13 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
         onConnectorCreated(connector);
       }
 
-      if (transitionToEditAfterSaveAndTest) {
-        setCreatedConnector(connector);
-        return;
-      }
-
       if (onTestConnector) {
         onTestConnector(connector);
       }
 
-      onClose();
+      setCreatedConnector(connector);
     }
-  }, [
-    validateAndCreateConnector,
-    onConnectorCreated,
-    transitionToEditAfterSaveAndTest,
-    onTestConnector,
-    onClose,
-  ]);
+  }, [validateAndCreateConnector, onConnectorCreated, onTestConnector]);
 
   const onSubmit = useCallback(async () => {
     const connector = await validateAndCreateConnector();
@@ -499,8 +488,7 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
         onBack={resetActionType}
         onCancel={onClose}
         isUsingInitialConnector={isUsingInitialConnector}
-        onTestConnector={onTestConnector}
-        transitionToEditAfterSaveAndTest={transitionToEditAfterSaveAndTest}
+        enableSaveAndTest={enableSaveAndTest || Boolean(onTestConnector)}
         disabled={disabled}
         isSaving={isSaving}
         onSubmit={onSubmit}

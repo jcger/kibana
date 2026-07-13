@@ -168,7 +168,7 @@ describe('CreateConnectorFlyout', () => {
     });
   });
 
-  it('does not show the save and test button if the onTestConnector is not provided', async () => {
+  it('does not show the save and test button without enableSaveAndTest or onTestConnector', async () => {
     appMockRenderer.render(
       <CreateConnectorFlyout
         actionTypeRegistry={actionTypeRegistry}
@@ -176,6 +176,12 @@ describe('CreateConnectorFlyout', () => {
         onConnectorCreated={onConnectorCreated}
       />
     );
+
+    await userEvent.click(await screen.findByTestId(`${actionTypeModel.id}-card`));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('create-connector-flyout-save-btn')).toBeInTheDocument();
+    });
 
     expect(screen.queryByTestId('create-connector-flyout-save-test-btn')).not.toBeInTheDocument();
   });
@@ -205,6 +211,7 @@ describe('CreateConnectorFlyout', () => {
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
         onTestConnector={onTestConnector}
+        enableSaveAndTest
       />
     );
 
@@ -692,13 +699,19 @@ describe('CreateConnectorFlyout', () => {
   });
 
   describe('Testing', () => {
-    it('saves and test correctly', async () => {
+    it('invokes onTestConnector and transitions in-place without closing the flyout', async () => {
+      appMockRenderer.coreStart.application.capabilities = {
+        ...appMockRenderer.coreStart.application.capabilities,
+        actions: { save: true, show: true, execute: true },
+      };
+
       appMockRenderer.render(
         <CreateConnectorFlyout
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
           onTestConnector={onTestConnector}
+          enableSaveAndTest
         />
       );
 
@@ -724,7 +737,9 @@ describe('CreateConnectorFlyout', () => {
         );
       });
 
-      expect(onClose).toHaveBeenCalled();
+      expect(await screen.findByTestId('edit-connector-flyout')).toBeInTheDocument();
+      expect(screen.getByTestId('testConnectorTab')).toHaveAttribute('aria-selected', 'true');
+      expect(onClose).not.toHaveBeenCalled();
       expect(onTestConnector).toHaveBeenCalledWith({
         actionTypeId: 'test',
         config: { testTextField: 'My text field' },
@@ -748,7 +763,7 @@ describe('CreateConnectorFlyout', () => {
     });
   });
 
-  describe('transitionToEditAfterSaveAndTest', () => {
+  describe('Save & Test transition', () => {
     const setupSaveAndTest = async () => {
       appMockRenderer.coreStart.application.capabilities = {
         ...appMockRenderer.coreStart.application.capabilities,
@@ -760,7 +775,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          transitionToEditAfterSaveAndTest
+          enableSaveAndTest
         />
       );
 
