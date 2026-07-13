@@ -43,7 +43,7 @@ import {
   OAuthRedirectMode,
   useConnectorOAuthDisconnect,
 } from '@kbn/response-ops-oauth-hooks';
-import { deleteActions } from '../../../lib/action_connector_api';
+import { loadActionTypes, deleteActions } from '../../../lib/action_connector_api';
 import { isConnectorTypeTestable } from '../../../lib/is_connector_type_testable';
 import {
   hasDeleteActionsCapability,
@@ -90,8 +90,6 @@ const ActionsConnectorsList = ({
   loadActions,
   setActions,
   connectorAuthStatusError,
-  actionTypesIndex,
-  isLoadingActionTypes = false,
 }: {
   setAddFlyoutVisibility: (state: boolean) => void;
   editItem: (actionConnector: ActionConnector, tab: EditConnectorTabs, isFix?: boolean) => void;
@@ -100,10 +98,10 @@ const ActionsConnectorsList = ({
   loadActions: () => Promise<void>;
   setActions: (state: ActionConnector[]) => void;
   connectorAuthStatusError?: string;
-  actionTypesIndex?: ActionTypeIndex;
-  isLoadingActionTypes?: boolean;
 }) => {
   const {
+    http,
+    notifications: { toasts },
     application: { capabilities },
     setBreadcrumbs,
     chrome,
@@ -129,8 +127,10 @@ const ActionsConnectorsList = ({
     [isEarsEnabled, isEarsExperimentalEnabled]
   );
 
+  const [actionTypesIndex, setActionTypesIndex] = useState<ActionTypeIndex | undefined>(undefined);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [selectedItems, setSelectedItems] = useState<ActionConnectorTableItem[]>([]);
+  const [isLoadingActionTypes, setIsLoadingActionTypes] = useState<boolean>(false);
   const [isDeletingConnectors, setIsDeletingConnectors] = useState<boolean>(false);
   const [connectorsToDelete, setConnectorsToDelete] = useState<string[]>([]);
   const [showWarningText, setShowWarningText] = useState<boolean>(false);
@@ -153,6 +153,30 @@ const ActionsConnectorsList = ({
     setBreadcrumbs([getAlertingSectionBreadcrumb('connectors')]);
     chrome.docTitle.change(getCurrentDocTitle('connectors'));
   }, [chrome, setBreadcrumbs]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setIsLoadingActionTypes(true);
+        const actionTypes = await loadActionTypes({ http });
+        const index: ActionTypeIndex = {};
+        for (const actionTypeItem of actionTypes) {
+          index[actionTypeItem.id] = actionTypeItem;
+        }
+        setActionTypesIndex(index);
+      } catch (e) {
+        toasts.addDanger({
+          title: i18n.translate(
+            'xpack.triggersActionsUI.sections.actionsConnectorsList.unableToLoadConnectorTypesMessage',
+            { defaultMessage: 'Unable to load connector types' }
+          ),
+        });
+      } finally {
+        setIsLoadingActionTypes(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const actionConnectorTableItems: ActionConnectorTableItem[] = useMemo(() => {
     return actionTypesIndex
