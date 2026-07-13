@@ -6,18 +6,12 @@
  */
 
 import { TEST_CONNECTOR_SUB_ACTION } from '@kbn/connector-specs';
-import { ACTION_TYPE_SOURCES } from '@kbn/actions-types';
-import type { ActionType } from '../../types';
 
 export function getSpecConnectorTestExecutionParams(
-  actionType: ActionType | undefined,
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
+  { isSpec, isTestable }: { isSpec: boolean; isTestable: boolean }
 ): Record<string, unknown> {
-  if (
-    actionType?.source !== ACTION_TYPE_SOURCES.spec ||
-    !actionType.isTestable ||
-    params.subAction
-  ) {
+  if (!isSpec || !isTestable || params.subAction) {
     return params;
   }
 
