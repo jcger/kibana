@@ -15,7 +15,6 @@ import type { AppMockRenderer } from '../../test_utils';
 import { createAppMockRenderer } from '../../test_utils';
 import { TECH_PREVIEW_LABEL } from '../../translations';
 import { AgentBuilderConnectorFeatureId } from '@kbn/actions-plugin/common';
-import type { GenericValidationResult } from '../../../../types';
 
 jest.mock('../../../lib/action_connector_api', () => ({
   ...(jest.requireActual('../../../lib/action_connector_api') as any),
@@ -43,10 +42,8 @@ describe('CreateConnectorFlyout', () => {
 
   const actionTypeModel = actionTypeRegistryMock.createMockActionTypeModel({
     actionConnectorFields: lazy(() => import('../connector_mock')),
-    validateParams: (): Promise<GenericValidationResult<unknown>> => {
-      const validationResult = { errors: {} };
-      return Promise.resolve(validationResult);
-    },
+    // The in-place transition mounts TestConnectorForm, which validates action params on mount.
+    validateParams: jest.fn().mockResolvedValue({ errors: {} }),
   });
 
   loadActionTypes.mockResolvedValue([
@@ -804,7 +801,7 @@ describe('CreateConnectorFlyout', () => {
       });
     });
 
-    it('closes the flyout via chrome close after transition when form is clean', async () => {
+    it('closes via the built-in flyout close button after transition when form is clean', async () => {
       await setupSaveAndTest();
 
       await userEvent.click(screen.getByTestId('euiFlyoutCloseButton'));
@@ -812,7 +809,7 @@ describe('CreateConnectorFlyout', () => {
       expect(onClose).toHaveBeenCalled();
     });
 
-    it('shows discard modal via chrome close after transition when form is dirty', async () => {
+    it('shows the discard modal from the built-in flyout close button when form is dirty', async () => {
       await setupSaveAndTest();
 
       await userEvent.click(screen.getByTestId('configureConnectorTab'));

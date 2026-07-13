@@ -249,12 +249,6 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
     node?.focus();
   }, []);
 
-  useEffect(() => {
-    if (createdConnector) {
-      document.getElementById('flyoutActionEditTitle')?.focus();
-    }
-  }, [createdConnector]);
-
   const onFormModifiedChange = useCallback((formModified: boolean) => {
     setIsFormModified(formModified);
   }, []);
@@ -271,7 +265,7 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
     return (
       <EuiFlyout
         onClose={onFlyoutClose}
-        aria-labelledby="flyoutActionEditTitle"
+        aria-labelledby="flyoutTitle"
         size="m"
         data-test-subj="edit-connector-flyout"
       >

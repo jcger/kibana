@@ -94,7 +94,7 @@ const FlyoutHeaderComponent: React.FC<{
               <EuiFlexGroup gutterSize="s" alignItems="center" wrap={true}>
                 <EuiFlexItem autoFocus={true} grow={false} style={{ minWidth: '200px' }}>
                   <EuiTitle size="s">
-                    <h3 id="flyoutActionEditTitle" tabIndex={-1}>
+                    <h3 id="flyoutTitle">
                       <FormattedMessage
                         defaultMessage="{connectorName}"
                         id="xpack.triggersActionsUI.sections.preconfiguredConnectorForm.flyoutTitle"
@@ -137,7 +137,7 @@ const FlyoutHeaderComponent: React.FC<{
               <EuiFlexGroup gutterSize="s" alignItems="center" wrap={true}>
                 <EuiFlexItem style={{ minWidth: '200px' }}>
                   <EuiTitle size="s">
-                    <h3 id="flyoutActionEditTitle" tabIndex={-1}>
+                    <h3 id="flyoutTitle">
                       <FormattedMessage
                         defaultMessage="Edit connector"
                         id="xpack.triggersActionsUI.sections.editConnectorForm.flyoutPreconfiguredTitle"

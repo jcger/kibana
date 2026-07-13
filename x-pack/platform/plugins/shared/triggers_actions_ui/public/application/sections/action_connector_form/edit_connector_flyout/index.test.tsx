@@ -140,7 +140,7 @@ describe('EditConnectorFlyout', () => {
     expect(getByText('Discard unsaved changes to connector?')).toBeInTheDocument();
   });
 
-  it('shows discard modal when closing via flyout chrome close button if form is dirty', async () => {
+  it('shows the discard modal from the built-in flyout close button when form is dirty', async () => {
     const { getByTestId } = appMockRenderer.render(
       <EditConnectorFlyout
         actionTypeRegistry={actionTypeRegistry}

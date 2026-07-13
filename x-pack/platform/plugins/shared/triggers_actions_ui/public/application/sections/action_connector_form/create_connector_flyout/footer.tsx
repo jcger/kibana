@@ -24,7 +24,7 @@ interface Props {
   isUsingInitialConnector: boolean;
   onTestConnector?: (connector: ActionConnector) => void;
   transitionToEditAfterSaveAndTest?: boolean;
-  testConnector?: () => void;
+  testConnector: () => Promise<void>;
   isSaving: boolean;
   disabled: boolean;
   onSubmit: () => Promise<void>;
