@@ -10,30 +10,28 @@ import { getSpecConnectorTestExecutionParams } from './get_spec_connector_test_e
 
 describe('getSpecConnectorTestExecutionParams', () => {
   it('seeds _test subAction for opted-in spec connectors', () => {
-    expect(
-      getSpecConnectorTestExecutionParams({}, { isSpec: true, isTestable: true })
-    ).toEqual({
+    expect(getSpecConnectorTestExecutionParams({}, { isSpec: true, isTestable: true })).toEqual({
       subAction: TEST_CONNECTOR_SUB_ACTION,
       subActionParams: {},
     });
   });
 
   it('returns params unchanged for spec connectors that are not testable', () => {
-    expect(
-      getSpecConnectorTestExecutionParams({}, { isSpec: true, isTestable: false })
-    ).toEqual({});
+    expect(getSpecConnectorTestExecutionParams({}, { isSpec: true, isTestable: false })).toEqual(
+      {}
+    );
   });
 
   it('returns params unchanged when subAction is already set', () => {
     const params = { subAction: 'run', subActionParams: { foo: 'bar' } };
-    expect(
-      getSpecConnectorTestExecutionParams(params, { isSpec: true, isTestable: true })
-    ).toBe(params);
+    expect(getSpecConnectorTestExecutionParams(params, { isSpec: true, isTestable: true })).toBe(
+      params
+    );
   });
 
   it('returns params unchanged for stack connectors', () => {
-    expect(
-      getSpecConnectorTestExecutionParams({}, { isSpec: false, isTestable: true })
-    ).toEqual({});
+    expect(getSpecConnectorTestExecutionParams({}, { isSpec: false, isTestable: true })).toEqual(
+      {}
+    );
   });
 });
