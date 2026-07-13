@@ -47,7 +47,7 @@ import { useExecuteConnector } from '../../../hooks/use_execute_connector';
 import { FlyoutHeader } from './header';
 import { FlyoutFooter } from './footer';
 
-export interface EditConnectorFlyoutContentProps {
+export interface EditConnectorFlyoutProps {
   actionTypeRegistry: ActionTypeRegistryContract;
   connector: ActionConnector;
   onClose: () => void;
@@ -57,6 +57,9 @@ export interface EditConnectorFlyoutContentProps {
   icon?: IconType;
   hideRulesTab?: boolean;
   isTestable?: boolean;
+}
+
+interface EditConnectorFlyoutContentProps extends EditConnectorFlyoutProps {
   isFormModified: boolean;
   onFormModifiedChange: (isModified: boolean) => void;
   onCloseAttempt: () => void;
@@ -529,18 +532,6 @@ export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProp
   );
 };
 
-export interface EditConnectorFlyoutProps {
-  actionTypeRegistry: ActionTypeRegistryContract;
-  connector: ActionConnector;
-  onClose: () => void;
-  tab?: EditConnectorTabs;
-  onConnectorUpdated?: (connector: ActionConnector) => void;
-  isServerless?: boolean;
-  icon?: IconType;
-  hideRulesTab?: boolean;
-  isTestable?: boolean;
-}
-
 const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   actionTypeRegistry,
   connector,
@@ -553,10 +544,6 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
 }) => {
   const [isFormModified, setIsFormModified] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  const onFormModifiedChange = useCallback((formModified: boolean) => {
-    setIsFormModified(formModified);
-  }, []);
 
   const onFlyoutClose = useCallback(() => {
     if (isFormModified) {
@@ -583,7 +570,7 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
         hideRulesTab={hideRulesTab}
         isTestable={isTestable}
         isFormModified={isFormModified}
-        onFormModifiedChange={onFormModifiedChange}
+        onFormModifiedChange={setIsFormModified}
         onCloseAttempt={onFlyoutClose}
         showConfirmModal={showConfirmModal}
         onConfirmModalCancel={() => setShowConfirmModal(false)}

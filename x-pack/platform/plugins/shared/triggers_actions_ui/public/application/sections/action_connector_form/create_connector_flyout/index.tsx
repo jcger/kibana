@@ -56,7 +56,6 @@ export interface CreateConnectorFlyoutProps {
   featureId?: string;
   onConnectorCreated?: (connector: ActionConnector) => void;
   onTestConnector?: (connector: ActionConnector) => void;
-  enableSaveAndTest?: boolean;
   isServerless?: boolean;
   initialConnector?: Partial<Omit<ActionConnector, 'secrets'>> & { actionTypeId: string };
   icon?: IconType;
@@ -68,7 +67,6 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
   onClose,
   onConnectorCreated,
   onTestConnector,
-  enableSaveAndTest,
   initialConnector,
   icon,
 }) => {
@@ -169,31 +167,31 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
 
   const resetActionType = useCallback(() => setActionType(null), []);
 
-  const [createdConnector, setCreatedConnector] = useState<ActionConnector | null>(null);
+  const [connectorToTest, setConnectorToTest] = useState<ActionConnector | null>(null);
   const [isFormModified, setIsFormModified] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const testConnector = useCallback(async () => {
-    const connector = await validateAndCreateConnector();
+    const createdConnector = await validateAndCreateConnector();
 
-    if (connector) {
+    if (createdConnector) {
       if (onConnectorCreated) {
-        onConnectorCreated(connector);
+        onConnectorCreated(createdConnector);
       }
 
       if (onTestConnector) {
-        onTestConnector(connector);
+        onTestConnector(createdConnector);
       }
 
-      setCreatedConnector(connector);
+      setConnectorToTest(createdConnector);
     }
   }, [validateAndCreateConnector, onConnectorCreated, onTestConnector]);
 
   const onSubmit = useCallback(async () => {
-    const connector = await validateAndCreateConnector();
-    if (connector) {
+    const createdConnector = await validateAndCreateConnector();
+    if (createdConnector) {
       if (onConnectorCreated) {
-        onConnectorCreated(connector);
+        onConnectorCreated(createdConnector);
       }
 
       onClose();
@@ -238,19 +236,15 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
     node?.focus();
   }, []);
 
-  const onFormModifiedChange = useCallback((formModified: boolean) => {
-    setIsFormModified(formModified);
-  }, []);
-
   const onFlyoutClose = useCallback(() => {
-    if (createdConnector && isFormModified) {
+    if (connectorToTest && isFormModified) {
       setShowConfirmModal(true);
       return;
     }
     onClose();
-  }, [createdConnector, isFormModified, onClose]);
+  }, [connectorToTest, isFormModified, onClose]);
 
-  if (createdConnector) {
+  if (connectorToTest) {
     return (
       <EuiFlyout
         onClose={onFlyoutClose}
@@ -260,13 +254,13 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
       >
         <EditConnectorFlyoutContent
           actionTypeRegistry={actionTypeRegistry}
-          connector={createdConnector}
+          connector={connectorToTest}
           onClose={onClose}
           tab={EditConnectorTabs.Test}
-          onConnectorUpdated={(updatedConnector) => setCreatedConnector(updatedConnector)}
+          onConnectorUpdated={setConnectorToTest}
           icon={icon}
           isFormModified={isFormModified}
-          onFormModifiedChange={onFormModifiedChange}
+          onFormModifiedChange={setIsFormModified}
           onCloseAttempt={onFlyoutClose}
           showConfirmModal={showConfirmModal}
           onConfirmModalCancel={() => setShowConfirmModal(false)}
@@ -488,7 +482,7 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
         onBack={resetActionType}
         onCancel={onClose}
         isUsingInitialConnector={isUsingInitialConnector}
-        enableSaveAndTest={enableSaveAndTest || Boolean(onTestConnector)}
+        onTestConnector={onTestConnector}
         disabled={disabled}
         isSaving={isSaving}
         onSubmit={onSubmit}

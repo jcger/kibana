@@ -294,8 +294,7 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
             setAddFlyoutVisibility(false);
             loadActions();
           }}
-          enableSaveAndTest
-          onConnectorCreated={loadActions}
+          onTestConnector={loadActions}
           actionTypeRegistry={actionTypeRegistry}
         />
       )}

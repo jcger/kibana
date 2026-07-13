@@ -168,7 +168,7 @@ describe('CreateConnectorFlyout', () => {
     });
   });
 
-  it('does not show the save and test button without enableSaveAndTest or onTestConnector', async () => {
+  it('does not show the save and test button without onTestConnector', async () => {
     appMockRenderer.render(
       <CreateConnectorFlyout
         actionTypeRegistry={actionTypeRegistry}
@@ -211,7 +211,6 @@ describe('CreateConnectorFlyout', () => {
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
         onTestConnector={onTestConnector}
-        enableSaveAndTest
       />
     );
 
@@ -698,71 +697,6 @@ describe('CreateConnectorFlyout', () => {
     });
   });
 
-  describe('Testing', () => {
-    it('invokes onTestConnector and transitions in-place without closing the flyout', async () => {
-      appMockRenderer.coreStart.application.capabilities = {
-        ...appMockRenderer.coreStart.application.capabilities,
-        actions: { save: true, show: true, execute: true },
-      };
-
-      appMockRenderer.render(
-        <CreateConnectorFlyout
-          actionTypeRegistry={actionTypeRegistry}
-          onClose={onClose}
-          onConnectorCreated={onConnectorCreated}
-          onTestConnector={onTestConnector}
-          enableSaveAndTest
-        />
-      );
-
-      await userEvent.click(await screen.findByTestId(`${actionTypeModel.id}-card`));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('test-connector-text-field')).toBeInTheDocument();
-      });
-
-      await userEvent.click(screen.getByTestId('nameInput'));
-      await userEvent.paste('My test');
-      await userEvent.click(screen.getByTestId('test-connector-text-field'));
-      await userEvent.paste('My text field');
-
-      await userEvent.click(screen.getByTestId('create-connector-flyout-save-test-btn'));
-
-      await waitFor(() => {
-        expect(appMockRenderer.coreStart.http.post).toHaveBeenCalledWith(
-          '/api/actions/connector/my-test',
-          {
-            body: `{"name":"My test","config":{"testTextField":"My text field"},"secrets":{},"connector_type_id":"${actionTypeModel.id}"}`,
-          }
-        );
-      });
-
-      expect(await screen.findByTestId('edit-connector-flyout')).toBeInTheDocument();
-      expect(screen.getByTestId('testConnectorTab')).toHaveAttribute('aria-selected', 'true');
-      expect(onClose).not.toHaveBeenCalled();
-      expect(onTestConnector).toHaveBeenCalledWith({
-        actionTypeId: 'test',
-        config: { testTextField: 'My text field' },
-        id: '123',
-        isDeprecated: false,
-        isMissingSecrets: undefined,
-        isPreconfigured: false,
-        name: 'My test',
-        secrets: {},
-      });
-      expect(onConnectorCreated).toHaveBeenCalledWith({
-        actionTypeId: 'test',
-        config: { testTextField: 'My text field' },
-        id: '123',
-        isDeprecated: false,
-        isMissingSecrets: undefined,
-        isPreconfigured: false,
-        name: 'My test',
-        secrets: {},
-      });
-    });
-  });
-
   describe('Save & Test transition', () => {
     const setupSaveAndTest = async () => {
       appMockRenderer.coreStart.application.capabilities = {
@@ -775,7 +709,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -804,7 +738,7 @@ describe('CreateConnectorFlyout', () => {
       expect(screen.queryByTestId('create-connector-flyout')).not.toBeInTheDocument();
       expect(screen.getByTestId('testConnectorTab')).toHaveAttribute('aria-selected', 'true');
       expect(onClose).not.toHaveBeenCalled();
-      expect(onConnectorCreated).toHaveBeenCalledWith({
+      expect(onTestConnector).toHaveBeenCalledWith({
         actionTypeId: 'test',
         config: { testTextField: 'My text field' },
         id: '123',
@@ -814,6 +748,9 @@ describe('CreateConnectorFlyout', () => {
         name: 'My test',
         secrets: {},
       });
+      expect(onConnectorCreated).toHaveBeenCalledWith(
+        expect.objectContaining({ id: '123', name: 'My test' })
+      );
     });
 
     it('closes via the built-in flyout close button after transition when form is clean', async () => {
