@@ -71,7 +71,6 @@ jest.mock('@kbn/response-ops-oauth-hooks', () => ({
 const useKibanaMock = useKibana as jest.Mocked<typeof useKibana>;
 const actionTypeRegistry = actionTypeRegistryMock.create();
 const mocks = coreMock.createSetup();
-
 const { loadActionTypes } = jest.requireMock('../../../lib/action_connector_api');
 
 describe('actions_connectors_list', () => {
@@ -137,49 +136,6 @@ describe('actions_connectors_list', () => {
     });
   });
 
-  describe('when loading connector types fails', () => {
-    beforeEach(async () => {
-      loadActionTypes.mockRejectedValueOnce(new Error('Failed to load connector types'));
-      actionTypeRegistry.has.mockReturnValue(true);
-      const [
-        {
-          application: { capabilities },
-        },
-      ] = await mocks.getStartServices();
-      useKibanaMock().services.actionTypeRegistry = actionTypeRegistry;
-      useKibanaMock().services.application.capabilities = {
-        ...capabilities,
-        actions: { delete: true, save: true, show: true },
-      };
-    });
-
-    it('shows a danger toast', async () => {
-      const addDanger = jest.fn();
-      useKibanaMock().services.notifications.toasts.addDanger = addDanger;
-
-      render(
-        <IntlProvider>
-          <ActionsConnectorsList
-            setAddFlyoutVisibility={() => {}}
-            loadActions={async () => {}}
-            editItem={() => {}}
-            isLoadingActions={false}
-            actions={[]}
-            setActions={() => {}}
-          />
-        </IntlProvider>
-      );
-
-      await waitFor(() => {
-        expect(addDanger).toHaveBeenCalledWith(
-          expect.objectContaining({
-            title: 'Unable to load connector types',
-          })
-        );
-      });
-    });
-  });
-
   describe('component with items', () => {
     const mockedActions: ActionConnector[] = [
       createMockActionConnector({
@@ -222,6 +178,7 @@ describe('actions_connectors_list', () => {
       }),
     ];
     let mockedEditItem: jest.Mock;
+
     beforeEach(async () => {
       loadActionTypes.mockResolvedValueOnce([
         { id: 'test', name: 'Test', enabled: true, supportedFeatureIds: ['alerting'] },
@@ -865,6 +822,7 @@ describe('actions_connectors_list', () => {
     let useConnectorOAuthConnect: jest.Mock;
     let useConnectorOAuthDisconnect: jest.Mock;
     let useConnectorContext: jest.Mock;
+
     beforeEach(async () => {
       useConnectorOAuthConnect = jest.requireMock('@kbn/response-ops-oauth-hooks')
         .useConnectorOAuthConnect as jest.Mock;

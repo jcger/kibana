@@ -131,7 +131,6 @@ const ActionsConnectorsList = ({
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [selectedItems, setSelectedItems] = useState<ActionConnectorTableItem[]>([]);
   const [isLoadingActionTypes, setIsLoadingActionTypes] = useState<boolean>(false);
-  const [isDeletingConnectors, setIsDeletingConnectors] = useState<boolean>(false);
   const [connectorsToDelete, setConnectorsToDelete] = useState<string[]>([]);
   const [showWarningText, setShowWarningText] = useState<boolean>(false);
 
@@ -541,7 +540,7 @@ const ActionsConnectorsList = ({
 
   const table = (
     <EuiInMemoryTable
-      loading={isLoadingActions || isLoadingActionTypes || isDeletingConnectors}
+      loading={isLoadingActions || isLoadingActionTypes}
       items={actionConnectorTableItems}
       sorting={true}
       tableLayout="fixed"
@@ -686,19 +685,16 @@ const ActionsConnectorsList = ({
               },
             }
           )}
-          setIsLoadingState={(isLoading: boolean) => setIsDeletingConnectors(isLoading)}
+          setIsLoadingState={(isLoading: boolean) => setIsLoadingActionTypes(isLoading)}
         />
 
         {/* Render the view based on if there's data or if they can save */}
-        {(isLoadingActions || isLoadingActionTypes || isDeletingConnectors) && (
-          <CenterJustifiedSpinner />
-        )}
+        {(isLoadingActions || isLoadingActionTypes) && <CenterJustifiedSpinner />}
         {actionConnectorTableItems.length !== 0 && table}
         {actionConnectorTableItems.length === 0 &&
           canSave &&
           !isLoadingActions &&
-          !isLoadingActionTypes &&
-          !isDeletingConnectors && (
+          !isLoadingActionTypes && (
             <EmptyConnectorsPrompt
               onCTAClicked={() => setAddFlyoutVisibility(true)}
               docLinks={docLinks}
