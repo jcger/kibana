@@ -453,7 +453,7 @@ describe('ActionsConnectorsHome', () => {
     expect(loadActionTypes).toHaveBeenCalledTimes(1);
   });
 
-  it('does not force isTestable to false on the edit flyout when loadActionTypes fails', async () => {
+  it('renders the edit flyout without a connectorActionType prop when loadActionTypes fails', async () => {
     loadActionTypes.mockRejectedValue(new Error('Failed to load connector types'));
 
     const props: RouteComponentProps<MatchParams> = {
@@ -505,10 +505,6 @@ describe('ActionsConnectorsHome', () => {
     });
 
     expect(await screen.findByTestId('editConnectorFlyoutComponent')).toBeInTheDocument();
-    // With the action-types index unavailable, Home must not pin isTestable to
-    // false: that would permanently hide the Test tab instead of letting the
-    // flyout derive testability itself once it resolves the action type.
-    expect(lastEditConnectorFlyoutProps?.isTestable).toBeUndefined();
     expect(lastEditConnectorFlyoutProps?.connectorActionType).toBeUndefined();
   });
 });

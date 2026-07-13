@@ -339,7 +339,6 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
           }`}
           connector={editConnectorProps.initialConnector}
           tab={editConnectorProps.tab}
-          connectorActionType={actionTypesIndex?.[editConnectorProps.initialConnector.actionTypeId]}
           onClose={() => {
             setEditConnectorProps({
               tab: editConnectorProps?.tab,

@@ -25,7 +25,6 @@ import { FormattedMessage } from '@kbn/i18n-react';
 import { i18n } from '@kbn/i18n';
 import type { ActionTypeExecutorResult } from '@kbn/actions-plugin/common';
 import { isActionTypeExecutorResult } from '@kbn/actions-plugin/common';
-import { ACTION_TYPE_SOURCES } from '@kbn/actions-types';
 import type { Option } from 'fp-ts/Option';
 import { none, some } from 'fp-ts/Option';
 import type { ConnectorFormSchema } from '@kbn/alerts-ui-shared';
@@ -33,7 +32,6 @@ import { useActionTypeModel } from '@kbn/alerts-ui-shared/src/common/hooks/use_a
 import { ReadOnlyConnectorMessage } from './read_only';
 import type {
   ActionConnector,
-  ActionType,
   ActionTypeRegistryContract,
   UserConfiguredActionConnector,
 } from '../../../../types';
@@ -41,11 +39,9 @@ import { EditConnectorTabs } from '../../../../types';
 import type { ConnectorFormState } from '../connector_form';
 import { ConnectorForm } from '../connector_form';
 import { useUpdateConnector } from '../../../hooks/use_edit_connector';
-import { useConnectorActionType } from '../../../hooks/use_connector_action_type';
 import { useKibana } from '../../../../common/lib/kibana';
 import { hasSaveActionsCapability } from '../../../lib/capabilities';
 import { getSpecConnectorTestExecutionParams } from '../../../lib/get_spec_connector_test_execution_params';
-import { isConnectorTypeTestable } from '../../../lib/is_connector_type_testable';
 import { TestConnectorForm } from '../test_connector_form';
 import { ConnectorRulesList } from '../connector_rules_list';
 import { useExecuteConnector } from '../../../hooks/use_execute_connector';
@@ -61,8 +57,6 @@ export interface EditConnectorFlyoutProps {
   isServerless?: boolean;
   icon?: IconType;
   hideRulesTab?: boolean;
-  isTestable?: boolean;
-  connectorActionType?: ActionType;
 }
 
 const getConnectorWithoutSecrets = (
@@ -160,8 +154,6 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   onConnectorUpdated,
   icon,
   hideRulesTab = false,
-  isTestable: isTestableProp,
-  connectorActionType,
 }) => {
   const confirmModalTitleId = useGeneratedHtmlId();
 
@@ -239,12 +231,8 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
     uiSettings,
   });
 
-  const { actionType: derivedActionType } = useConnectorActionType({
-    actionTypeId: connector.actionTypeId,
-    enabled: !connectorActionType,
-  });
-
-  const resolvedActionType = connectorActionType ?? derivedActionType;
+  const isSpecConnector = !actionTypeRegistry.has(connector.actionTypeId);
+  const isTestable = actionTypeModel?.isTestable ?? actionTypeRegistry.has(connector.actionTypeId);
 
   // Delay the spinner so quick spec loads don't flash a loading state.
   const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
@@ -275,8 +263,12 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   );
 
   const resolvedTestExecutionActionParams = useMemo(
-    () => getSpecConnectorTestExecutionParams(resolvedActionType, testExecutionActionParams),
-    [resolvedActionType, testExecutionActionParams]
+    () =>
+      getSpecConnectorTestExecutionParams(testExecutionActionParams, {
+        isSpec: isSpecConnector,
+        isTestable,
+      }),
+    [isSpecConnector, isTestable, testExecutionActionParams]
   );
 
   const onExecutionAction = useCallback(async () => {
@@ -478,7 +470,7 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
             isExecutingAction={isExecutingConnector}
             executionResult={testExecutionResult}
             actionTypeModel={actionTypeModel}
-            hideActionParamsStep={resolvedActionType?.source === ACTION_TYPE_SOURCES.spec}
+            hideActionParamsStep={isSpecConnector}
           />
         )}
       </>
@@ -496,7 +488,7 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
     actionTypeModelError,
     showLoadingSpinner,
     refetchConnectorSpec,
-    resolvedActionType,
+    isSpecConnector,
   ]);
 
   const renderConnectorRulesList = useCallback(() => {
@@ -514,8 +506,6 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
     }
     return actionTypeModel?.isExperimental;
   }, [actionTypeModel, connector]);
-
-  const isTestable = isTestableProp ?? isConnectorTypeTestable(resolvedActionType);
 
   return (
     <>
