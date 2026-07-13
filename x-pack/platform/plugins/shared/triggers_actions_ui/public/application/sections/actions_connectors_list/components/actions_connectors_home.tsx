@@ -292,10 +292,10 @@ export const ActionsConnectorsHome: React.FunctionComponent<RouteComponentProps<
         <CreateConnectorFlyout
           onClose={() => {
             setAddFlyoutVisibility(false);
+            loadActions();
           }}
-          enableSaveAndTest
+          transitionToEditAfterSaveAndTest
           onConnectorCreated={loadActions}
-          onConnectorUpdated={loadActions}
           actionTypeRegistry={actionTypeRegistry}
         />
       )}

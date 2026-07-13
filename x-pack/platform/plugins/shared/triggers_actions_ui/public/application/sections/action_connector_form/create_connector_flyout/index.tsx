@@ -45,7 +45,7 @@ import type { ResetForm } from '../connector_form';
 import { ConnectorForm } from '../connector_form';
 import { useConnectorCreateForm } from '../use_connector_create_form';
 import { useKibana } from '../../../../common/lib/kibana';
-import { EditConnectorFlyoutContent } from '../edit_connector_flyout/content';
+import { EditConnectorFlyoutContent } from '../edit_connector_flyout';
 import { FlyoutHeader } from './header';
 import { FlyoutFooter } from './footer';
 import { UpgradeLicenseCallOut } from './upgrade_license_callout';
@@ -55,8 +55,8 @@ export interface CreateConnectorFlyoutProps {
   onClose: () => void;
   featureId?: string;
   onConnectorCreated?: (connector: ActionConnector) => void;
-  onConnectorUpdated?: (connector: ActionConnector) => void;
-  enableSaveAndTest?: boolean;
+  onTestConnector?: (connector: ActionConnector) => void;
+  transitionToEditAfterSaveAndTest?: boolean;
   isServerless?: boolean;
   initialConnector?: Partial<Omit<ActionConnector, 'secrets'>> & { actionTypeId: string };
   icon?: IconType;
@@ -67,8 +67,8 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
   featureId,
   onClose,
   onConnectorCreated,
-  onConnectorUpdated,
-  enableSaveAndTest,
+  onTestConnector,
+  transitionToEditAfterSaveAndTest,
   initialConnector,
   icon,
 }) => {
@@ -181,9 +181,24 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
         onConnectorCreated(connector);
       }
 
-      setCreatedConnector(connector);
+      if (transitionToEditAfterSaveAndTest) {
+        setCreatedConnector(connector);
+        return;
+      }
+
+      if (onTestConnector) {
+        onTestConnector(connector);
+      }
+
+      onClose();
     }
-  }, [validateAndCreateConnector, onConnectorCreated]);
+  }, [
+    validateAndCreateConnector,
+    onConnectorCreated,
+    transitionToEditAfterSaveAndTest,
+    onTestConnector,
+    onClose,
+  ]);
 
   const onSubmit = useCallback(async () => {
     const connector = await validateAndCreateConnector();
@@ -219,13 +234,16 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [allActionTypes]);
 
-  const flyoutHeaderName = actionType
-    ? actionType.name.toLowerCase().includes('connector')
-      ? actionType.name
-      : `${actionType.name} connector`
-    : i18n.translate('xpack.triggersActionsUI.createConnectorFlyout.selectConnector', {
-        defaultMessage: 'Select a connector',
-      });
+  const [flyoutHeaderName, setFlyoutHeaderName] = useState<string>('Select a connector');
+  useEffect(() => {
+    if (actionType) {
+      if (!actionType.name.toLowerCase().includes('connector')) {
+        setFlyoutHeaderName(`${actionType.name} connector`);
+      } else {
+        setFlyoutHeaderName(actionType.name);
+      }
+    }
+  }, [actionType]);
 
   const handleErrorFocus = useCallback((node: HTMLDivElement) => {
     node?.focus();
@@ -262,7 +280,7 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
           connector={createdConnector}
           onClose={onClose}
           tab={EditConnectorTabs.Test}
-          onConnectorUpdated={onConnectorUpdated}
+          onConnectorUpdated={(updatedConnector) => setCreatedConnector(updatedConnector)}
           icon={icon}
           isFormModified={isFormModified}
           onFormModifiedChange={onFormModifiedChange}
@@ -487,7 +505,8 @@ const CreateConnectorFlyoutComponent: React.FC<CreateConnectorFlyoutProps> = ({
         onBack={resetActionType}
         onCancel={onClose}
         isUsingInitialConnector={isUsingInitialConnector}
-        enableSaveAndTest={enableSaveAndTest}
+        onTestConnector={onTestConnector}
+        transitionToEditAfterSaveAndTest={transitionToEditAfterSaveAndTest}
         disabled={disabled}
         isSaving={isSaving}
         onSubmit={onSubmit}

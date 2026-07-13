@@ -39,6 +39,7 @@ describe('CreateConnectorFlyout', () => {
   let appMockRenderer: AppMockRenderer;
   const onClose = jest.fn();
   const onConnectorCreated = jest.fn();
+  const onTestConnector = jest.fn();
 
   const actionTypeModel = actionTypeRegistryMock.createMockActionTypeModel({
     actionConnectorFields: lazy(() => import('../connector_mock')),
@@ -81,7 +82,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -96,7 +97,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -109,7 +110,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -126,7 +127,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
         featureId="alerting"
       />
     );
@@ -142,7 +143,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -157,7 +158,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -170,7 +171,7 @@ describe('CreateConnectorFlyout', () => {
     });
   });
 
-  it('does not show the save and test button if enableSaveAndTest is not provided', async () => {
+  it('does not show the save and test button if the onTestConnector is not provided', async () => {
     appMockRenderer.render(
       <CreateConnectorFlyout
         actionTypeRegistry={actionTypeRegistry}
@@ -193,7 +194,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -206,7 +207,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -269,7 +270,7 @@ describe('CreateConnectorFlyout', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -314,7 +315,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -349,7 +350,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -384,7 +385,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -399,7 +400,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -412,7 +413,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -425,7 +426,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -447,7 +448,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -469,7 +470,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -483,7 +484,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -497,7 +498,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -512,7 +513,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -525,7 +526,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
       expect(await screen.findByTestId('createConnectorsModalSearch')).toBeInTheDocument();
@@ -542,7 +543,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -570,6 +571,7 @@ describe('CreateConnectorFlyout', () => {
       });
 
       expect(onClose).toHaveBeenCalled();
+      expect(onTestConnector).not.toHaveBeenCalled();
       expect(onConnectorCreated).toHaveBeenCalledWith({
         actionTypeId: 'test',
         config: { testTextField: 'My text field' },
@@ -589,7 +591,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -612,7 +614,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -668,7 +670,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -693,51 +695,13 @@ describe('CreateConnectorFlyout', () => {
   });
 
   describe('Testing', () => {
-    const setupSaveAndTest = async () => {
-      appMockRenderer.coreStart.application.capabilities = {
-        ...appMockRenderer.coreStart.application.capabilities,
-        actions: { save: true, show: true, execute: true },
-      };
-
-      appMockRenderer.render(
-        <CreateConnectorFlyout
-          actionTypeRegistry={actionTypeRegistry}
-          onClose={onClose}
-          onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
-        />
-      );
-
-      await userEvent.click(await screen.findByTestId(`${actionTypeModel.id}-card`));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('test-connector-text-field')).toBeInTheDocument();
-      });
-
-      await userEvent.click(screen.getByTestId('nameInput'));
-      await userEvent.paste('My test');
-      await userEvent.click(screen.getByTestId('test-connector-text-field'));
-      await userEvent.paste('My text field');
-
-      await userEvent.click(screen.getByTestId('create-connector-flyout-save-test-btn'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('edit-connector-flyout')).toBeInTheDocument();
-      });
-    };
-
     it('saves and test correctly', async () => {
-      appMockRenderer.coreStart.application.capabilities = {
-        ...appMockRenderer.coreStart.application.capabilities,
-        actions: { save: true, show: true, execute: true },
-      };
-
       appMockRenderer.render(
         <CreateConnectorFlyout
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -763,10 +727,68 @@ describe('CreateConnectorFlyout', () => {
         );
       });
 
+      expect(onClose).toHaveBeenCalled();
+      expect(onTestConnector).toHaveBeenCalledWith({
+        actionTypeId: 'test',
+        config: { testTextField: 'My text field' },
+        id: '123',
+        isDeprecated: false,
+        isMissingSecrets: undefined,
+        isPreconfigured: false,
+        name: 'My test',
+        secrets: {},
+      });
+      expect(onConnectorCreated).toHaveBeenCalledWith({
+        actionTypeId: 'test',
+        config: { testTextField: 'My text field' },
+        id: '123',
+        isDeprecated: false,
+        isMissingSecrets: undefined,
+        isPreconfigured: false,
+        name: 'My test',
+        secrets: {},
+      });
+    });
+  });
+
+  describe('transitionToEditAfterSaveAndTest', () => {
+    const setupSaveAndTest = async () => {
+      appMockRenderer.coreStart.application.capabilities = {
+        ...appMockRenderer.coreStart.application.capabilities,
+        actions: { save: true, show: true, execute: true },
+      };
+
+      appMockRenderer.render(
+        <CreateConnectorFlyout
+          actionTypeRegistry={actionTypeRegistry}
+          onClose={onClose}
+          onConnectorCreated={onConnectorCreated}
+          transitionToEditAfterSaveAndTest
+        />
+      );
+
+      await userEvent.click(await screen.findByTestId(`${actionTypeModel.id}-card`));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('test-connector-text-field')).toBeInTheDocument();
+      });
+
+      await userEvent.click(screen.getByTestId('nameInput'));
+      await userEvent.paste('My test');
+      await userEvent.click(screen.getByTestId('test-connector-text-field'));
+      await userEvent.paste('My text field');
+
+      await userEvent.click(screen.getByTestId('create-connector-flyout-save-test-btn'));
+
       await waitFor(() => {
         expect(screen.getByTestId('edit-connector-flyout')).toBeInTheDocument();
       });
+    };
 
+    it('transitions in-place to the Test tab after Save & test without closing the flyout', async () => {
+      await setupSaveAndTest();
+
+      expect(await screen.findByTestId('edit-connector-flyout')).toBeInTheDocument();
       expect(screen.queryByTestId('create-connector-flyout')).not.toBeInTheDocument();
       expect(screen.getByTestId('testConnectorTab')).toHaveAttribute('aria-selected', 'true');
       expect(onClose).not.toHaveBeenCalled();
@@ -807,6 +829,71 @@ describe('CreateConnectorFlyout', () => {
       expect(await screen.findByText('Discard unsaved changes to connector?')).toBeInTheDocument();
       expect(onClose).not.toHaveBeenCalled();
     });
+
+    it('keeps the latest saved connector in local state across repeated configuration edits', async () => {
+      appMockRenderer.coreStart.http.put = jest
+        .fn()
+        .mockResolvedValueOnce({
+          ...createConnectorResponse,
+          name: 'First edit',
+        })
+        .mockResolvedValueOnce({
+          ...createConnectorResponse,
+          name: 'Second edit',
+        });
+
+      await setupSaveAndTest();
+
+      await userEvent.click(screen.getByTestId('configureConnectorTab'));
+      await waitFor(() => {
+        expect(screen.getByTestId('nameInput')).toBeInTheDocument();
+      });
+
+      await userEvent.clear(screen.getByTestId('nameInput'));
+      await userEvent.paste('First edit');
+      await userEvent.click(screen.getByTestId('edit-connector-flyout-save-btn'));
+
+      await waitFor(() => {
+        expect(appMockRenderer.coreStart.http.put).toHaveBeenCalledWith(
+          '/api/actions/connector/123',
+          {
+            body: JSON.stringify({
+              name: 'First edit',
+              config: { testTextField: 'My text field' },
+              secrets: {},
+            }),
+          }
+        );
+      });
+
+      // Force a remount of the configuration form by leaving and returning to the tab.
+      await userEvent.click(screen.getByTestId('testConnectorTab'));
+      await userEvent.click(screen.getByTestId('configureConnectorTab'));
+
+      expect(await screen.findByTestId('nameInput')).toHaveValue('First edit');
+
+      await userEvent.clear(screen.getByTestId('nameInput'));
+      await userEvent.paste('Second edit');
+      await userEvent.click(screen.getByTestId('edit-connector-flyout-save-btn'));
+
+      await waitFor(() => {
+        expect(appMockRenderer.coreStart.http.put).toHaveBeenCalledWith(
+          '/api/actions/connector/123',
+          {
+            body: JSON.stringify({
+              name: 'Second edit',
+              config: { testTextField: 'My text field' },
+              secrets: {},
+            }),
+          }
+        );
+      });
+
+      await userEvent.click(screen.getByTestId('testConnectorTab'));
+      await userEvent.click(screen.getByTestId('configureConnectorTab'));
+
+      expect(await screen.findByTestId('nameInput')).toHaveValue('Second edit');
+    });
   });
 
   describe('Footer', () => {
@@ -816,7 +903,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -838,7 +925,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
         />
       );
 
@@ -888,7 +975,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
           initialConnector={initialConnector}
         />
       );
@@ -908,7 +995,7 @@ describe('CreateConnectorFlyout', () => {
           actionTypeRegistry={actionTypeRegistry}
           onClose={onClose}
           onConnectorCreated={onConnectorCreated}
-          enableSaveAndTest
+          onTestConnector={onTestConnector}
           initialConnector={initialConnector}
         />
       );

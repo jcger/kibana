@@ -26,6 +26,7 @@ describe('spec connector', () => {
   let appMockRenderer: AppMockRenderer;
   const onClose = jest.fn();
   const onConnectorCreated = jest.fn();
+  const onTestConnector = jest.fn();
   const actionTypeRegistry = actionTypeRegistryMock.create();
 
   const specActionTypeModel = actionTypeRegistryMock.createMockActionTypeModel({
@@ -60,7 +61,7 @@ describe('spec connector', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
@@ -72,6 +73,7 @@ describe('spec connector with API fetch', () => {
   let appMockRenderer: AppMockRenderer;
   const onClose = jest.fn();
   const onConnectorCreated = jest.fn();
+  const onTestConnector = jest.fn();
   const actionTypeRegistry = actionTypeRegistryMock.create();
 
   // Use 'workflows' feature ID since spec connectors are only shown when workflows UI is enabled
@@ -234,7 +236,7 @@ describe('spec connector with API fetch', () => {
         actionTypeRegistry={actionTypeRegistry}
         onClose={onClose}
         onConnectorCreated={onConnectorCreated}
-        enableSaveAndTest
+        onTestConnector={onTestConnector}
       />
     );
 
