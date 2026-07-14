@@ -23,4 +23,8 @@ export interface ClientRegistry {}
 
 export type ClientTypeId = keyof ClientRegistry;
 
-export const clientTypes: Readonly<Record<ClientTypeId, ClientTypeSpec<unknown>>> = {};
+export type ClientTypeSpecs = Readonly<{
+  [K in ClientTypeId]: ClientTypeSpec<ClientRegistry[K]>;
+}>;
+
+export const clientTypes: ClientTypeSpecs = {};

@@ -111,6 +111,34 @@ describe('LeasePool', () => {
       await expect(p1).rejects.toThrow('concurrent fail');
       await expect(p2).rejects.toThrow('concurrent fail');
     });
+
+    it('does not remove a replacement entry when an evicted build later rejects', async () => {
+      const pool = new LeasePool<string>();
+      let rejectFirstBuild!: (error: Error) => void;
+      const firstBuild = new Promise<string>((_, reject) => {
+        rejectFirstBuild = reject;
+      });
+      const firstLease = pool.lease('conn:mcp:shared', async () => firstBuild, noopTerminate);
+
+      pool.evict('conn');
+
+      const replacementTerminate = jest.fn().mockResolvedValue(undefined);
+      const replacementBuild = jest.fn().mockResolvedValue('replacement-client');
+      await expect(
+        pool.lease('conn:mcp:shared', replacementBuild, replacementTerminate)
+      ).resolves.toBe('replacement-client');
+
+      rejectFirstBuild(new Error('stale build failed'));
+      await expect(firstLease).rejects.toThrow('stale build failed');
+      await Promise.resolve();
+
+      const unexpectedBuild = jest.fn().mockResolvedValue('unexpected-client');
+      await expect(pool.lease('conn:mcp:shared', unexpectedBuild, noopTerminate)).resolves.toBe(
+        'replacement-client'
+      );
+      expect(unexpectedBuild).not.toHaveBeenCalled();
+      expect(replacementTerminate).not.toHaveBeenCalled();
+    });
   });
 
   describe('isolation: distinct keys', () => {

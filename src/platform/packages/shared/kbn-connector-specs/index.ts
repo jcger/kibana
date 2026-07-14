@@ -49,4 +49,5 @@ export type {
   CredentialAccessor,
   ClientRegistry,
   ClientTypeId,
+  ClientTypeSpecs,
 } from './src/lib/clients';

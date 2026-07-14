@@ -52,7 +52,9 @@ export class LeasePool<TClient> {
 
     const promise = Promise.resolve().then(buildFn);
     promise.catch(() => {
-      this.cache.delete(key);
+      if (this.cache.peek(key)?.promise === promise) {
+        this.cache.delete(key);
+      }
     });
 
     const entry: PoolEntry<TClient> = { promise, terminate };

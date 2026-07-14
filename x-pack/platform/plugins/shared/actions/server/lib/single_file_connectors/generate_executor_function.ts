@@ -69,6 +69,30 @@ const getErrorMeta = ({
   return Object.keys(errorMeta).length > 0 ? errorMeta : undefined;
 };
 
+const getCause = (error: unknown): unknown =>
+  typeof error === 'object' && error !== null && 'cause' in error
+    ? (error as { cause?: unknown }).cause
+    : undefined;
+
+const isClientUserError = (error: unknown, clientType: ClientTypeSpec<unknown>): boolean => {
+  const visited = new Set<unknown>();
+  let current: unknown = error;
+
+  while (current !== undefined && current !== null && !visited.has(current)) {
+    visited.add(current);
+    if (
+      current instanceof AllowlistDeniedError ||
+      (current instanceof Error && isUserError(current)) ||
+      (clientType.isUserError?.(current) ?? false)
+    ) {
+      return true;
+    }
+    current = getCause(current);
+  }
+
+  return false;
+};
+
 export const generateExecutorFunction = ({
   actions,
   getAxiosInstanceWithAuth,
@@ -143,14 +167,9 @@ export const generateExecutorFunction = ({
           clientType.terminate
         );
       } catch (err) {
-        // An allowlist (SSRF) denial is permanent bad config, not a retryable fault:
-        // classify it at the framework seam so every client type benefits, rather than
-        // relying on each client to string-match the message.
-        const isUser =
-          err instanceof AllowlistDeniedError ||
-          isUserError(err) ||
-          (clientType.isUserError?.(err) ?? false);
-        throw createTaskRunError(err, isUser ? TaskErrorSource.USER : TaskErrorSource.FRAMEWORK);
+        const isUser = isClientUserError(err, clientType);
+        const error = err instanceof Error ? err : new Error(String(err));
+        throw createTaskRunError(error, isUser ? TaskErrorSource.USER : TaskErrorSource.FRAMEWORK);
       }
     };
 
@@ -172,7 +191,8 @@ export const generateExecutorFunction = ({
 
       return { status: 'ok', data, actionId: connectorId };
     } catch (error) {
-      if (error instanceof Error && getErrorSource(error)) throw error;
+      const errorSource = error instanceof Error ? getErrorSource(error) : undefined;
+      if (errorSource === TaskErrorSource.FRAMEWORK) throw error;
       const errorMessage = error instanceof Error ? error.message : String(error);
       const contentLengthBytes = getResponseSizeHeaderBytes({
         error,
@@ -185,6 +205,9 @@ export const generateExecutorFunction = ({
         message: errorMessage,
         actionId: connectorId,
         ...(errorMeta ? { errorMeta } : {}),
+        ...(errorSource === TaskErrorSource.USER
+          ? { retry: false, errorSource: TaskErrorSource.USER }
+          : {}),
       };
     }
   };

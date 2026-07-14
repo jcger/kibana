@@ -17,7 +17,7 @@ import type {
 } from '@kbn/connector-specs';
 import type { GetAxiosInstanceWithAuthFn, GetCredentialFn } from '../get_axios_instance';
 import { LeasePool } from '../lease_pool';
-import { createConnectorNetwork } from './create_connector_network';
+import { AllowlistDeniedError, createConnectorNetwork } from './create_connector_network';
 import type { ActionsConfigurationUtilities } from '../../actions_config';
 import { TaskErrorSource } from '@kbn/task-manager-plugin/server';
 import { getErrorSource } from '@kbn/task-manager-plugin/server/task_running';
@@ -414,7 +414,7 @@ describe('generateExecutorFunction', () => {
       expect(getErrorSource(thrown)).toBe(TaskErrorSource.FRAMEWORK);
     });
 
-    it('tags a build failure as USER when clientType.isUserError returns true', async () => {
+    it('returns a non-retryable USER error when clientType.isUserError returns true', async () => {
       const buildError = new Error('config.serverUrl is required');
       const fakeClientType = {
         id: 'typed',
@@ -438,15 +438,19 @@ describe('generateExecutorFunction', () => {
         clientTypes: { typed: fakeClientType },
       });
 
-      const thrown = await executor(
+      const result = await executor(
         makeExecOptions({ subAction: 'testAction', subActionParams: {} })
-      ).catch((e) => e);
+      );
 
-      expect(thrown).toBeInstanceOf(Error);
-      expect(getErrorSource(thrown)).toBe(TaskErrorSource.USER);
+      expect(result).toMatchObject({
+        status: 'error',
+        message: 'config.serverUrl is required',
+        retry: false,
+        errorSource: TaskErrorSource.USER,
+      });
     });
 
-    it('MCP 401 connect failure surfaces with USER tag (end-to-end via isUserError seam)', async () => {
+    it('returns an MCP 401 connect failure as a non-retryable USER error', async () => {
       const mcpError = Object.assign(
         new Error('Unauthorized error: Error POSTing to endpoint: Unauthorized'),
         { httpStatus: 401 }
@@ -478,12 +482,16 @@ describe('generateExecutorFunction', () => {
         clientTypes: { mcp: fakeClientType },
       });
 
-      const thrown = await executor(
+      const result = await executor(
         makeExecOptions({ subAction: 'testAction', subActionParams: {} })
-      ).catch((e) => e);
+      );
 
-      expect(thrown).toBeInstanceOf(Error);
-      expect(getErrorSource(thrown)).toBe(TaskErrorSource.USER);
+      expect(result).toMatchObject({
+        status: 'error',
+        message: 'Unauthorized error: Error POSTing to endpoint: Unauthorized',
+        retry: false,
+        errorSource: TaskErrorSource.USER,
+      });
     });
 
     it('MCP 500 connect failure surfaces with FRAMEWORK tag', async () => {
@@ -525,7 +533,7 @@ describe('generateExecutorFunction', () => {
       expect(getErrorSource(thrown)).toBe(TaskErrorSource.FRAMEWORK);
     });
 
-    it('tags an allowlist (SSRF) denial as USER, not a retryable FRAMEWORK error', async () => {
+    it('returns an allowlist (SSRF) denial as a non-retryable USER error', async () => {
       // Real network seam over a config that denies every host, i.e. the connector's
       // serverUrl is no longer on xpack.actions.allowedHosts (tightened after save).
       const denyingConfigUtils = {
@@ -569,12 +577,50 @@ describe('generateExecutorFunction', () => {
         clientTypes: { mcp: fakeClientType },
       });
 
-      const thrown = await executor(
+      const result = await executor(
         makeExecOptions({ subAction: 'testAction', subActionParams: {} })
-      ).catch((e) => e);
+      );
 
-      expect(thrown).toBeInstanceOf(Error);
-      expect(getErrorSource(thrown)).toBe(TaskErrorSource.USER);
+      expect(result).toMatchObject({
+        status: 'error',
+        retry: false,
+        errorSource: TaskErrorSource.USER,
+      });
+    });
+
+    it('classifies a wrapped allowlist denial by walking the error cause chain', async () => {
+      const wrappedError = new Error('client connection failed', {
+        cause: new AllowlistDeniedError('host is not allowlisted'),
+      });
+      const fakeClientType = {
+        id: 'wrapped',
+        build: jest.fn().mockRejectedValue(wrappedError),
+        terminate: jest.fn().mockResolvedValue(undefined),
+      };
+      const pool = new LeasePool<unknown>();
+      const handler = jest.fn(async (ctx: ActionContext) => {
+        await (ctx.getClient as unknown as GetClient)('wrapped');
+        return {};
+      });
+      const executor = generateExecutorFunction({
+        actions: { testAction: { isTool: true, input: {} as never, handler } },
+        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
+        getCredential: mockGetCredential,
+        getClientLeasePool: () => pool,
+        network: mockNetwork,
+        clientTypes: { wrapped: fakeClientType },
+      });
+
+      const result = await executor(
+        makeExecOptions({ subAction: 'testAction', subActionParams: {} })
+      );
+
+      expect(result).toMatchObject({
+        status: 'error',
+        message: 'client connection failed',
+        retry: false,
+        errorSource: TaskErrorSource.USER,
+      });
     });
 
     it('returns {status:error} for an untagged handler error — no getClient involved (regression)', async () => {
