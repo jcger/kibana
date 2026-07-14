@@ -23,7 +23,7 @@ interface Props {
   onCancel: () => void;
   isUsingInitialConnector: boolean;
   onTestConnector?: (connector: ActionConnector) => void;
-  testConnector: () => void;
+  testConnector?: () => void;
   isSaving: boolean;
   disabled: boolean;
   onSubmit: () => Promise<void>;
@@ -78,7 +78,7 @@ const FlyoutFooterComponent: React.FC<Props> = ({
                       type="submit"
                       isLoading={isSaving}
                       disabled={disabled}
-                      onClick={testConnector}
+                      onClick={onTestConnector !== null ? testConnector : undefined}
                     >
                       <FormattedMessage
                         id="xpack.triggersActionsUI.sections.actionConnectorAdd.saveAndTestButtonLabel"

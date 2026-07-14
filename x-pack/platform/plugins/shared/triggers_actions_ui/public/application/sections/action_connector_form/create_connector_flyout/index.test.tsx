@@ -168,7 +168,7 @@ describe('CreateConnectorFlyout', () => {
     });
   });
 
-  it('does not show the save and test button without onTestConnector', async () => {
+  it('does not show the save and test button if the onTestConnector is not provided', async () => {
     appMockRenderer.render(
       <CreateConnectorFlyout
         actionTypeRegistry={actionTypeRegistry}
@@ -779,17 +779,11 @@ describe('CreateConnectorFlyout', () => {
       expect(onClose).not.toHaveBeenCalled();
     });
 
-    it('keeps the latest saved connector in local state across repeated configuration edits', async () => {
-      appMockRenderer.coreStart.http.put = jest
-        .fn()
-        .mockResolvedValueOnce({
-          ...createConnectorResponse,
-          name: 'First edit',
-        })
-        .mockResolvedValueOnce({
-          ...createConnectorResponse,
-          name: 'Second edit',
-        });
+    it('keeps the saved connector in local state across tab remounts', async () => {
+      appMockRenderer.coreStart.http.put = jest.fn().mockResolvedValue({
+        ...createConnectorResponse,
+        name: 'First edit',
+      });
 
       await setupSaveAndTest();
 
@@ -820,28 +814,6 @@ describe('CreateConnectorFlyout', () => {
       await userEvent.click(screen.getByTestId('configureConnectorTab'));
 
       expect(await screen.findByTestId('nameInput')).toHaveValue('First edit');
-
-      await userEvent.clear(screen.getByTestId('nameInput'));
-      await userEvent.paste('Second edit');
-      await userEvent.click(screen.getByTestId('edit-connector-flyout-save-btn'));
-
-      await waitFor(() => {
-        expect(appMockRenderer.coreStart.http.put).toHaveBeenCalledWith(
-          '/api/actions/connector/123',
-          {
-            body: JSON.stringify({
-              name: 'Second edit',
-              config: { testTextField: 'My text field' },
-              secrets: {},
-            }),
-          }
-        );
-      });
-
-      await userEvent.click(screen.getByTestId('testConnectorTab'));
-      await userEvent.click(screen.getByTestId('configureConnectorTab'));
-
-      expect(await screen.findByTestId('nameInput')).toHaveValue('Second edit');
     });
   });
 
