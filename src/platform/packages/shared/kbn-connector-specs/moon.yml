@@ -23,6 +23,7 @@ dependsOn:
   - '@kbn/actions-utils'
   - '@kbn/i18n'
   - '@kbn/mcp-client'
+  - '@kbn/logging-mocks'
 tags:
   - shared-common
   - package
