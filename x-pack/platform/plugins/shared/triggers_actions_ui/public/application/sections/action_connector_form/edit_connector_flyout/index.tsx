@@ -59,6 +59,14 @@ export interface EditConnectorFlyoutProps {
   hideRulesTab?: boolean;
 }
 
+interface EditConnectorFlyoutContentProps extends EditConnectorFlyoutProps {
+  isFormModified: boolean;
+  onFormModifiedChange: (isModified: boolean) => void;
+  onCloseAttempt: () => void;
+  showConfirmModal: boolean;
+  onConfirmModalCancel: () => void;
+}
+
 const getConnectorWithoutSecrets = (
   connector: UserConfiguredActionConnector<Record<string, unknown>, Record<string, unknown>>
 ) => ({
@@ -146,7 +154,7 @@ const ConnectorSpecLoadState: React.FC<ConnectorSpecLoadStateProps> = ({
   </>
 );
 
-const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
+export const EditConnectorFlyoutContent: React.FC<EditConnectorFlyoutContentProps> = ({
   actionTypeRegistry,
   connector,
   onClose,
@@ -154,6 +162,11 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
   onConnectorUpdated,
   icon,
   hideRulesTab = false,
+  isFormModified,
+  onFormModifiedChange: onFormModifiedChangeProp,
+  onCloseAttempt,
+  showConfirmModal,
+  onConfirmModalCancel,
 }) => {
   const confirmModalTitleId = useGeneratedHtmlId();
 
@@ -210,8 +223,6 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
     [testExecutionResult, setTestExecutionResult]
   );
 
-  const [isFormModified, setIsFormModified] = useState<boolean>(false);
-  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(true);
   const [isSaved, setIsSaved] = useState<boolean>(false);
   const { preSubmitValidator, submit, isValid: isFormValid, isSubmitting } = formState;
@@ -296,19 +307,11 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
       if (formModified) {
         setIsSaved(false);
       }
-      setIsFormModified(formModified);
+      onFormModifiedChangeProp(formModified);
       setTestExecutionResult(none);
     },
-    [setIsFormModified]
+    [onFormModifiedChangeProp]
   );
-
-  const closeFlyout = useCallback(() => {
-    if (isFormModified) {
-      setShowConfirmModal(true);
-      return;
-    }
-    onClose();
-  }, [onClose, isFormModified, setShowConfirmModal]);
 
   const onClickSave = useCallback(async () => {
     setPreSubmitValidationErrorMessage(null);
@@ -509,41 +512,34 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
 
   return (
     <>
-      <EuiFlyout
-        onClose={closeFlyout}
-        aria-labelledby="flyoutActionEditTitle"
-        size="m"
-        data-test-subj="edit-connector-flyout"
-      >
-        <FlyoutHeader
-          isPreconfigured={connector.isPreconfigured}
-          connectorName={connector.name}
-          connectorTypeDesc={
-            actionTypeModel?.selectMessagePreconfigured || actionTypeModel?.selectMessage || ''
-          }
-          setTab={handleSetTab}
-          selectedTab={selectedTab}
-          icon={icon ?? actionTypeModel?.iconClass}
-          isExperimental={isExperimental}
-          subFeature={actionTypeModel?.subFeature}
-          isTestable={isTestable}
-          hideRulesTab={hideRulesTab}
-          docsUrl={actionTypeModel?.docsUrl}
-        />
-        <EuiFlyoutBody>
-          {selectedTab === EditConnectorTabs.Configuration && renderConfigurationTab()}
-          {selectedTab === EditConnectorTabs.Test && renderTestTab()}
-          {selectedTab === EditConnectorTabs.Rules && renderConnectorRulesList()}
-        </EuiFlyoutBody>
-        <FlyoutFooter
-          onClose={closeFlyout}
-          isSaving={isSaving}
-          isSaved={isSaved}
-          disabled={disabled}
-          showButtons={showButtons}
-          onClickSave={onClickSave}
-        />
-      </EuiFlyout>
+      <FlyoutHeader
+        isPreconfigured={connector.isPreconfigured}
+        connectorName={connector.name}
+        connectorTypeDesc={
+          actionTypeModel?.selectMessagePreconfigured || actionTypeModel?.selectMessage || ''
+        }
+        setTab={handleSetTab}
+        selectedTab={selectedTab}
+        icon={icon ?? actionTypeModel?.iconClass}
+        isExperimental={isExperimental}
+        subFeature={actionTypeModel?.subFeature}
+        isTestable={isTestable}
+        hideRulesTab={hideRulesTab}
+        docsUrl={actionTypeModel?.docsUrl}
+      />
+      <EuiFlyoutBody>
+        {selectedTab === EditConnectorTabs.Configuration && renderConfigurationTab()}
+        {selectedTab === EditConnectorTabs.Test && renderTestTab()}
+        {selectedTab === EditConnectorTabs.Rules && renderConnectorRulesList()}
+      </EuiFlyoutBody>
+      <FlyoutFooter
+        onClose={onCloseAttempt}
+        isSaving={isSaving}
+        isSaved={isSaved}
+        disabled={disabled}
+        showButtons={showButtons}
+        onClickSave={onClickSave}
+      />
       {showConfirmModal && (
         <EuiConfirmModal
           aria-labelledby={confirmModalTitleId}
@@ -557,7 +553,7 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
             }
           )}
           onCancel={() => {
-            setShowConfirmModal(false);
+            onConfirmModalCancel();
           }}
           onConfirm={onClose}
           cancelButtonText={i18n.translate(
@@ -580,6 +576,51 @@ const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
         </EuiConfirmModal>
       )}
     </>
+  );
+};
+
+const EditConnectorFlyoutComponent: React.FC<EditConnectorFlyoutProps> = ({
+  actionTypeRegistry,
+  connector,
+  onClose,
+  tab = EditConnectorTabs.Configuration,
+  onConnectorUpdated,
+  icon,
+  hideRulesTab = false,
+}) => {
+  const [isFormModified, setIsFormModified] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const onFlyoutClose = useCallback(() => {
+    if (isFormModified) {
+      setShowConfirmModal(true);
+      return;
+    }
+    onClose();
+  }, [isFormModified, onClose]);
+
+  return (
+    <EuiFlyout
+      onClose={onFlyoutClose}
+      aria-labelledby="flyoutActionEditTitle"
+      size="m"
+      data-test-subj="edit-connector-flyout"
+    >
+      <EditConnectorFlyoutContent
+        actionTypeRegistry={actionTypeRegistry}
+        connector={connector}
+        onClose={onClose}
+        tab={tab}
+        onConnectorUpdated={onConnectorUpdated}
+        icon={icon}
+        hideRulesTab={hideRulesTab}
+        isFormModified={isFormModified}
+        onFormModifiedChange={setIsFormModified}
+        onCloseAttempt={onFlyoutClose}
+        showConfirmModal={showConfirmModal}
+        onConfirmModalCancel={() => setShowConfirmModal(false)}
+      />
+    </EuiFlyout>
   );
 };
 
