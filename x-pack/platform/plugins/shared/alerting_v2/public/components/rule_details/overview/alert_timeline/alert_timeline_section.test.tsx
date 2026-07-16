@@ -71,9 +71,7 @@ jest.mock('../../../../utils/discover_href_for_episode', () => ({
 
 import { useFetchRuleEvents } from '../../../../hooks/use_fetch_rule_events';
 
-const mockUseFetchRuleEvents = useFetchRuleEvents as jest.MockedFunction<
-  typeof useFetchRuleEvents
->;
+const mockUseFetchRuleEvents = useFetchRuleEvents as jest.MockedFunction<typeof useFetchRuleEvents>;
 
 const baseRule: RuleApiResponse = {
   id: 'rule-1',
@@ -112,7 +110,9 @@ const renderSection = (rule: RuleApiResponse = baseRule) =>
 describe('AlertTimelineSection', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseFetchRuleEvents.mockReturnValue(defaultFetchResult as unknown as ReturnType<typeof useFetchRuleEvents>);
+    mockUseFetchRuleEvents.mockReturnValue(
+      defaultFetchResult as unknown as ReturnType<typeof useFetchRuleEvents>
+    );
   });
 
   it('renders a horizontal rule separator after the legend in the empty state', () => {

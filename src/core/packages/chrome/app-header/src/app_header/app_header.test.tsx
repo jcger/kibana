@@ -172,9 +172,7 @@ describe('AppHeaderView', () => {
     expect(screen.getByRole('heading', { level: 1 }).className).toMatch(/euiTitle-xs/);
     unmountOverride();
 
-    renderAppHeader(
-      <AppHeaderView title="Single row" titleSize="s" />
-    );
+    renderAppHeader(<AppHeaderView title="Single row" titleSize="s" />);
     expect(screen.getByRole('heading', { level: 1 }).className).toMatch(/euiTitle-s/);
   });
 

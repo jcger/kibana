@@ -304,7 +304,10 @@ describe('RuleConditions', () => {
 
   describe('showDescription', () => {
     it('renders description text before the ES|QL heading when showDescription is true and description exists', () => {
-      const ruleWithDesc = { ...baseRule, metadata: { name: 'Test Signal Rule', description: 'My rule desc' } };
+      const ruleWithDesc = {
+        ...baseRule,
+        metadata: { name: 'Test Signal Rule', description: 'My rule desc' },
+      };
       renderConditions(ruleWithDesc, 'full', true);
       const desc = screen.getByTestId('ruleConditionsDescription');
       expect(desc).toHaveTextContent('My rule desc');
@@ -313,7 +316,10 @@ describe('RuleConditions', () => {
     });
 
     it('does not render description when showDescription is false', () => {
-      const ruleWithDesc = { ...baseRule, metadata: { name: 'Test Signal Rule', description: 'My rule desc' } };
+      const ruleWithDesc = {
+        ...baseRule,
+        metadata: { name: 'Test Signal Rule', description: 'My rule desc' },
+      };
       renderConditions(ruleWithDesc, 'full', false);
       expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
     });
@@ -324,7 +330,10 @@ describe('RuleConditions', () => {
     });
 
     it('does not render description in summary variant even when showDescription is true', () => {
-      const ruleWithDesc = { ...baseRule, metadata: { name: 'Test Signal Rule', description: 'My rule desc' } };
+      const ruleWithDesc = {
+        ...baseRule,
+        metadata: { name: 'Test Signal Rule', description: 'My rule desc' },
+      };
       renderConditions(ruleWithDesc, 'summary', false);
       expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
     });

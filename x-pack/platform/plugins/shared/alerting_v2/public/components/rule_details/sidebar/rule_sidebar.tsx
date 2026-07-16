@@ -85,7 +85,9 @@ export const RuleSidebar: React.FC<RuleSidebarProps> = ({
 
       <EuiHorizontalRule margin="m" />
 
-      {selectedTab === 'conditions' && <RuleSidebarConditionsTab showDescription={showDescription} />}
+      {selectedTab === 'conditions' && (
+        <RuleSidebarConditionsTab showDescription={showDescription} />
+      )}
       {selectedTab === 'queryPreview' && <RuleSidebarPreviewTab />}
       {selectedTab === 'runbook' && <RuleSidebarRunbookTab />}
     </div>
