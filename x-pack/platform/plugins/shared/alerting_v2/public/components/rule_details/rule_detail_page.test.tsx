@@ -145,27 +145,17 @@ describe('RuleDetailPage', () => {
     });
   });
 
-  it('renders the app header title and description in the body', async () => {
+  it('renders the app header title and sidebar sections', async () => {
     renderPage(baseRule);
     expect(screen.getByTestId(APP_HEADER_TEST_SUBJECTS.title)).toHaveTextContent(
       'Test Signal Rule'
     );
-    expect(screen.getByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).toBeInTheDocument();
-    expect(screen.getByTestId('ruleDescription')).toHaveTextContent('Test rule description');
+    expect(screen.queryByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('ruleDescription')).not.toBeInTheDocument();
     expect(screen.queryByTestId('ruleTags')).not.toBeInTheDocument();
     expect(screen.getByTestId('ruleConditionsSection')).toBeInTheDocument();
     expect(screen.getByTestId('ruleMetadataSection')).toBeInTheDocument();
     expect(await screen.findByTestId('ruleDetailsEnabledSwitch')).toBeInTheDocument();
-  });
-
-  it('omits the header metadata row when the rule has no description', () => {
-    renderPage({
-      ...baseRule,
-      metadata: { ...baseRule.metadata, description: undefined },
-    });
-
-    expect(screen.queryByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).not.toBeInTheDocument();
-    expect(screen.queryByTestId('ruleDescription')).not.toBeInTheDocument();
   });
 
   it('renders a back link to the rules list', () => {

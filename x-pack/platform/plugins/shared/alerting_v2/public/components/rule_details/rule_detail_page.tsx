@@ -14,7 +14,7 @@ import {
   useEuiTheme,
 } from '@elastic/eui';
 import { AppHeader } from '@kbn/app-header';
-import type { AppHeaderBadge, AppHeaderMenu, AppHeaderMetadataItems } from '@kbn/app-header';
+import type { AppHeaderBadge, AppHeaderMenu } from '@kbn/app-header';
 import { RULE_KIND_LABELS } from '@kbn/alerting-v2-constants';
 import { KibanaPageTemplate } from '@kbn/shared-ux-page-kibana-template';
 import { css } from '@emotion/react';
@@ -184,20 +184,6 @@ export const RuleDetailPage: React.FunctionComponent = () => {
     [rule, onEdit, handleToggleEnabled, isToggling, onClone, showDeleteConfirmationModal]
   );
 
-  // AppHeaderMetadata bolds `label` (it's meant to be the key of a label/value pair) and renders
-  // `value` at a lighter weight, so the description is passed as `value` with an empty `label`
-  // to get the lighter weight without touching the shared app-header component.
-  const metadata = rule.metadata?.description
-    ? ([
-        {
-          type: 'text',
-          label: '',
-          value: rule.metadata.description,
-          'data-test-subj': 'ruleDescription',
-        },
-      ] as AppHeaderMetadataItems)
-    : undefined;
-
   return (
     <KibanaPageTemplate
       paddingSize="none"
@@ -223,7 +209,6 @@ export const RuleDetailPage: React.FunctionComponent = () => {
         menu={menu}
         padding="none"
         sticky={false}
-        metadata={metadata}
       />
       <KibanaPageTemplate.Section
         paddingSize="none"
@@ -291,7 +276,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
               }
             `}
           >
-            <RuleSidebar />
+            <RuleSidebar showDescription />
           </EuiSplitPanel.Inner>
         </EuiSplitPanel.Outer>
       </KibanaPageTemplate.Section>

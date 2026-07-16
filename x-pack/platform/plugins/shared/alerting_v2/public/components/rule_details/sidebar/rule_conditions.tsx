@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import { EuiCodeBlock, EuiSpacer, EuiTitle } from '@elastic/eui';
+import { EuiCodeBlock, EuiSpacer, EuiText, EuiTitle } from '@elastic/eui';
 import { formatDuration } from '@kbn/alerting-plugin/common';
 import { getBreachEsqlQuery, getRootEsqlQuery } from '@kbn/alerting-v2-schemas';
 import { getIndexPatternFromESQLQuery } from '@kbn/esql-utils';
@@ -37,10 +37,13 @@ export interface RuleConditionsProps {
    * `'summary'` hides Alert delay and Recovery delay — used by the rule summary flyout.
    */
   variant?: 'full' | 'summary';
+  /** When true, renders the rule description before the ES|QL heading. */
+  showDescription?: boolean;
 }
 
 export const RuleConditions: React.FunctionComponent<RuleConditionsProps> = ({
   variant = 'full',
+  showDescription = false,
 }) => {
   const rule = useRule();
   const isAlertMode = rule.kind === 'alert';
@@ -145,6 +148,8 @@ export const RuleConditions: React.FunctionComponent<RuleConditionsProps> = ({
       : []),
   ];
 
+  const description = showDescription ? rule.metadata?.description : undefined;
+
   return (
     <>
       {isSummary && (
@@ -156,6 +161,14 @@ export const RuleConditions: React.FunctionComponent<RuleConditionsProps> = ({
               })}
             </h2>
           </EuiTitle>
+          <EuiSpacer size="m" />
+        </>
+      )}
+      {description && (
+        <>
+          <EuiText size="s" data-test-subj="ruleConditionsDescription">
+            <p>{description}</p>
+          </EuiText>
           <EuiSpacer size="m" />
         </>
       )}

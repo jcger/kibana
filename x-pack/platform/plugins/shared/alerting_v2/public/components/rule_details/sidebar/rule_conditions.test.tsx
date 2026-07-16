@@ -56,11 +56,15 @@ const alertRule: RuleApiResponse = {
   state_transition: { pending_count: 3, pending_timeframe: '5m' },
 };
 
-const renderConditions = (rule: RuleApiResponse, variant?: 'full' | 'summary') =>
+const renderConditions = (
+  rule: RuleApiResponse,
+  variant?: 'full' | 'summary',
+  showDescription?: boolean
+) =>
   render(
     <I18nProvider>
       <RuleProvider rule={rule}>
-        <RuleConditions variant={variant} />
+        <RuleConditions variant={variant} showDescription={showDescription} />
       </RuleProvider>
     </I18nProvider>
   );
@@ -295,6 +299,34 @@ describe('RuleConditions', () => {
       expect(screen.getByTestId('alertingV2RuleDetailsSchedule')).toHaveTextContent('Every 5m');
       expect(screen.getByTestId('alertingV2RuleDetailsLookback')).toHaveTextContent('10m');
       expect(screen.getByTestId('alertingV2RuleDetailsMode')).toHaveTextContent('Alert');
+    });
+  });
+
+  describe('showDescription', () => {
+    it('renders description text before the ES|QL heading when showDescription is true and description exists', () => {
+      const ruleWithDesc = { ...baseRule, metadata: { name: 'Test Signal Rule', description: 'My rule desc' } };
+      renderConditions(ruleWithDesc, 'full', true);
+      const desc = screen.getByTestId('ruleConditionsDescription');
+      expect(desc).toHaveTextContent('My rule desc');
+      const query = screen.getByTestId('alertingV2RuleDetailsBaseQuery');
+      expect(desc.compareDocumentPosition(query)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+
+    it('does not render description when showDescription is false', () => {
+      const ruleWithDesc = { ...baseRule, metadata: { name: 'Test Signal Rule', description: 'My rule desc' } };
+      renderConditions(ruleWithDesc, 'full', false);
+      expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
+    });
+
+    it('does not render description when showDescription is true but description is absent', () => {
+      renderConditions(baseRule, 'full', true);
+      expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
+    });
+
+    it('does not render description in summary variant even when showDescription is true', () => {
+      const ruleWithDesc = { ...baseRule, metadata: { name: 'Test Signal Rule', description: 'My rule desc' } };
+      renderConditions(ruleWithDesc, 'summary', false);
+      expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
     });
   });
 

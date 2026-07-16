@@ -12,8 +12,14 @@ import type { RuleApiResponse } from '../../../services/rules_api';
 import { RuleProvider } from '../rule_context';
 import { RuleSidebar } from './rule_sidebar';
 
+import type { RuleSidebarConditionsTabProps } from './rule_sidebar_conditions_tab';
+
+const mockConditionsTabProps = jest.fn();
 jest.mock('./rule_sidebar_conditions_tab', () => ({
-  RuleSidebarConditionsTab: () => <div data-test-subj="mockConditionsTab" />,
+  RuleSidebarConditionsTab: (props: RuleSidebarConditionsTabProps) => {
+    mockConditionsTabProps(props);
+    return <div data-test-subj="mockConditionsTab" />;
+  },
 }));
 
 jest.mock('./rule_sidebar_preview_tab', () => ({
@@ -50,6 +56,10 @@ const renderSidebar = (props: RuleSidebarProps = {}) =>
   );
 
 describe('RuleSidebar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders two tabs by default (no query preview)', () => {
     renderSidebar();
     expect(screen.getByTestId('sidebarTabGroup')).toBeInTheDocument();
@@ -86,6 +96,20 @@ describe('RuleSidebar', () => {
     expect(screen.getByTestId('mockRunbookTab')).toBeInTheDocument();
     expect(screen.queryByTestId('mockConditionsTab')).not.toBeInTheDocument();
     expect(screen.queryByTestId('mockPreviewTab')).not.toBeInTheDocument();
+  });
+
+  it('passes showDescription=false to conditions tab by default', () => {
+    renderSidebar();
+    expect(mockConditionsTabProps).toHaveBeenCalledWith(
+      expect.objectContaining({ showDescription: false })
+    );
+  });
+
+  it('forwards showDescription=true to conditions tab', () => {
+    renderSidebar({ showDescription: true });
+    expect(mockConditionsTabProps).toHaveBeenCalledWith(
+      expect.objectContaining({ showDescription: true })
+    );
   });
 
   it('switches back to conditions from query preview', () => {
