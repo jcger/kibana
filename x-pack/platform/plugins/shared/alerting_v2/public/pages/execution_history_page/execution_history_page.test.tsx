@@ -204,6 +204,14 @@ describe('ExecutionHistoryPage', () => {
     expect(screen.getByRole('tab', { name: /rules/i })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('renders the page title with xs size to match other management pages', () => {
+    mockFetchResult();
+    renderPage();
+
+    const heading = screen.getByRole('heading', { level: 1, name: /execution history/i });
+    expect(heading.className).toMatch(/euiTitle-xs/);
+  });
+
   it('renders the experimental badge in the page header', () => {
     mockFetchResult();
     renderPage();

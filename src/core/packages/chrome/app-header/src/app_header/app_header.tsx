@@ -47,6 +47,11 @@ export interface AppHeaderViewProps {
    * separating line instead (e.g. Discover using UnifiedTabs).
    */
   borderless?: boolean;
+  /**
+   * Override the automatic title size. When absent, the header picks `s` for multi-row layouts
+   * (tabs or metadata present) and `xs` for single-row layouts.
+   */
+  titleSize?: 'xs' | 's';
 }
 
 export const AppHeaderView = React.memo<AppHeaderViewProps>(
@@ -64,6 +69,7 @@ export const AppHeaderView = React.memo<AppHeaderViewProps>(
     borderless,
     docLink,
     showAddIntegrations,
+    titleSize: titleSizeOverride,
   }) => {
     const hasLegacyActionMenu = useHasLegacyActionMenu();
     const shareAction = useShareAction(menu);
@@ -72,7 +78,7 @@ export const AppHeaderView = React.memo<AppHeaderViewProps>(
     // A second row (tabs or metadata) makes a taller, multi-line header where an `xs` title looks
     // too small, so bump the title to `s` there; single-row headers stay `xs`.
     const isMultiRow = !!tabs?.length || !!metadata?.length;
-    const titleSize = isMultiRow ? 's' : 'xs';
+    const titleSize = titleSizeOverride ?? (isMultiRow ? 's' : 'xs');
 
     const show =
       title !== undefined ||

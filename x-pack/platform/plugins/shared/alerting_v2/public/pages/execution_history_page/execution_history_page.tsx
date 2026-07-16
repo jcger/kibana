@@ -84,6 +84,7 @@ export const ExecutionHistoryPage = () => {
         titleAppend={<ExperimentalBadge />}
         padding={{ bleed: 'm' }}
         tabs={tabs}
+        titleSize="xs"
       />
       <EuiSpacer size="m" />
       {selectedTabId === RULES_TAB_ID ? (
