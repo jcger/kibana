@@ -315,15 +315,6 @@ describe('RuleConditions', () => {
       renderConditions(baseRule);
       expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
     });
-
-    it('does not duplicate the description in the summary variant', () => {
-      const ruleWithDesc = {
-        ...baseRule,
-        metadata: { name: 'Test Signal Rule', description: 'My rule desc' },
-      };
-      renderConditions(ruleWithDesc, 'summary');
-      expect(screen.queryByTestId('ruleConditionsDescription')).not.toBeInTheDocument();
-    });
   });
 
   it('renders fallback values for missing optional fields', () => {

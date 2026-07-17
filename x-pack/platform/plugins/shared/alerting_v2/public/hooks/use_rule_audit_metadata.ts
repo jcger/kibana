@@ -8,7 +8,6 @@
 import { CoreStart, useService } from '@kbn/core-di-browser';
 import type { RuleResponse } from '@kbn/alerting-v2-schemas';
 import moment from 'moment';
-import { useMemo } from 'react';
 import { EMPTY_VALUE } from '../components/rule_details/utils';
 import { useBulkGetUserProfiles } from './use_bulk_get_user_profiles';
 import { resolveDisplayName } from '../utils/resolve_display_name';
@@ -25,22 +24,16 @@ export interface RuleAuditMetadata {
 export const useRuleAuditMetadata = (rule?: RuleAuditFields): RuleAuditMetadata => {
   const uiSettings = useService(CoreStart('uiSettings'));
   const dateFormat: string = uiSettings.get('dateFormat');
-
-  const auditUids = useMemo(
-    () => [rule?.createdBy, rule?.updatedBy].filter((uid): uid is string => Boolean(uid)),
-    [rule?.createdBy, rule?.updatedBy]
-  );
-
+  const auditUids = [rule?.createdBy, rule?.updatedBy].filter((uid): uid is string => Boolean(uid));
   const { data: profileByUid } = useBulkGetUserProfiles({ uids: auditUids });
 
-  const createdByDisplay = resolveDisplayName(rule?.createdBy, profileByUid, EMPTY_VALUE);
-  const createdAtFormatted = rule?.createdAt
-    ? moment(rule.createdAt).format(dateFormat)
-    : EMPTY_VALUE;
-  const updatedByDisplay = resolveDisplayName(rule?.updatedBy, profileByUid, EMPTY_VALUE);
-  const updatedAtFormatted = rule?.updatedAt
-    ? moment(rule.updatedAt).format(dateFormat)
-    : EMPTY_VALUE;
+  const formatDate = (date: string | undefined): string =>
+    date ? moment(date).format(dateFormat) : EMPTY_VALUE;
 
-  return { createdByDisplay, createdAtFormatted, updatedByDisplay, updatedAtFormatted };
+  return {
+    createdByDisplay: resolveDisplayName(rule?.createdBy, profileByUid, EMPTY_VALUE),
+    createdAtFormatted: formatDate(rule?.createdAt),
+    updatedByDisplay: resolveDisplayName(rule?.updatedBy, profileByUid, EMPTY_VALUE),
+    updatedAtFormatted: formatDate(rule?.updatedAt),
+  };
 };

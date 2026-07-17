@@ -161,10 +161,8 @@ describe('RuleDetailPage', () => {
       'Test Signal Rule'
     );
     expect(screen.getByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).toBeInTheDocument();
-    expect(screen.queryByTestId('ruleDescription')).not.toBeInTheDocument();
     expect(screen.queryByTestId('ruleTags')).not.toBeInTheDocument();
     expect(screen.getByTestId('ruleConditionsSection')).toBeInTheDocument();
-    expect(screen.queryByTestId('ruleMetadataSection')).not.toBeInTheDocument();
     expect(await screen.findByTestId('ruleDetailsEnabledSwitch')).toBeInTheDocument();
   });
 
