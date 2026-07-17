@@ -6,8 +6,10 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { euiFontSize, useEuiTheme } from '@elastic/eui';
+import { APP_HEADER_TEST_SUBJECTS } from '@kbn/app-header';
 import { ListPageTestProviders } from '../../test_utils/test_providers';
 import type { PolicyExecutionHistoryItem } from '../../services/execution_history_api';
 import type { useFetchRuleExecutions } from '../../hooks/use_fetch_rule_executions';
@@ -208,8 +210,13 @@ describe('ExecutionHistoryPage', () => {
     mockFetchResult();
     renderPage();
 
-    const heading = screen.getByRole('heading', { level: 1, name: /execution history/i });
-    expect(heading.className).toMatch(/euiTitle-xs/);
+    const { result } = renderHook(() => useEuiTheme());
+    const { fontSize, lineHeight } = euiFontSize(result.current, 'm');
+    const titleSelector = `[data-test-subj='${APP_HEADER_TEST_SUBJECTS.root}'] h1`;
+    const page = screen.getByTestId('executionHistoryPage');
+
+    expect(page).toHaveStyleRule('font-size', fontSize, { target: titleSelector });
+    expect(page).toHaveStyleRule('line-height', lineHeight, { target: titleSelector });
   });
 
   it('renders the experimental badge in the page header', () => {

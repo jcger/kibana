@@ -35,7 +35,7 @@ const defaultProps = {
 };
 
 describe('AlertEpisodeDetailsHeader', () => {
-  it('renders title, description, status badges, and tags', () => {
+  it('renders title, status badges, and tags without the rule description', () => {
     render(
       <I18nProvider>
         <AlertEpisodeDetailsHeader
@@ -49,7 +49,7 @@ describe('AlertEpisodeDetailsHeader', () => {
       </I18nProvider>
     );
     expect(screen.getByRole('heading', { name: 'Rule 1' })).toBeInTheDocument();
-    expect(screen.getByText('Some description')).toBeInTheDocument();
+    expect(screen.queryByText('Some description')).not.toBeInTheDocument();
     expect(screen.getByTestId('alertingV2EpisodeDetailsHeaderTags')).toBeInTheDocument();
     expect(screen.getByText('t1')).toBeInTheDocument();
   });

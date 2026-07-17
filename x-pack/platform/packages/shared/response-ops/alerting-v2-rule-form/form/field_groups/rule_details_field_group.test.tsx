@@ -39,7 +39,7 @@ describe('RuleDetailsFieldGroup', () => {
     expect(screen.getByText('optional')).toBeInTheDocument();
   });
 
-  it('does not render the description field', () => {
+  it('renders the description field immediately', () => {
     const Wrapper = createFormWrapper();
 
     render(
@@ -48,8 +48,8 @@ describe('RuleDetailsFieldGroup', () => {
       </Wrapper>
     );
 
-    expect(screen.queryByText('Description')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('ruleDescriptionInput')).not.toBeInTheDocument();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.queryByText('Add description')).not.toBeInTheDocument();
   });
 
   it('does not render enabled or kind fields', () => {

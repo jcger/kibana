@@ -44,13 +44,9 @@ const RUNBOOK_TAB = {
 
 export interface RuleSidebarProps {
   showQueryPreview?: boolean;
-  showDescription?: boolean;
 }
 
-export const RuleSidebar: React.FC<RuleSidebarProps> = ({
-  showQueryPreview = false,
-  showDescription = false,
-}) => {
+export const RuleSidebar: React.FC<RuleSidebarProps> = ({ showQueryPreview = false }) => {
   const [selectedTab, setSelectedTab] = useState('conditions');
 
   const tabOptions = showQueryPreview
@@ -85,9 +81,7 @@ export const RuleSidebar: React.FC<RuleSidebarProps> = ({
 
       <EuiHorizontalRule margin="m" />
 
-      {selectedTab === 'conditions' && (
-        <RuleSidebarConditionsTab showDescription={showDescription} />
-      )}
+      {selectedTab === 'conditions' && <RuleSidebarConditionsTab />}
       {selectedTab === 'queryPreview' && <RuleSidebarPreviewTab />}
       {selectedTab === 'runbook' && <RuleSidebarRunbookTab />}
     </div>

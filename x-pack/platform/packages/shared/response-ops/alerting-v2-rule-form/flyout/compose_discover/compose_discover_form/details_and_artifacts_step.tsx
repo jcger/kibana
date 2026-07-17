@@ -14,7 +14,7 @@ import { RelatedDashboardSelector, RunbookArtifactField } from '../../../form/fi
 export function DetailsAndArtifactsStep() {
   return (
     <>
-      {/* Name, tags -- connected to RHF via useFormContext() internally */}
+      {/* Name, description, tags -- connected to RHF via useFormContext() internally */}
       <RuleDetailsFieldGroup />
 
       <EuiHorizontalRule margin="m" />

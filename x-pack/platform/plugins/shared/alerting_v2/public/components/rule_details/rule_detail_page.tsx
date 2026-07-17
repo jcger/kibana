@@ -14,7 +14,7 @@ import {
   useEuiTheme,
 } from '@elastic/eui';
 import { AppHeader } from '@kbn/app-header';
-import type { AppHeaderBadge, AppHeaderMenu } from '@kbn/app-header';
+import type { AppHeaderBadge, AppHeaderMenu, AppHeaderMetadataItems } from '@kbn/app-header';
 import { RULE_KIND_LABELS } from '@kbn/alerting-v2-constants';
 import { KibanaPageTemplate } from '@kbn/shared-ux-page-kibana-template';
 import { css } from '@emotion/react';
@@ -22,6 +22,7 @@ import { i18n } from '@kbn/i18n';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
+import { useRuleAuditMetadata } from '../../hooks/use_rule_audit_metadata';
 import { useDeleteRule } from '../../hooks/use_delete_rule';
 import { useComposeDiscoverFlyout } from '../../hooks/use_compose_discover_flyout';
 import { useToggleRuleEnabled } from '../../hooks/use_toggle_rule_enabled';
@@ -169,7 +170,38 @@ export const RuleDetailPage: React.FunctionComponent = () => {
     openCloneFlyout(rule);
   }, [openCloneFlyout, rule]);
 
+  const { createdByDisplay, createdAtFormatted, updatedByDisplay, updatedAtFormatted } =
+    useRuleAuditMetadata(rule);
+
   const badges = React.useMemo(() => getRuleDetailBadges(rule), [rule]);
+
+  const headerMetadata = React.useMemo<AppHeaderMetadataItems>(
+    () => [
+      {
+        type: 'text',
+        label: i18n.translate('xpack.alertingV2.ruleDetails.header.createdBy', {
+          defaultMessage: 'Created by',
+        }),
+        value: i18n.translate('xpack.alertingV2.ruleDetails.header.createdByValue', {
+          defaultMessage: '{user} on {date}',
+          values: { user: createdByDisplay, date: createdAtFormatted },
+        }),
+        'data-test-subj': 'ruleDetailsCreatedByMetadata',
+      },
+      {
+        type: 'text',
+        label: i18n.translate('xpack.alertingV2.ruleDetails.header.updatedBy', {
+          defaultMessage: 'Last updated by',
+        }),
+        value: i18n.translate('xpack.alertingV2.ruleDetails.header.updatedByValue', {
+          defaultMessage: '{user} on {date}',
+          values: { user: updatedByDisplay, date: updatedAtFormatted },
+        }),
+        'data-test-subj': 'ruleDetailsUpdatedByMetadata',
+      },
+    ],
+    [createdByDisplay, createdAtFormatted, updatedByDisplay, updatedAtFormatted]
+  );
 
   const menu = React.useMemo(
     () =>
@@ -206,6 +238,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
           }),
         }}
         badges={badges}
+        metadata={headerMetadata}
         menu={menu}
         padding="none"
         sticky={false}
@@ -216,6 +249,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
         restrictWidth={false}
         css={css`
           min-height: 0;
+          margin-block-start: ${euiTheme.border.width.thin};
         `}
         contentProps={{
           css: css`
@@ -276,7 +310,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
               }
             `}
           >
-            <RuleSidebar showDescription />
+            <RuleSidebar />
           </EuiSplitPanel.Inner>
         </EuiSplitPanel.Outer>
       </KibanaPageTemplate.Section>

@@ -50,6 +50,7 @@ import { CenterJustifiedSpinner } from '../../components/center_justified_spinne
 import { paths } from '../../constants';
 import type { AlertEpisodesKibanaServices } from '../../episodes_kibana_services';
 import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
+import { useRuleAuditMetadata } from '../../hooks/use_rule_audit_metadata';
 import { getDiscoverHrefForRuleAndEpisodeTimestamp } from '../../utils/discover_href_for_episode';
 import {
   filterEpisodeActionsByPrivilege,
@@ -119,6 +120,8 @@ export function EpisodeDetailsPage() {
   const tags = useMemo(() => groupAction?.tags ?? [], [groupAction]);
 
   const showRuleDependentUi = isRuleLoaded(ruleState);
+  const { createdByDisplay, createdAtFormatted, updatedByDisplay, updatedAtFormatted } =
+    useRuleAuditMetadata(showRuleDependentUi ? ruleState.rule : undefined);
 
   const episodeBreadcrumbTitle =
     showRuleDependentUi && ruleState.rule.metadata.name
@@ -230,7 +233,32 @@ export function EpisodeDetailsPage() {
     [applicableActions, episode, invalidateEpisodeQueries]
   );
 
-  const ruleDescription = showRuleDependentUi ? ruleState.rule.metadata.description : undefined;
+  const metadata = useMemo<AppHeaderMetadataItems | undefined>(
+    () =>
+      showRuleDependentUi
+        ? [
+            {
+              type: 'text',
+              label: i18n.CREATED_BY_LABEL,
+              value: i18n.CREATED_BY_VALUE(createdByDisplay, createdAtFormatted),
+              'data-test-subj': 'alertingV2EpisodeDetailsCreatedByMetadata',
+            },
+            {
+              type: 'text',
+              label: i18n.LAST_UPDATED_BY_LABEL,
+              value: i18n.LAST_UPDATED_BY_VALUE(updatedByDisplay, updatedAtFormatted),
+              'data-test-subj': 'alertingV2EpisodeDetailsUpdatedByMetadata',
+            },
+          ]
+        : undefined,
+    [
+      showRuleDependentUi,
+      createdByDisplay,
+      createdAtFormatted,
+      updatedByDisplay,
+      updatedAtFormatted,
+    ]
+  );
 
   const episodesListHref = services.http.basePath.prepend(paths.alertEpisodesList);
 
@@ -372,20 +400,6 @@ export function EpisodeDetailsPage() {
       {sidebar}
     </EuiSplitPanel.Inner>
   );
-
-  // AppHeaderMetadata bolds `label` (it's meant to be the key of a label/value pair) and renders
-  // `value` at a lighter weight, so the description is passed as `value` with an empty `label`
-  // to get the lighter weight without touching the shared app-header component.
-  const metadata = ruleDescription
-    ? ([
-        {
-          type: 'text',
-          label: '',
-          value: ruleDescription,
-          'data-test-subj': 'alertingV2EpisodeDetailsHeaderDescription',
-        },
-      ] as AppHeaderMetadataItems)
-    : undefined;
 
   return (
     <KibanaPageTemplate

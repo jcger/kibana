@@ -84,6 +84,7 @@ describe('AlertEpisodeDetailsHeaderSection', () => {
     await waitFor(() =>
       expect(screen.getByTestId('alertingV2EpisodeDetailsHeaderTags')).toBeInTheDocument()
     );
+    expect(screen.queryByText('A description')).not.toBeInTheDocument();
   });
 
   it('surfaces episode severity in the header after status', async () => {

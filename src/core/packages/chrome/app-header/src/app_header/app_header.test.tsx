@@ -161,21 +161,6 @@ describe('AppHeaderView', () => {
     expect(screen.getByRole('heading', { level: 1 }).className).toMatch(/euiTitle-s/);
   });
 
-  it('uses the explicit titleSize when provided, overriding the multi-row default', () => {
-    const { unmount: unmountOverride } = renderAppHeader(
-      <AppHeaderView
-        title="Execution history"
-        tabs={[{ id: 'rules', label: 'Rules' }]}
-        titleSize="xs"
-      />
-    );
-    expect(screen.getByRole('heading', { level: 1 }).className).toMatch(/euiTitle-xs/);
-    unmountOverride();
-
-    renderAppHeader(<AppHeaderView title="Single row" titleSize="s" />);
-    expect(screen.getByRole('heading', { level: 1 }).className).toMatch(/euiTitle-s/);
-  });
-
   it('renders tab badge and test subject metadata', () => {
     renderAppHeader(
       <AppHeaderView

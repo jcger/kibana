@@ -37,13 +37,10 @@ export interface RuleConditionsProps {
    * `'summary'` hides Alert delay and Recovery delay — used by the rule summary flyout.
    */
   variant?: 'full' | 'summary';
-  /** When true, renders the rule description before the ES|QL heading. */
-  showDescription?: boolean;
 }
 
 export const RuleConditions: React.FunctionComponent<RuleConditionsProps> = ({
   variant = 'full',
-  showDescription = false,
 }) => {
   const rule = useRule();
   const isAlertMode = rule.kind === 'alert';
@@ -148,7 +145,8 @@ export const RuleConditions: React.FunctionComponent<RuleConditionsProps> = ({
       : []),
   ];
 
-  const description = showDescription ? rule.metadata?.description : undefined;
+  // The summary flyout renders the description in its header.
+  const description = isSummary ? undefined : rule.metadata.description;
 
   return (
     <>
