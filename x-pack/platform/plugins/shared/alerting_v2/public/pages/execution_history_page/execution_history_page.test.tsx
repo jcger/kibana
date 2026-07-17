@@ -24,6 +24,8 @@ jest.mock('../../application/breadcrumb_context', () => ({
   useSetBreadcrumbs: () => jest.fn(),
 }));
 
+const mockCanReadRules = true;
+
 jest.mock('@kbn/core-di-browser', () => ({
   useService: (token: unknown) => {
     if (token === 'chrome') return { docTitle: { change: jest.fn() } };
@@ -35,6 +37,13 @@ jest.mock('@kbn/core-di-browser', () => ({
     }
     if (token === 'http') {
       return {};
+    }
+    if (typeof token === 'function') {
+      return {
+        canRead: () => mockCanReadRules,
+        canWrite: () => mockCanReadRules,
+        can: () => mockCanReadRules,
+      };
     }
     return {};
   },
