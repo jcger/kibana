@@ -19,6 +19,7 @@ import {
   ALERT_STATUS_UNTRACKED,
   ALERT_TIME_RANGE,
   ALERT_UUID,
+  SPACE_IDS,
 } from '@kbn/rule-data-utils';
 import type { QueryDslQueryContainer } from '@elastic/elasticsearch/lib/api/types';
 import type { RulesClientContext } from '../../rules_client';
@@ -63,6 +64,8 @@ const getUntrackQuery = (
   params: SetAlertsToUntrackedParamsWithDep,
   alertStatus: AlertStatus
 ): QueryDslQueryContainer => {
+  const { spaceId } = params;
+
   const statusTerms: Array<{ term: Record<string, { value: string }> }> = [
     {
       term: {
@@ -71,12 +74,17 @@ const getUntrackQuery = (
     },
   ];
 
+  // Restrict to alerts visible in the active space, including globally visible ('*') alerts.
+  // When spaceId is absent (internal cleanup calls), no space filter is applied.
+  const spaceFilter = spaceId ? { terms: { [SPACE_IDS]: [spaceId, '*'] } } : undefined;
+
   if (params.isUsingQuery) {
     const { query } = params;
+    const filterClauses = [...(spaceFilter ? [spaceFilter] : []), ...(query ?? [])];
     return {
       bool: {
         must: statusTerms,
-        ...(query ? { filter: query } : {}),
+        ...(filterClauses.length > 0 ? { filter: filterClauses } : {}),
       },
     };
   } else {
@@ -112,6 +120,7 @@ const getUntrackQuery = (
             },
           },
         ],
+        ...(spaceFilter ? { filter: [spaceFilter] } : {}),
       },
     };
   }
