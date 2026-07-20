@@ -470,7 +470,7 @@ describe('setAlertsToUntracked()', () => {
             filter: [
               {
                 terms: {
-                  [SPACE_IDS]: ['default', '*'],
+                  [SPACE_IDS]: ['default'],
                 },
               },
               {
@@ -504,7 +504,7 @@ describe('setAlertsToUntracked()', () => {
             filter: [
               {
                 terms: {
-                  [SPACE_IDS]: ['default', '*'],
+                  [SPACE_IDS]: ['default'],
                 },
               },
               {
@@ -615,7 +615,7 @@ describe('setAlertsToUntracked()', () => {
             filter: [
               {
                 terms: {
-                  [SPACE_IDS]: ['default', '*'],
+                  [SPACE_IDS]: ['default'],
                 },
               },
               {
@@ -654,7 +654,7 @@ describe('setAlertsToUntracked()', () => {
           filter: [
             {
               terms: {
-                [SPACE_IDS]: ['space1', '*'],
+                [SPACE_IDS]: ['space1'],
               },
             },
           ],
@@ -692,7 +692,7 @@ describe('setAlertsToUntracked()', () => {
             filter: [
               {
                 terms: {
-                  [SPACE_IDS]: ['space1', '*'],
+                  [SPACE_IDS]: ['space1'],
                 },
               },
             ],
@@ -734,13 +734,31 @@ describe('setAlertsToUntracked()', () => {
             filter: [
               {
                 terms: {
-                  [SPACE_IDS]: ['space1', '*'],
+                  [SPACE_IDS]: ['space1'],
                 },
               },
             ],
           },
         },
       });
+    });
+
+    test('should NOT include the all-spaces wildcard in the space filter', async () => {
+      // Untracking must never match globally visible ('*') alerts (e.g. internally managed
+      // Streams "Significant Events" alerts). Only the caller's own space is allowed.
+      await setAlertsToUntracked({
+        logger,
+        esClient: clusterClient,
+        indices: ['test-index'],
+        alertUuids: ['test-alert-uuid'],
+        spaceId: 'space1',
+      });
+
+      const query = clusterClient.updateByQuery.mock.lastCall![0].query as {
+        bool: { filter: Array<{ terms: Record<string, string[]> }> };
+      };
+      expect(query.bool.filter[0].terms[SPACE_IDS]).toEqual(['space1']);
+      expect(query.bool.filter[0].terms[SPACE_IDS]).not.toContain('*');
     });
   });
 });
