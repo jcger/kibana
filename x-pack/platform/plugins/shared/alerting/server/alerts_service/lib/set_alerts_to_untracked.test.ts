@@ -653,7 +653,8 @@ describe('setAlertsToUntracked()', () => {
 
       expect(clusterClient.updateByQuery).toHaveBeenCalledTimes(1);
       expect(
-        (clusterClient.updateByQuery.mock.lastCall![0] as { body?: { query?: unknown } }).body?.query
+        (clusterClient.updateByQuery.mock.lastCall![0] as { body?: { query?: unknown } }).body
+          ?.query
       ).toMatchObject({
         bool: {
           must: expect.any(Array),
