@@ -698,6 +698,9 @@ export default function webhookTest({ getService }: FtrProviderContext) {
         // waits enough for the token to be expired plus some buffer
         await new Promise((resolve) =>
           setTimeout(resolve, oauth2Server.getTokenExpirationTime() * 2 * 1000)
+        // waits enough for the token to be expired plus some buffer
+        await new Promise((resolve) =>
+          setTimeout(resolve, oauth2Server.getTokenExpirationTime() * 2 * 1000 + 2500)
         );
 
         // this second call should trigger a second call to the auth server because
