@@ -675,7 +675,7 @@ describe('setAlertsToUntracked()', () => {
         indices: ['test-index'],
         alertUuids: ['test-alert-uuid'],
         spaceId: 'space1',
-        bulkEnsureAuthorized: bulkEnsureAuthorizedMock,
+        ensureAuthorized: ensureAuthorizedMock,
       });
 
       // First search is for authorization aggregation
