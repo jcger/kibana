@@ -652,7 +652,9 @@ describe('setAlertsToUntracked()', () => {
       });
 
       expect(clusterClient.updateByQuery).toHaveBeenCalledTimes(1);
-      expect(clusterClient.updateByQuery.mock.lastCall![0].body?.query).toMatchObject({
+      expect(
+        (clusterClient.updateByQuery.mock.lastCall![0] as { body?: { query?: unknown } }).body?.query
+      ).toMatchObject({
         bool: {
           must: expect.any(Array),
           filter: [
@@ -715,7 +717,9 @@ describe('setAlertsToUntracked()', () => {
         alertUuids: ['test-alert-uuid'],
       });
 
-      const query = clusterClient.updateByQuery.mock.lastCall![0].body?.query;
+      const query = (
+        clusterClient.updateByQuery.mock.lastCall![0] as { body?: { query?: unknown } }
+      ).body?.query;
       expect(query).toMatchObject({ bool: { must: expect.any(Array) } });
       expect(query).not.toHaveProperty('bool.filter');
     });
@@ -761,7 +765,9 @@ describe('setAlertsToUntracked()', () => {
         spaceId: 'space1',
       });
 
-      const query = clusterClient.updateByQuery.mock.lastCall![0].body?.query;
+      const query = (
+        clusterClient.updateByQuery.mock.lastCall![0] as { body?: { query?: unknown } }
+      ).body?.query;
       expect(query).toMatchObject({
         bool: {
           filter: [
