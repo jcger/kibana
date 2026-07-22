@@ -109,11 +109,6 @@ jest.mock('../../hooks/use_breadcrumbs', () => ({
   useBreadcrumbs: jest.fn(),
 }));
 
-const mockUseRuleAuditMetadata = jest.fn();
-jest.mock('../../hooks/use_rule_audit_metadata', () => ({
-  useRuleAuditMetadata: () => mockUseRuleAuditMetadata(),
-}));
-
 const mockUseParams = jest.mocked(useParams);
 const mockUseFetchEpisodeQuery = jest.mocked(useFetchEpisodeQuery);
 const mockUseFetchEpisodeActions = jest.mocked(useFetchEpisodeActions);
@@ -190,12 +185,6 @@ beforeEach(() => {
   mockUseParams.mockReturnValue({ episodeId });
   mockUseFetchEpisodeQuery.mockReturnValue(episodeQuery);
   mockUseFetchRule.mockReturnValue(fetchRuleResult);
-  mockUseRuleAuditMetadata.mockReturnValue({
-    createdByDisplay: 'Alice Example',
-    createdAtFormatted: 'May 1, 2026',
-    updatedByDisplay: 'Bob Example',
-    updatedAtFormatted: 'May 4, 2026',
-  });
   mockUseFetchEpisodeActions.mockReturnValue({
     data: new Map([
       [
@@ -275,30 +264,7 @@ describe('EpisodeDetailsPage', () => {
     );
   });
 
-  it('renders rule audit metadata in the header area', () => {
-    renderPage();
-
-    expect(screen.getByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).toBeInTheDocument();
-    expect(screen.getByTestId('alertingV2EpisodeDetailsCreatedByMetadata')).toHaveTextContent(
-      'Created by Alice Example on May 1, 2026'
-    );
-    expect(screen.getByTestId('alertingV2EpisodeDetailsUpdatedByMetadata')).toHaveTextContent(
-      'Last updated by Bob Example on May 4, 2026'
-    );
-    expect(
-      screen.queryByTestId('alertingV2EpisodeDetailsHeaderDescription')
-    ).not.toBeInTheDocument();
-  });
-
-  it('omits the header metadata row when the rule is not loaded', () => {
-    mockUseFetchRule.mockReturnValue({
-      ...fetchRuleResult,
-      ruleState: {
-        status: RuleStateStatus.loading,
-        ruleId: 'rule-1',
-      },
-    } as unknown as FetchRuleResult);
-
+  it('does not render rule audit metadata in the header area', () => {
     renderPage();
 
     expect(screen.queryByTestId(APP_HEADER_TEST_SUBJECTS.metadata)).not.toBeInTheDocument();

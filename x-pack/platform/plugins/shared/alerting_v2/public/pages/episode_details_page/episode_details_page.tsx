@@ -22,7 +22,6 @@ import {
   useEuiMaxBreakpoint,
   useEuiTheme,
 } from '@elastic/eui';
-import type { AppHeaderMetadataItems } from '@kbn/app-header';
 import { AppHeader } from '@kbn/app-header';
 import { useQueryClient } from '@kbn/react-query';
 import { getBreachEsqlQuery } from '@kbn/alerting-v2-schemas';
@@ -50,7 +49,6 @@ import { CenterJustifiedSpinner } from '../../components/center_justified_spinne
 import { paths } from '../../constants';
 import type { AlertEpisodesKibanaServices } from '../../episodes_kibana_services';
 import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
-import { useRuleAuditMetadata } from '../../hooks/use_rule_audit_metadata';
 import { getDiscoverHrefForRuleAndEpisodeTimestamp } from '../../utils/discover_href_for_episode';
 import {
   filterEpisodeActionsByPrivilege,
@@ -120,8 +118,6 @@ export function EpisodeDetailsPage() {
   const tags = useMemo(() => groupAction?.tags ?? [], [groupAction]);
 
   const showRuleDependentUi = isRuleLoaded(ruleState);
-  const { createdByDisplay, createdAtFormatted, updatedByDisplay, updatedAtFormatted } =
-    useRuleAuditMetadata(showRuleDependentUi ? ruleState.rule : undefined);
 
   const episodeBreadcrumbTitle =
     showRuleDependentUi && ruleState.rule.metadata.name
@@ -231,33 +227,6 @@ export function EpisodeDetailsPage() {
         onSuccess: invalidateEpisodeQueries,
       }),
     [applicableActions, episode, invalidateEpisodeQueries]
-  );
-
-  const metadata = useMemo<AppHeaderMetadataItems | undefined>(
-    () =>
-      showRuleDependentUi
-        ? [
-            {
-              type: 'text',
-              label: i18n.CREATED_BY_LABEL,
-              value: i18n.CREATED_BY_VALUE(createdByDisplay, createdAtFormatted),
-              'data-test-subj': 'alertingV2EpisodeDetailsCreatedByMetadata',
-            },
-            {
-              type: 'text',
-              label: i18n.LAST_UPDATED_BY_LABEL,
-              value: i18n.LAST_UPDATED_BY_VALUE(updatedByDisplay, updatedAtFormatted),
-              'data-test-subj': 'alertingV2EpisodeDetailsUpdatedByMetadata',
-            },
-          ]
-        : undefined,
-    [
-      showRuleDependentUi,
-      createdByDisplay,
-      createdAtFormatted,
-      updatedByDisplay,
-      updatedAtFormatted,
-    ]
   );
 
   const episodesListHref = services.http.basePath.prepend(paths.alertEpisodesList);
@@ -417,7 +386,6 @@ export function EpisodeDetailsPage() {
       <AppHeader
         sticky={false}
         title={episodeBreadcrumbTitle}
-        metadata={metadata}
         back={{
           href: episodesListHref,
           label: i18n.EPISODES_LIST_BACK_LABEL,

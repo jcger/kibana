@@ -184,29 +184,6 @@ export const LOADING_RULE_TITLE = i18n.translate(
   }
 );
 
-export const CREATED_BY_LABEL = i18n.translate('xpack.alertingV2.episodeDetails.header.createdBy', {
-  defaultMessage: 'Created by',
-});
-
-export const CREATED_BY_VALUE = (user: string, date: string) =>
-  i18n.translate('xpack.alertingV2.episodeDetails.header.createdByValue', {
-    defaultMessage: '{user} on {date}',
-    values: { user, date },
-  });
-
-export const LAST_UPDATED_BY_LABEL = i18n.translate(
-  'xpack.alertingV2.episodeDetails.header.updatedBy',
-  {
-    defaultMessage: 'Last updated by',
-  }
-);
-
-export const LAST_UPDATED_BY_VALUE = (user: string, date: string) =>
-  i18n.translate('xpack.alertingV2.episodeDetails.header.updatedByValue', {
-    defaultMessage: '{user} on {date}',
-    values: { user, date },
-  });
-
 /** --- Sidebar --- */
 export const SIDEBAR_TITLE_EPISODE_DETAILS = i18n.translate(
   'xpack.alertingV2.episodeDetails.sidebarTitle',
