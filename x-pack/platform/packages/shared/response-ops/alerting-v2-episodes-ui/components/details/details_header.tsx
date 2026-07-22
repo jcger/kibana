@@ -41,8 +41,8 @@ export const AlertEpisodeDetailsHeader = ({
   const titleContent = isLoading
     ? i18n.HEADER_LOADING_TITLE
     : isRuleLoaded(ruleState)
-      ? ruleState.rule.metadata.name
-      : i18n.HEADER_EPISODE_TITLE_FALLBACK;
+    ? ruleState.rule.metadata.name
+    : i18n.HEADER_EPISODE_TITLE_FALLBACK;
   const showBadgeRow = Boolean(status) || isSupportedEpisodeSeverity(severity);
 
   return (
