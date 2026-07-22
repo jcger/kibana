@@ -26,7 +26,7 @@ export default function ({ getService }: FtrProviderContext) {
     // Timeout of 360000ms exceeded
     this.tags(['failsOnMKI']);
     const RULE_TYPE_ID = '.es-query';
-    const alertActionIndexPrefix = 'alert-action-es-query';
+    const ALERT_ACTION_INDEX = 'alert-action-es-query';
     let connectorId: string;
     let ruleId: string;
     let alertActionIndex: string;
@@ -41,7 +41,7 @@ export default function ({ getService }: FtrProviderContext) {
     });
 
     beforeEach(() => {
-      alertActionIndex = `${alertActionIndexPrefix}-${testIndex++}`;
+      alertActionIndex = `${ALERT_ACTION_INDEX}-${testIndex++}`;
     });
 
     afterEach(async () => {
