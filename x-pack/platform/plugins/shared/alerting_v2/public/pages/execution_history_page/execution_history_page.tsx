@@ -11,7 +11,7 @@ import { AppHeader, APP_HEADER_TEST_SUBJECTS } from '@kbn/app-header';
 import type { AppHeaderTab } from '@kbn/app-header';
 import { css } from '@emotion/react';
 import { i18n } from '@kbn/i18n';
-import { ExperimentalBadge } from '../../components/experimental_badge';
+import { experimentalBadge } from '../../components/experimental_badge';
 import { ActionPolicyDetailsFlyoutContainer } from '../../components/action_policy/details_flyout/action_policy_details_flyout_container';
 import { RuleSummaryFlyoutContainer } from '../../components/rule/flyouts/rule_summary_flyout_container';
 import { useBreadcrumbs } from '../../hooks/use_breadcrumbs';
@@ -97,8 +97,8 @@ export const ExecutionHistoryPage = () => {
       <AppHeader
         sticky={false}
         title={EXECUTION_HISTORY_PAGE_TITLE}
-        titleAppend={<ExperimentalBadge />}
-        padding={{ bleed: 'm' }}
+        badges={[experimentalBadge]}
+        spacing="bleed"
         tabs={tabs}
       />
       <EuiSpacer size="m" />

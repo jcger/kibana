@@ -244,7 +244,7 @@ export const RuleDetailPage: React.FunctionComponent = () => {
         badges={badges}
         metadata={headerMetadata}
         menu={canWrite ? menu : undefined}
-        padding="none"
+        spacing="flush"
         sticky={false}
       />
       <KibanaPageTemplate.Section

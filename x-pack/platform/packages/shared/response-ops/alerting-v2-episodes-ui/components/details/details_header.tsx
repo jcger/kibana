@@ -12,7 +12,6 @@ import type { AlertEpisodeStatus } from '@kbn/alerting-v2-schemas';
 import { AlertEpisodeStatusBadges } from '../status/status_badges';
 import { AlertEpisodeSeverityBadge } from '../severity/episode_severity_badge';
 import { isSupportedEpisodeSeverity } from '../severity/severity_utils';
-import { TagsOverflowBadgeRow, getTagsOverflowLimits } from '../actions/tags_overflow_badge_row';
 import type { EpisodeActionState, AlertEpisodeGroupAction } from '../../types/action';
 import { isRuleLoaded, isRuleLoading, type RuleState } from '../../types/rule_state';
 import * as i18n from './translations';
@@ -20,35 +19,31 @@ import * as i18n from './translations';
 export interface AlertEpisodeDetailsHeaderProps {
   isLoadingEpisode: boolean;
   ruleState: RuleState;
-  tags: string[];
   status: AlertEpisodeStatus | undefined;
   severity: string | undefined | null;
   episodeAction: EpisodeActionState | undefined;
   groupAction: AlertEpisodeGroupAction | undefined;
+  isFlapping?: boolean;
   titleSize?: EuiTitleSize;
 }
 
 export const AlertEpisodeDetailsHeader = ({
   isLoadingEpisode,
   ruleState,
-  tags,
   status,
   severity,
   episodeAction,
   groupAction,
+  isFlapping = false,
   titleSize = 'l',
 }: AlertEpisodeDetailsHeaderProps) => {
   const isLoading = isLoadingEpisode || isRuleLoading(ruleState);
   const titleContent = isLoading
     ? i18n.HEADER_LOADING_TITLE
     : isRuleLoaded(ruleState)
-    ? ruleState.rule.metadata.name
-    : i18n.HEADER_EPISODE_TITLE_FALLBACK;
-  const showTags = tags.length > 0;
-  const showBadgeRow = Boolean(status) || isSupportedEpisodeSeverity(severity) || showTags;
-  const nonTagBadgeCount = (status ? 1 : 0) + (isSupportedEpisodeSeverity(severity) ? 1 : 0);
-  const { overflowSize: tagsOverflowSize, maxVisible: tagsMaxVisibleOnOverflow } =
-    getTagsOverflowLimits(nonTagBadgeCount);
+      ? ruleState.rule.metadata.name
+      : i18n.HEADER_EPISODE_TITLE_FALLBACK;
+  const showBadgeRow = Boolean(status) || isSupportedEpisodeSeverity(severity);
 
   return (
     <>
@@ -72,6 +67,7 @@ export const AlertEpisodeDetailsHeader = ({
                     status={status}
                     episodeAction={episodeAction}
                     groupAction={groupAction}
+                    isFlapping={isFlapping}
                   />
                 </EuiFlexItem>
               ) : null}
@@ -79,14 +75,6 @@ export const AlertEpisodeDetailsHeader = ({
                 <EuiFlexItem grow={false}>
                   <AlertEpisodeSeverityBadge severity={severity} />
                 </EuiFlexItem>
-              ) : null}
-              {showTags ? (
-                <TagsOverflowBadgeRow
-                  tags={tags}
-                  overflowSize={tagsOverflowSize}
-                  maxVisible={tagsMaxVisibleOnOverflow}
-                  data-test-subj="alertingV2EpisodeDetailsHeaderTags"
-                />
               ) : null}
             </EuiFlexGroup>
           </EuiFlexItem>
