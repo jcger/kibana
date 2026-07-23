@@ -8,7 +8,7 @@
 import { loggingSystemMock } from '@kbn/core/server/mocks';
 import type { MockedLogger } from '@kbn/logging-mocks';
 import { generateExecutorFunction } from './generate_executor_function';
-import { setConnectorActionErrorMeta } from '@kbn/connector-specs';
+import { setConnectorActionErrorMeta, TEST_CONNECTOR_SUB_ACTION } from '@kbn/connector-specs';
 import type {
   ActionContext,
   BuildContext,
@@ -864,6 +864,66 @@ describe('generateExecutorFunction', () => {
       await expect(
         executor(makeExecOptions({ subAction: 'testAction', subActionParams: {} }))
       ).resolves.toMatchObject({ status: 'error' });
+    });
+  });
+
+  describe('_test subAction', () => {
+    it('returns status ok when the test handler resolves', async () => {
+      const testHandler = jest.fn().mockResolvedValue({ message: 'connected' });
+      const actions: ConnectorSpec['actions'] = {
+        [TEST_CONNECTOR_SUB_ACTION]: {
+          isTool: false,
+          input: {} as never,
+          handler: testHandler,
+        },
+      };
+
+      const executor = generateExecutorFunction({
+        actions,
+        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
+        getCredential: mockGetCredential,
+        getClientLeasePool: () => fakeLeasePool,
+        network: mockNetwork,
+      });
+
+      const result = await executor(
+        makeExecOptions({ subAction: TEST_CONNECTOR_SUB_ACTION, subActionParams: {} })
+      );
+
+      expect(result).toEqual({
+        status: 'ok',
+        data: { message: 'connected' },
+        actionId: connectorId,
+      });
+    });
+
+    it('returns status error when the test handler throws', async () => {
+      const testHandler = jest.fn().mockRejectedValue(new Error('connection failed'));
+      const actions: ConnectorSpec['actions'] = {
+        [TEST_CONNECTOR_SUB_ACTION]: {
+          isTool: false,
+          input: {} as never,
+          handler: testHandler,
+        },
+      };
+
+      const executor = generateExecutorFunction({
+        actions,
+        getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
+        getCredential: mockGetCredential,
+        getClientLeasePool: () => fakeLeasePool,
+        network: mockNetwork,
+      });
+
+      const result = await executor(
+        makeExecOptions({ subAction: TEST_CONNECTOR_SUB_ACTION, subActionParams: {} })
+      );
+
+      expect(result).toEqual({
+        status: 'error',
+        message: 'connection failed',
+        actionId: connectorId,
+      });
     });
   });
 
