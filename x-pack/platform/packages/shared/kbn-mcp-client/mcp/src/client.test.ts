@@ -6,7 +6,8 @@
  */
 
 /* eslint-disable max-classes-per-file */
-import { McpClient, McpConnectionError } from './client';
+import { McpClient } from './client';
+import { McpConnectionError } from './errors';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import {
   StreamableHTTPClientTransport,
