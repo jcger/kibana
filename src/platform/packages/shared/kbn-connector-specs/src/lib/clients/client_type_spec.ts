@@ -19,6 +19,20 @@ export interface CredentialAccessor {
   getAuthHeaders(): Promise<Record<string, string>>;
 }
 
+export type FetchLike = (url: string | URL, init?: RequestInit) => Promise<Response>;
+
+export interface ConfiguredFetchResource {
+  readonly fetch: FetchLike;
+  close(): Promise<void>;
+}
+
+export interface ConfiguredFetchOptions {
+  readonly targetUrl: string;
+  readonly headers?: Readonly<Record<string, string>>;
+}
+
+export type ConfiguredFetchFactory = (options: ConfiguredFetchOptions) => ConfiguredFetchResource;
+
 export interface BuildContext {
   logger: Logger;
   axiosInstance: AxiosInstance;

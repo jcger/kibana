@@ -47,6 +47,7 @@ import type { CloudSetup } from '@kbn/cloud-plugin/server';
 import type { AxiosInstance } from 'axios';
 import type { UsageApiSetup } from '@kbn/usage-api-plugin/server';
 import type { CredentialAccessor } from '@kbn/connector-specs';
+import type { ConfiguredFetchFactory } from '@kbn/connector-specs';
 import { type ActionsConfig, type EnabledConnectorTypes } from './config';
 import { AllowedHosts, getValidatedConfig } from './config';
 import { resolveCustomHosts } from './lib/custom_host_settings';
@@ -128,6 +129,7 @@ import { OAuthRateLimiter } from './lib/oauth_rate_limiter';
 import type { GetAxiosInstanceWithAuthFnOpts, GetCredentialFnOpts } from './lib/get_axios_instance';
 import { getAxiosInstanceWithAuth, getCredentialWithAuth } from './lib/get_axios_instance';
 import { RelayClient, type RelayClientContract } from './lib/relay';
+import { buildConfiguredFetch } from './lib/configured_fetch';
 
 export interface PluginSetupContract {
   registerType<
@@ -149,6 +151,10 @@ export interface PluginSetupContract {
   getAxiosInstanceWithAuth(opts: GetAxiosInstanceWithAuthFnOpts): Promise<AxiosInstance>;
 
   getCredential(opts: GetCredentialFnOpts): CredentialAccessor;
+
+  /** Returns an Actions-configured fetch factory that applies SSL/TLS, proxy, User-Agent,
+   * timeout, and body-size limits to every outbound fetch request. */
+  getConfiguredFetchFactory(): ConfiguredFetchFactory;
 
   /** PoC: process-wide pool for reusable connector clients (MCP, future DB/gRPC). */
   getClientLeasePool(): LeasePool<unknown>;
@@ -509,6 +515,8 @@ export class ActionsPlugin
         plugins.cloud
       ),
       getCredential: this.getCredentialHelper(actionsConfigUtils),
+      getConfiguredFetchFactory: () =>
+        buildConfiguredFetch(actionsConfigUtils, this.logger, plugins.cloud),
       getClientLeasePool: () => this.clientLeasePool!,
       isPreconfiguredConnector: (connectorId: string): boolean => {
         return !!this.inMemoryConnectors.find(

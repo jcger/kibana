@@ -21,6 +21,11 @@ describe('createConnectorTypeFromSpec', () => {
   const mockActionsPlugin: ActionsPluginSetupContract = {
     getActionsConfigurationUtilities: () => mockActionsConfigUtils,
     getAxiosInstanceWithAuth: mockGetAxiosInstanceWithAuth,
+    getCredential: jest.fn().mockReturnValue({ getAuthHeaders: jest.fn().mockResolvedValue({}) }),
+    getConfiguredFetchFactory: jest.fn().mockReturnValue(
+      jest.fn().mockReturnValue({ fetch: jest.fn(), close: jest.fn().mockResolvedValue(undefined) })
+    ),
+    getClientLeasePool: jest.fn().mockReturnValue({ lease: jest.fn() }),
   } as unknown as ActionsPluginSetupContract;
 
   const createMockSpec = (overrides: Partial<ConnectorSpec> = {}): ConnectorSpec =>

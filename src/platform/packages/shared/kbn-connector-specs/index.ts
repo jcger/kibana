@@ -50,4 +50,8 @@ export type {
   ClientRegistry,
   ClientTypeId,
   ClientTypeSpecs,
+  ConfiguredFetchResource,
+  ConfiguredFetchOptions,
+  ConfiguredFetchFactory,
+  FetchLike,
 } from './src/lib/clients';
