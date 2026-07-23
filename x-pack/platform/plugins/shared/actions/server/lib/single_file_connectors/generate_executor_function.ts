@@ -12,7 +12,12 @@ import {
   getHeaderValue,
   clientTypes as defaultClientTypes,
 } from '@kbn/connector-specs';
-import type { ActionContext, ClientTypeSpec, ConnectorNetwork } from '@kbn/connector-specs';
+import type {
+  ActionContext,
+  ClientTypeSpec,
+  ConfiguredFetchFactory,
+  ConnectorNetwork,
+} from '@kbn/connector-specs';
 import { createTaskRunError, TaskErrorSource } from '@kbn/task-manager-plugin/server';
 import { getErrorSource, isUserError } from '@kbn/task-manager-plugin/server/task_running';
 import type { ExecutorParams } from '../../sub_action_framework/types';
@@ -100,6 +105,9 @@ export const generateExecutorFunction = ({
   getClientLeasePool,
   network,
   clientTypes = defaultClientTypes,
+  configuredFetchFactory,
+  defaultHeaders,
+  requestTimeout,
 }: {
   actions: ConnectorSpec['actions'];
   getAxiosInstanceWithAuth: GetAxiosInstanceWithAuthFn;
@@ -107,6 +115,9 @@ export const generateExecutorFunction = ({
   getClientLeasePool: () => LeasePool<unknown>;
   network: ConnectorNetwork;
   clientTypes?: Readonly<Record<string, ClientTypeSpec<unknown>>>;
+  configuredFetchFactory?: ConfiguredFetchFactory;
+  defaultHeaders?: Readonly<Record<string, string>>;
+  requestTimeout?: number;
 }) =>
   async function (
     execOptions: ConnectorTypeExecutorOptions<RecordUnknown, RecordUnknown, RecordUnknown>
@@ -163,7 +174,17 @@ export const generateExecutorFunction = ({
       try {
         return await pool.lease(
           buildClientLeaseKey(connectorId, id),
-          () => clientType.build({ logger, axiosInstance, config, network, credential }),
+          () =>
+            clientType.build({
+              logger,
+              axiosInstance,
+              config,
+              network,
+              credential,
+              configuredFetchFactory,
+              defaultHeaders,
+              requestTimeout,
+            }),
           clientType.terminate
         );
       } catch (err) {

@@ -65,6 +65,7 @@ export const createConnectorTypeFromSpec = (
         getCredential: actions.getCredential,
         getClientLeasePool: actions.getClientLeasePool,
         network,
+        configuredFetchFactory: actions.getConfiguredFetchFactory(),
       })
     : undefined;
 

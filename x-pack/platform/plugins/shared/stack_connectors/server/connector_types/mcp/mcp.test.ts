@@ -781,7 +781,9 @@ describe('McpConnector', () => {
           logger,
           services,
         },
-        jest.fn().mockReturnValue({ fetch: jest.fn(), close: jest.fn().mockResolvedValue(undefined) })
+        jest
+          .fn()
+          .mockReturnValue({ fetch: jest.fn(), close: jest.fn().mockResolvedValue(undefined) })
       );
 
       mockMcpClient.isConnected.mockReturnValueOnce(false).mockReturnValueOnce(true);
@@ -828,7 +830,9 @@ describe('McpConnector', () => {
           logger,
           services,
         },
-        jest.fn().mockReturnValue({ fetch: jest.fn(), close: jest.fn().mockResolvedValue(undefined) })
+        jest
+          .fn()
+          .mockReturnValue({ fetch: jest.fn(), close: jest.fn().mockResolvedValue(undefined) })
       );
 
       mockMcpClient.isConnected.mockReturnValueOnce(false).mockReturnValueOnce(true);

@@ -39,6 +39,9 @@ export interface BuildContext {
   config?: Record<string, unknown>;
   network: ConnectorNetwork;
   credential: CredentialAccessor;
+  configuredFetchFactory?: ConfiguredFetchFactory;
+  defaultHeaders?: Readonly<Record<string, string>>;
+  requestTimeout?: number;
 }
 
 export interface ClientTypeSpec<TClient> {
