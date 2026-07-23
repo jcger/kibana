@@ -41,3 +41,4 @@ export * from './specs/microsoft_teams/microsoft_teams';
 export * from './specs/tavily/tavily';
 export * from './specs/pagerduty/pagerduty';
 export * from './specs/snowflake/snowflake';
+export * from './specs/test_workflows_connector/test_workflows_connector';

@@ -197,4 +197,14 @@ export const ConnectorIconsMap: Map<
     '.snowflake',
     lazy(() => import(/* webpackChunkName: "connectorIconsnowflake" */ './specs/snowflake/icon')),
   ],
+
+  [
+    '.test-workflows-connector',
+    lazy(
+      () =>
+        import(
+          /* webpackChunkName: "connectorIcontestworkflowsconnector" */ './specs/test_workflows_connector/icon'
+        )
+    ),
+  ],
 ]);
