@@ -68,7 +68,9 @@ export const SharepointOnline: ConnectorSpec = {
         type: 'ears',
         isRecommended: true,
         overrides: {
-          meta: { scope: { disabled: true } },
+          meta: {
+            scope: { hidden: true, disabled: true },
+          },
         },
         defaults: {
           provider: 'microsoft',

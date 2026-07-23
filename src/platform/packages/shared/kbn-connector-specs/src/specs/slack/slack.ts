@@ -212,7 +212,9 @@ export const Slack: ConnectorSpec = {
         type: 'ears',
         isRecommended: true,
         overrides: {
-          meta: { scope: { disabled: true } },
+          meta: {
+            scope: { hidden: true, disabled: true },
+          },
         },
         defaults: {
           provider: 'slack',
@@ -232,6 +234,13 @@ export const Slack: ConnectorSpec = {
           scopeParamName: 'user_scope',
           accessTokenPath: 'authed_user.access_token',
           tokenType: 'Bearer',
+        },
+        overrides: {
+          meta: {
+            authorizationUrl: { hidden: true },
+            tokenUrl: { hidden: true },
+            scope: { hidden: true },
+          },
         },
       },
       {

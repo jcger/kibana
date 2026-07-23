@@ -69,6 +69,7 @@ export const HubSpotConnector: ConnectorSpec = {
           meta: {
             authorizationUrl: { hidden: true },
             tokenUrl: { hidden: true },
+            scope: { hidden: true },
           },
         },
         defaults: {

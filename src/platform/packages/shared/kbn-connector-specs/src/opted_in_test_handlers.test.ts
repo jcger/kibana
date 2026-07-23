@@ -10,23 +10,54 @@
 import * as connectorsSpecs from './all_specs';
 import type { ActionContext, ConnectorSpec } from './connector_spec';
 
-const createFailingContext = (): ActionContext => {
+const TEST_HANDLER_CONFIGS: Record<string, Record<string, unknown>> = {
+  '.sublime_security': {
+    baseUrl: 'https://example.com',
+  },
+};
+
+const createFailingContext = (
+  config: Record<string, unknown>
+): {
+  ctx: ActionContext;
+  failingRequests: Record<string, jest.Mock>;
+} => {
   const rejection = new Error('connection failed');
   const reject = () => Promise.reject(rejection);
+  const failingRequests = {
+    callable: jest.fn(reject),
+    request: jest.fn(reject),
+    get: jest.fn(reject),
+    delete: jest.fn(reject),
+    head: jest.fn(reject),
+    options: jest.fn(reject),
+    post: jest.fn(reject),
+    put: jest.fn(reject),
+    patch: jest.fn(reject),
+    postForm: jest.fn(reject),
+    putForm: jest.fn(reject),
+    patchForm: jest.fn(reject),
+    query: jest.fn(reject),
+  };
+  const client = Object.assign(failingRequests.callable, failingRequests);
 
   return {
-    client: {
-      get: jest.fn(reject),
-      post: jest.fn(reject),
-      put: jest.fn(reject),
-      patch: jest.fn(reject),
-      delete: jest.fn(reject),
-      request: jest.fn(reject),
-    },
-    config: {},
-    log: {},
-  } as unknown as ActionContext;
+    ctx: {
+      client,
+      config,
+      log: {
+        debug: jest.fn(),
+        error: jest.fn(),
+        info: jest.fn(),
+        warn: jest.fn(),
+      },
+    } as unknown as ActionContext,
+    failingRequests,
+  };
 };
+
+const didMakeFailingRequest = (failingRequests: Record<string, jest.Mock>): boolean =>
+  Object.values(failingRequests).some((request) => request.mock.calls.length > 0);
 
 describe('opted-in connector test handlers', () => {
   const optedInSpecs = Object.entries(connectorsSpecs).filter(
@@ -36,10 +67,15 @@ describe('opted-in connector test handlers', () => {
     }
   );
 
-  it.each(optedInSpecs)('%s test handler must throw on failure', async (_exportName, spec) => {
-    const handler = spec.test.handler;
-    const ctx = createFailingContext();
+  it.each(optedInSpecs)(
+    '%s test handler must attempt an HTTP request and throw on failure',
+    async (_exportName, spec) => {
+      const handler = spec.test.handler;
+      const config = TEST_HANDLER_CONFIGS[spec.metadata.id] ?? {};
+      const { ctx, failingRequests } = createFailingContext(config);
 
-    await expect(handler(ctx)).rejects.toThrow();
-  });
+      await expect(handler(ctx)).rejects.toThrow();
+      expect(didMakeFailingRequest(failingRequests)).toBe(true);
+    }
+  );
 });
