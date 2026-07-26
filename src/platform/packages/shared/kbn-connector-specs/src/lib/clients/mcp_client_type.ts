@@ -10,13 +10,25 @@
 import { McpClient, McpConnectionError } from '@kbn/mcp-client';
 import { createMcpFetch } from '../mcp/create_mcp_fetch';
 import type { BuildContext, ClientTypeSpec } from './client_type_spec';
+import type { ConfiguredFetchFactory } from './configured_fetch_types';
 
 const DEFAULT_MCP_CLIENT_VERSION = '1.0.0';
 
 /**
- * Registered client type for `ctx.getClient('mcp')`.
+ * Dependencies the MCP client type closes over. These are outbound-HTTP concerns specific to the
+ * MCP client type and intentionally do not travel through the generic `BuildContext`, so non-HTTP
+ * client types stay unaffected.
+ */
+export interface McpClientTypeDeps {
+  configuredFetchFactory?: ConfiguredFetchFactory;
+  defaultHeaders?: Readonly<Record<string, string>>;
+  requestTimeout?: number;
+}
+
+/**
+ * Factory for the registered client type behind `ctx.getClient('mcp')`.
  *
- * Build creates an `McpClient` using the `ConfiguredFetchFactory` from the `BuildContext` (which
+ * Build creates an `McpClient` using the `ConfiguredFetchFactory` closed over via `deps` (which
  * applies SSL/TLS, proxy, and User-Agent policy from the Actions config). If no factory is
  * available, falls back to the built-in Fetch API so the type remains usable in unit tests and
  * contexts where the factory has not been wired yet.
@@ -25,7 +37,7 @@ const DEFAULT_MCP_CLIENT_VERSION = '1.0.0';
  * user errors so that the executor can surface them as non-retryable USER errors rather than
  * FRAMEWORK errors.
  */
-export const mcpClientType: ClientTypeSpec<McpClient> = {
+export const createMcpClientType = (deps: McpClientTypeDeps = {}): ClientTypeSpec<McpClient> => ({
   id: 'mcp',
 
   async build(ctx: BuildContext): Promise<McpClient> {
@@ -39,10 +51,10 @@ export const mcpClientType: ClientTypeSpec<McpClient> = {
 
     let customFetch: ((url: string | URL, init?: RequestInit) => Promise<Response>) | undefined;
 
-    if (ctx.configuredFetchFactory) {
-      const resource = ctx.configuredFetchFactory({
+    if (deps.configuredFetchFactory) {
+      const resource = deps.configuredFetchFactory({
         targetUrl: serverUrl,
-        ...(ctx.defaultHeaders ? { headers: ctx.defaultHeaders } : {}),
+        ...(deps.defaultHeaders ? { headers: deps.defaultHeaders } : {}),
       });
       customFetch = createMcpFetch(resource);
     }
@@ -55,12 +67,12 @@ export const mcpClientType: ClientTypeSpec<McpClient> = {
         url: serverUrl,
       },
       {
-        ...(ctx.defaultHeaders ? { headers: { ...ctx.defaultHeaders } } : {}),
+        ...(deps.defaultHeaders ? { headers: { ...deps.defaultHeaders } } : {}),
         ...(customFetch ? { fetch: customFetch } : {}),
       }
     );
 
-    await client.connect(ctx.requestTimeout ? { timeout: ctx.requestTimeout } : undefined);
+    await client.connect(deps.requestTimeout ? { timeout: deps.requestTimeout } : undefined);
 
     return client;
   },
@@ -82,4 +94,4 @@ export const mcpClientType: ClientTypeSpec<McpClient> = {
     }
     return false;
   },
-};
+});

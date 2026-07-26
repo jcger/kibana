@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { ConfiguredFetchResource } from '../clients/client_type_spec';
+import type { ConfiguredFetchResource } from '../clients/configured_fetch_types';
 import { createMcpFetch } from './create_mcp_fetch';
 
 const makeResource = (fetchImpl?: jest.Mock): ConfiguredFetchResource => ({

@@ -7,7 +7,7 @@
  * License v3.0 only", or the "Server Side Public License, v 1".
  */
 
-import type { ConfiguredFetchResource, FetchLike } from '../clients/client_type_spec';
+import type { ConfiguredFetchResource, FetchLike } from '../clients/configured_fetch_types';
 
 // How long to wait for the GET SSE channel before proceeding anyway.
 const SSE_READY_TIMEOUT_MS = 5_000;

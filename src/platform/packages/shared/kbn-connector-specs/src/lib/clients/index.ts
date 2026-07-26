@@ -9,18 +9,24 @@
 
 import type { McpClient } from '@kbn/mcp-client';
 import type { ClientTypeSpec } from './client_type_spec';
-import { mcpClientType } from './mcp_client_type';
+import { createMcpClientType } from './mcp_client_type';
+
+export { createMcpClientType } from './mcp_client_type';
+export type { McpClientTypeDeps } from './mcp_client_type';
 
 export type {
   ClientTypeSpec,
   BuildContext,
   ConnectorNetwork,
   CredentialAccessor,
+} from './client_type_spec';
+
+export type {
+  FetchLike,
   ConfiguredFetchResource,
   ConfiguredFetchOptions,
   ConfiguredFetchFactory,
-  FetchLike,
-} from './client_type_spec';
+} from './configured_fetch_types';
 
 export interface ClientRegistry {
   mcp: McpClient;
@@ -33,5 +39,5 @@ export type ClientTypeSpecs = Readonly<{
 }>;
 
 export const clientTypes: ClientTypeSpecs = {
-  mcp: mcpClientType,
+  mcp: createMcpClientType(),
 };

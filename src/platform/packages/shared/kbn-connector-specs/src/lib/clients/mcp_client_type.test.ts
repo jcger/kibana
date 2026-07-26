@@ -9,7 +9,7 @@
 
 import { McpClient, McpConnectionError } from '@kbn/mcp-client';
 import type { BuildContext } from './client_type_spec';
-import { mcpClientType } from './mcp_client_type';
+import { createMcpClientType } from './mcp_client_type';
 
 jest.mock('@kbn/mcp-client', () => {
   class MockMcpConnectionError extends Error {
@@ -51,14 +51,14 @@ const makeBuildContext = (overrides: Partial<BuildContext> = {}): BuildContext =
   ...overrides,
 });
 
-describe('mcpClientType', () => {
+describe('createMcpClientType', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   describe('id', () => {
     it('has id "mcp"', () => {
-      expect(mcpClientType.id).toBe('mcp');
+      expect(createMcpClientType().id).toBe('mcp');
     });
   });
 
@@ -66,7 +66,7 @@ describe('mcpClientType', () => {
     it('creates and connects an McpClient with the serverUrl from config', async () => {
       const ctx = makeBuildContext();
 
-      const client = await mcpClientType.build(ctx);
+      const client = await createMcpClientType().build(ctx);
 
       expect(McpClient).toHaveBeenCalledWith(
         ctx.logger,
@@ -79,13 +79,15 @@ describe('mcpClientType', () => {
     it('throws McpConnectionError when config.serverUrl is missing', async () => {
       const ctx = makeBuildContext({ config: {} });
 
-      await expect(mcpClientType.build(ctx)).rejects.toThrow('config.serverUrl is required');
+      await expect(createMcpClientType().build(ctx)).rejects.toThrow(
+        'config.serverUrl is required'
+      );
     });
 
     it('validates the server URL against the network allowlist', async () => {
       const ctx = makeBuildContext();
 
-      await mcpClientType.build(ctx);
+      await createMcpClientType().build(ctx);
 
       expect(ctx.network.ensureUriAllowed).toHaveBeenCalledWith('https://mcp.example.com');
     });
@@ -97,9 +99,9 @@ describe('mcpClientType', () => {
       const mockResource = { fetch: jest.fn(), close: jest.fn() };
       const mockFactory = jest.fn().mockReturnValue(mockResource);
 
-      const ctx = makeBuildContext({ configuredFetchFactory: mockFactory });
+      const ctx = makeBuildContext();
 
-      await mcpClientType.build(ctx);
+      await createMcpClientType({ configuredFetchFactory: mockFactory }).build(ctx);
 
       expect(mockFactory).toHaveBeenCalledWith(
         expect.objectContaining({ targetUrl: 'https://mcp.example.com' })
@@ -112,9 +114,9 @@ describe('mcpClientType', () => {
       const mockResource = { fetch: jest.fn(), close: jest.fn() };
       const mockFactory = jest.fn().mockReturnValue(mockResource);
 
-      const ctx = makeBuildContext({ configuredFetchFactory: mockFactory, defaultHeaders });
+      const ctx = makeBuildContext();
 
-      await mcpClientType.build(ctx);
+      await createMcpClientType({ configuredFetchFactory: mockFactory, defaultHeaders }).build(ctx);
 
       expect(mockFactory).toHaveBeenCalledWith(
         expect.objectContaining({ headers: defaultHeaders })
@@ -127,9 +129,9 @@ describe('mcpClientType', () => {
     });
 
     it('passes requestTimeout to connect()', async () => {
-      const ctx = makeBuildContext({ requestTimeout: 10000 });
+      const ctx = makeBuildContext();
 
-      const client = await mcpClientType.build(ctx);
+      const client = await createMcpClientType({ requestTimeout: 10000 }).build(ctx);
 
       expect(client.connect).toHaveBeenCalledWith({ timeout: 10000 });
     });
@@ -137,7 +139,7 @@ describe('mcpClientType', () => {
     it('calls connect() without options when no requestTimeout', async () => {
       const ctx = makeBuildContext();
 
-      const client = await mcpClientType.build(ctx);
+      const client = await createMcpClientType().build(ctx);
 
       expect(client.connect).toHaveBeenCalledWith(undefined);
     });
@@ -145,21 +147,23 @@ describe('mcpClientType', () => {
 
   describe('terminate', () => {
     it('calls terminateSession then disconnect', async () => {
+      const clientType = createMcpClientType();
       const ctx = makeBuildContext();
-      const client = await mcpClientType.build(ctx);
+      const client = await clientType.build(ctx);
 
-      await mcpClientType.terminate(client);
+      await clientType.terminate(client);
 
       expect(client.terminateSession).toHaveBeenCalled();
       expect(client.disconnect).toHaveBeenCalled();
     });
 
     it('disconnects even when terminateSession throws', async () => {
+      const clientType = createMcpClientType();
       const ctx = makeBuildContext();
-      const client = await mcpClientType.build(ctx);
+      const client = await clientType.build(ctx);
       (client.terminateSession as jest.Mock).mockRejectedValue(new Error('terminate failed'));
 
-      await mcpClientType.terminate(client);
+      await clientType.terminate(client);
 
       expect(client.disconnect).toHaveBeenCalled();
     });
@@ -168,26 +172,26 @@ describe('mcpClientType', () => {
   describe('isUserError', () => {
     it('returns true for McpConnectionError with httpStatus 401', () => {
       const err = new McpConnectionError('Unauthorized', { httpStatus: 401 });
-      expect(mcpClientType.isUserError?.(err)).toBe(true);
+      expect(createMcpClientType().isUserError?.(err)).toBe(true);
     });
 
     it('returns true for McpConnectionError with httpStatus 403', () => {
       const err = new McpConnectionError('Forbidden', { httpStatus: 403 });
-      expect(mcpClientType.isUserError?.(err)).toBe(true);
+      expect(createMcpClientType().isUserError?.(err)).toBe(true);
     });
 
     it('returns false for McpConnectionError with httpStatus 500', () => {
       const err = new McpConnectionError('Server Error', { httpStatus: 500 });
-      expect(mcpClientType.isUserError?.(err)).toBe(false);
+      expect(createMcpClientType().isUserError?.(err)).toBe(false);
     });
 
     it('returns false for McpConnectionError without httpStatus', () => {
       const err = new McpConnectionError('Connection failed');
-      expect(mcpClientType.isUserError?.(err)).toBe(false);
+      expect(createMcpClientType().isUserError?.(err)).toBe(false);
     });
 
     it('returns false for plain Error', () => {
-      expect(mcpClientType.isUserError?.(new Error('boom'))).toBe(false);
+      expect(createMcpClientType().isUserError?.(new Error('boom'))).toBe(false);
     });
   });
 });
