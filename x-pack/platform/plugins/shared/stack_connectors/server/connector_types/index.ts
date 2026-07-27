@@ -86,7 +86,13 @@ export function registerConnectorTypes({
   actions.registerSubActionConnectorType(getResilientConnectorType());
   actions.registerSubActionConnectorType(getTheHiveConnectorType());
   actions.registerSubActionConnectorType(getXSOARConnectorType());
-  actions.registerSubActionConnectorType(getMcpConnectorType(actions.getConfiguredFetchFactory()));
+  // ponytail: throwaway demo wiring — pass the process-wide LeasePool so the legacy MCP
+  // connector reuses a pooled client (fires LeasePool Building/Reusing debug logs). Not for merge.
+  actions.registerSubActionConnectorType(
+    // ponytail: pass the getter (not the pool) — the pool is created in actions start(), but
+    // registration runs in setup(). Resolve it lazily at execution time. Not for merge.
+    getMcpConnectorType(actions.getConfiguredFetchFactory(), actions.getClientLeasePool)
+  );
 
   if (experimentalFeatures.sentinelOneConnectorOn) {
     actions.registerSubActionConnectorType(getSentinelOneConnectorType());

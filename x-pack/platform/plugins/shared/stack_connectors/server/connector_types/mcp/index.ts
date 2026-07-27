@@ -27,14 +27,18 @@ import {
   type MCPConnectorSecrets,
 } from '@kbn/connector-schemas/mcp';
 import type { ConfiguredFetchFactory } from '@kbn/connector-specs';
+import type { LeasePool } from '@kbn/actions-plugin/server/lib/lease_pool';
 import { McpConnector } from './mcp';
 
 export const getMcpConnectorType = (
-  configuredFetchFactory: ConfiguredFetchFactory
+  configuredFetchFactory: ConfiguredFetchFactory,
+  // ponytail: throwaway demo — getter for the process-wide pool (resolved lazily at execution
+  // time, since the pool only exists after actions start()). Not for merge.
+  getLeasePool?: () => LeasePool<unknown>
 ): SubActionConnectorType<MCPConnectorConfig, MCPConnectorSecrets> => ({
   id: CONNECTOR_ID,
   name: CONNECTOR_NAME,
-  getService: (params) => new McpConnector(params, configuredFetchFactory),
+  getService: (params) => new McpConnector(params, configuredFetchFactory, getLeasePool),
   schema: {
     config: MCPConnectorConfigSchema,
     secrets: MCPConnectorSecretsSchema,

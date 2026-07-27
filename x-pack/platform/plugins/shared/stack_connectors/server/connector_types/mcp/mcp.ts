@@ -8,6 +8,8 @@
 import { LRUCache } from 'lru-cache';
 import hash from 'object-hash';
 import { SubActionConnector } from '@kbn/actions-plugin/server';
+// ponytail: throwaway demo import — LeasePool for pooled client reuse. Not for merge.
+import type { LeasePool } from '@kbn/actions-plugin/server/lib/lease_pool';
 import type { MCPConnectorConfig, MCPConnectorSecrets } from '@kbn/connector-schemas/mcp';
 import {
   TestConnectorRequestSchema,
@@ -30,7 +32,7 @@ import {
 } from '@kbn/mcp-client';
 import type { ConnectorUsageCollector } from '@kbn/actions-plugin/server/usage';
 import { MCP_CLIENT_VERSION, MAX_RETRIES } from '@kbn/connector-schemas/mcp/constants';
-import type { ConfiguredFetchFactory, ConfiguredFetchResource } from '@kbn/connector-specs';
+import type { ConfiguredFetchFactory } from '@kbn/connector-specs';
 import { buildHeadersFromSecrets } from './auth_helpers';
 import { buildCustomFetch } from './build_custom_fetch';
 import { retryWithRecovery, type RetryOptions } from './retry_utils';
@@ -63,13 +65,18 @@ export const listToolsCache = new LRUCache<string, ListToolsResponse>({
 export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConnectorSecrets> {
   private mcpClient: McpClient;
   private authHeaders: Record<string, string>;
-  private fetchResource: ConfiguredFetchResource;
+  // ponytail: throwaway demo — reuse a pooled McpClient across executions. Not for merge.
+  private readonly getLeasePool?: () => LeasePool<unknown>;
+  private readonly clientDetails: ClientDetails;
+  private readonly clientOptions: McpClientOptions;
 
   constructor(
     params: ServiceParams<MCPConnectorConfig, MCPConnectorSecrets>,
-    configuredFetchFactory: ConfiguredFetchFactory
+    configuredFetchFactory: ConfiguredFetchFactory,
+    getLeasePool?: () => LeasePool<unknown>
   ) {
     super(params);
+    this.getLeasePool = getLeasePool;
 
     // Build auth headers from secrets based on authType
     this.authHeaders = buildHeadersFromSecrets(this.secrets, this.config);
@@ -81,8 +88,8 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
     };
 
     // Build a fetch resource that applies the actions plugin's SSL/proxy/UA/timeout settings
-    this.fetchResource = buildCustomFetch(configuredFetchFactory, this.config.serverUrl);
-    const customFetch = this.fetchResource.fetch;
+    const fetchResource = buildCustomFetch(configuredFetchFactory, this.config.serverUrl);
+    const customFetch = fetchResource.fetch;
 
     // Build client options
     const clientOptions: McpClientOptions = {
@@ -97,10 +104,31 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
       url: this.config.serverUrl,
     };
 
+    // ponytail: store build inputs so the pool can (re)build the client lazily. Not for merge.
+    this.clientDetails = clientDetails;
+    this.clientOptions = clientOptions;
+
     // Initialize the single MCP Client instance for this connector
     this.mcpClient = new McpClient(this.logger, clientDetails, clientOptions);
 
     this.registerSubActions();
+  }
+
+  /**
+   * ponytail: throwaway demo — swap `this.mcpClient` for a client leased from the process-wide
+   * LeasePool, keyed by connector id. First execution misses (LeasePool logs "Building"), later
+   * executions hit (logs "Reusing") and get the still-connected client. Not for merge.
+   */
+  private async usePooledClient(): Promise<void> {
+    const leasePool = this.getLeasePool?.();
+    if (!leasePool) return; // no pool wired (e.g. unit tests) → keep the per-instance client
+    this.mcpClient = (await leasePool.lease(
+      `legacy-mcp:${this.connector.id}`,
+      async () => new McpClient(this.logger, this.clientDetails, this.clientOptions),
+      async (client) => {
+        await (client as McpClient).disconnect();
+      }
+    )) as McpClient;
   }
 
   private registerSubActions() {
@@ -147,6 +175,8 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
     _params: z.infer<typeof TestConnectorRequestSchema>,
     connectorUsageCollector: ConnectorUsageCollector
   ): Promise<{ connected: boolean; capabilities?: unknown }> {
+    // ponytail: demo — use the pooled client instead of a fresh one. Not for merge.
+    await this.usePooledClient();
     try {
       const result = await this.mcpClient.connect();
 
@@ -164,40 +194,8 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
         `MCP connector test failed: ${error instanceof Error ? error.message : String(error)}`
       );
       throw error;
-    } finally {
-      // Always disconnect after test to clean up
-      await this.safeDisconnect('test');
     }
-  }
-
-  /**
-   * Safely disconnects the MCP client if connected.
-   * Logs any errors but does not throw, making it safe to use in finally blocks.
-   * @param operationName - Optional operation name for logging context
-   */
-  private async safeDisconnect(operationName?: string): Promise<void> {
-    if (this.mcpClient.isConnected()) {
-      try {
-        await this.mcpClient.disconnect();
-      } catch (disconnectError) {
-        const operationContext = operationName ? ` after ${operationName}` : '';
-        this.logger.debug(
-          `Error disconnecting${operationContext}: ${
-            disconnectError instanceof Error ? disconnectError.message : String(disconnectError)
-          }`
-        );
-      }
-    }
-
-    try {
-      await this.fetchResource.close();
-    } catch (closeError) {
-      this.logger.debug(
-        `Error closing fetch resource: ${
-          closeError instanceof Error ? closeError.message : String(closeError)
-        }`
-      );
-    }
+    // ponytail: demo — keep the pooled connection alive for reuse (no per-op disconnect). Not for merge.
   }
 
   /**
@@ -257,6 +255,9 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
   ): Promise<{
     tools: Array<{ name: string; description?: string; inputSchema: Record<string, unknown> }>;
   }> {
+    // ponytail: demo — use the pooled client instead of a fresh one. Not for merge.
+    await this.usePooledClient();
+
     const cacheKey = this.getListToolsCacheKey();
 
     // Check cache first (unless forceRefresh is requested)
@@ -287,10 +288,8 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
       // On error, ensure connection state is cleaned up
       await this.handleConnectionError(error, 'listTools');
       throw error;
-    } finally {
-      // Always disconnect after operation to clean up
-      await this.safeDisconnect('listTools');
     }
+    // ponytail: demo — keep the pooled connection alive for reuse (no per-op disconnect). Not for merge.
   }
 
   /**
@@ -302,6 +301,8 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
     params: z.infer<typeof CallToolRequestSchema>,
     connectorUsageCollector: ConnectorUsageCollector
   ): Promise<CallToolResponse> {
+    // ponytail: demo — use the pooled client instead of a fresh one. Not for merge.
+    await this.usePooledClient();
     try {
       connectorUsageCollector.addRequestBodyBytes(undefined, params);
 
@@ -321,10 +322,8 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
       // On error, ensure connection state is cleaned up
       await this.handleConnectionError(error, `callTool(${params.name})`);
       throw error;
-    } finally {
-      // Always disconnect after operation to clean up
-      await this.safeDisconnect(`callTool(${params.name})`);
     }
+    // ponytail: demo — keep the pooled connection alive for reuse (no per-op disconnect). Not for merge.
   }
   /**
    * Handles connection errors by cleaning up connection state.
