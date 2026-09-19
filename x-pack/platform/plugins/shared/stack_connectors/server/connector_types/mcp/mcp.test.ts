@@ -322,6 +322,29 @@ describe('McpConnector', () => {
       } catch (err) {
         expect(getErrorSource(err)).toBe(TaskErrorSource.USER);
       }
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('MCP callTool(test-tool) failed: unauthorized')
+      );
+      expect(logger.error).not.toHaveBeenCalled();
+    });
+
+    it('logs non-user failures at error', async () => {
+      fakeClient.callTool.mockRejectedValue(new Error('socket closed'));
+      mcpClientType.isUserError.mockReturnValue(false);
+      const connector = createConnector();
+
+      try {
+        await connector.callTool({ name: 'test-tool', arguments: {} }, connectorUsageCollector);
+        throw new Error('expected callTool to throw');
+      } catch (err) {
+        expect(getErrorSource(err)).not.toBe(TaskErrorSource.USER);
+      }
+
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('MCP callTool(test-tool) failed:')
+      );
+      expect(logger.warn).not.toHaveBeenCalled();
     });
 
     it('throws a FRAMEWORK error and does not build when connectorVersion is missing', async () => {
@@ -391,6 +414,22 @@ describe('McpConnector', () => {
         'X-Custom': 'from-config',
         'X-Auth': 'from-secrets',
       });
+    });
+
+    it('does not pass the connector instance in the build context', async () => {
+      const connector = createConnector();
+
+      await connector.testConnector({}, connectorUsageCollector);
+
+      const buildContext = mcpClientType.build.mock.calls[0][0] as Record<string, unknown>;
+      const ownValues = Object.values(buildContext);
+      const nestedOwnValues = ownValues.flatMap((value) =>
+        value !== null && typeof value === 'object' ? Object.values(value) : []
+      );
+
+      for (const value of [...ownValues, ...nestedOwnValues]) {
+        expect(value).not.toBeInstanceOf(McpConnector);
+      }
     });
 
     it('derives networkSettings from configurationUtilities', async () => {

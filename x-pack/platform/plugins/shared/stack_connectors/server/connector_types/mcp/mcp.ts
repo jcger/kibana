@@ -76,12 +76,14 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
 
     this.pool = pool as LeasePool<McpClient>;
     this.connectorVersion = params.connectorVersion;
-    this.authHeaders = buildHeadersFromSecrets(this.secrets, this.config);
-    this.networkSettings = createConnectorNetworkSettings(this.configurationUtilities);
+    const configHeaders = this.config.headers ?? {};
+    const authHeaders = buildHeadersFromSecrets(this.secrets, this.config);
+    this.authHeaders = authHeaders;
+    this.networkSettings = createConnectorNetworkSettings(params.configurationUtilities);
     this.credential = {
       getAuthHeaders: async () => ({
-        ...(this.config.headers ?? {}),
-        ...this.authHeaders,
+        ...configHeaders,
+        ...authHeaders,
       }),
     };
 
@@ -165,11 +167,17 @@ export class McpConnector extends SubActionConnector<MCPConnectorConfig, MCPConn
         await this.pool.invalidate(key, promise);
       }
 
-      this.logger.error(
-        `MCP ${operation} failed: ${err instanceof Error ? err.message : String(err)}`
-      );
+      const isUserError = clientTypes.mcp.isUserError?.(err) ?? false;
+      const message = `MCP ${operation} failed: ${
+        err instanceof Error ? err.message : String(err)
+      }`;
+      if (isUserError) {
+        this.logger.warn(message);
+      } else {
+        this.logger.error(message);
+      }
 
-      if (clientTypes.mcp.isUserError?.(err)) {
+      if (isUserError) {
         throw createTaskRunError(
           err instanceof Error ? err : new Error(String(err)),
           TaskErrorSource.USER
