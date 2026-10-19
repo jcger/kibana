@@ -7,7 +7,7 @@
 
 import type { AuditLogger } from '@kbn/security-plugin/server';
 import type { PublicMethodsOf } from '@kbn/utility-types';
-import type { ConnectorSpecDetail } from '../../common/connector_spec';
+import type { ConnectorSpecDetail, ConnectorSpecSummary } from '../../common/connector_spec';
 import type { ActionTypeRegistry } from '../action_type_registry';
 import type { ActionsConfigurationUtilities } from '../actions_config';
 import type { ActionsAuthorization } from '../authorization/actions_authorization';
@@ -31,6 +31,11 @@ export interface GetSpecParams {
   id: string;
 }
 
+export interface GetAllSpecsParams {
+  featureId?: string;
+}
+
 export interface ISpecsClient {
   get(params: GetSpecParams): Promise<ConnectorSpecDetail>;
+  getAll(params?: GetAllSpecsParams): Promise<ConnectorSpecSummary[]>;
 }
