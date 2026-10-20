@@ -6,17 +6,23 @@
  */
 
 import { ACTION_TYPE_SOURCES } from '@kbn/actions-types';
-import type { ConnectorSpecDetail, ConnectorSpecSummary } from '../../common/connector_spec';
+import type { ConnectorSpecSummary } from '../../common/connector_spec';
 import { ConnectorAuditAction, connectorAuditEvent } from '../lib/audit_events';
 import { getRegisteredSpec } from './lib/get_registered_spec';
 import { serializeSpecDetail } from './lib/serialize_spec_detail';
 import { serializeSpecSummary } from './lib/serialize_spec_summary';
-import type { GetAllSpecsParams, GetSpecParams, ISpecsClient, SpecsClientOpts } from './types';
+import type {
+  GetAllSpecsParams,
+  GetSpecParams,
+  ISpecsClient,
+  ServerConnectorSpecDetail,
+  SpecsClientOpts,
+} from './types';
 
 export class SpecsClient implements ISpecsClient {
   constructor(private readonly opts: SpecsClientOpts) {}
 
-  public async get({ id }: GetSpecParams): Promise<ConnectorSpecDetail> {
+  public async get({ id }: GetSpecParams): Promise<ServerConnectorSpecDetail> {
     await this.ensureAuthorized();
     const registered = getRegisteredSpec(this.opts.actionTypeRegistry, id);
     return serializeSpecDetail(registered, this.opts.configurationUtilities);

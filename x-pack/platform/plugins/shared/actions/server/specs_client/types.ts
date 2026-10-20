@@ -35,7 +35,10 @@ export interface GetAllSpecsParams {
   featureId?: string;
 }
 
+/** Server-only detail. Keeps the bundled skill text for server consumers. It is not sent over HTTP. */
+export type ServerConnectorSpecDetail = ConnectorSpecDetail & { skill?: string };
+
 export interface ISpecsClient {
-  get(params: GetSpecParams): Promise<ConnectorSpecDetail>;
+  get(params: GetSpecParams): Promise<ServerConnectorSpecDetail>;
   getAll(params?: GetAllSpecsParams): Promise<ConnectorSpecSummary[]>;
 }

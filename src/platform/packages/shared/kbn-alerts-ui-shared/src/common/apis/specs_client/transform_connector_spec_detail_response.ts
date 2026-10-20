@@ -34,7 +34,6 @@ export const transformConnectorSpecDetailResponse = (
   return {
     ...summary,
     formSchema: wire.schema,
-    ...(wire.skill !== undefined ? { skill: wire.skill } : {}),
     actions: summary.actions.map((action, index) => ({
       ...action,
       inputSchema: wire.actions?.[index]?.input_schema ?? {},

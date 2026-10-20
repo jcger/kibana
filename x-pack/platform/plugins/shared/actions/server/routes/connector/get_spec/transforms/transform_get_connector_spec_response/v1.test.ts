@@ -5,7 +5,7 @@
  * 2.0.
  */
 
-import type { ConnectorSpecDetail } from '../../../../../../common/connector_spec';
+import type { ServerConnectorSpecDetail } from '../../../../../specs_client/types';
 import { getConnectorSpecResponseBodySchemaV1 } from '../../../../../../common/routes/connector/response';
 import { transformGetConnectorSpecResponse } from './v1';
 
@@ -19,7 +19,7 @@ const formSchema = {
 
 const inputSchema = { type: 'object', properties: { id: { type: 'string' } } };
 
-const detail: ConnectorSpecDetail = {
+const detail: ServerConnectorSpecDetail = {
   id: 'test-connector',
   displayName: 'Test Connector',
   description: 'A test connector',
@@ -78,7 +78,7 @@ describe('transformGetConnectorSpecResponse', () => {
     expect(body.has_inbound_events).toBe(false);
     expect(body.is_inbound_only).toBe(false);
     expect(body.is_ears_experimental).toBe(false);
-    expect(body.skill).toBe('test-skill');
+    expect(body).not.toHaveProperty('skill');
     expect(body.actions).toEqual([
       {
         name: 'listIncidents',
@@ -90,14 +90,26 @@ describe('transformGetConnectorSpecResponse', () => {
     ]);
   });
 
-  it('omits skill, icon, and docs_url when undefined', () => {
-    const { skill, icon, docsUrl, ...rest } = detail;
+  it('omits icon and docs_url when undefined', () => {
+    const { icon, docsUrl, ...rest } = detail;
     const body = transformGetConnectorSpecResponse(rest);
 
-    expect(body).not.toHaveProperty('skill');
     expect(body.metadata).not.toHaveProperty('icon');
     expect(body.metadata).not.toHaveProperty('docs_url');
     expect(body.metadata.is_technical_preview).toBe(true);
+  });
+
+  it('keeps long bundled skill text off the wire and still validates', () => {
+    const longSkill = 'Use listIncidents to search incident records. '.repeat(40);
+    expect(longSkill.length).toBeGreaterThan(1024);
+
+    const serverDetail: ServerConnectorSpecDetail = { ...detail, skill: longSkill };
+    const body = transformGetConnectorSpecResponse(serverDetail);
+
+    expect(serverDetail.skill).toBe(longSkill);
+    expect(body).not.toHaveProperty('skill');
+    expect(JSON.stringify(body)).not.toContain(longSkill);
+    expect(() => getConnectorSpecResponseBodySchemaV1.validate(body)).not.toThrow();
   });
 
   it('passes input_schema through unchanged', () => {

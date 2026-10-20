@@ -43,7 +43,6 @@ const fullWire: GetConnectorSpecResponse = {
   has_inbound_events: false,
   is_inbound_only: false,
   is_ears_experimental: false,
-  skill: 'test-skill',
   actions: [
     {
       name: 'listIncidents',
@@ -78,7 +77,6 @@ describe('transformConnectorSpecDetailResponse', () => {
       isInboundOnly: false,
       isEarsExperimental: false,
       formSchema,
-      skill: 'test-skill',
       actions: [
         {
           name: 'listIncidents',
@@ -91,10 +89,9 @@ describe('transformConnectorSpecDetailResponse', () => {
     });
   });
 
-  it('omits optional skill, icon, and docsUrl when absent on the wire', () => {
-    const { skill, ...wireWithoutSkill } = fullWire;
+  it('omits optional icon and docsUrl when absent on the wire', () => {
     const result = transformConnectorSpecDetailResponse({
-      ...wireWithoutSkill,
+      ...fullWire,
       metadata: {
         id: fullWire.metadata.id,
         display_name: fullWire.metadata.display_name,

@@ -41,7 +41,6 @@ export const transformGetConnectorSpecResponse = (
     },
     schema: detail.formSchema,
     ...topLevel,
-    ...(detail.skill !== undefined ? { skill: detail.skill } : {}),
     actions: detail.actions.map((action) => ({
       ...transformConnectorSpecActionSummaryResponse(action),
       input_schema: action.inputSchema,

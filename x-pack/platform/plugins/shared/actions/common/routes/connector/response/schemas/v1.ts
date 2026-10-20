@@ -419,12 +419,6 @@ export const getConnectorSpecResponseBodySchema = schema.object({
   is_ears_experimental: schema.boolean({
     meta: { description: 'Whether this connector type uses experimental EARS authentication.' },
   }),
-  skill: schema.maybe(
-    schema.string({
-      maxLength: 1024,
-      meta: { description: 'Optional skill identifier associated with this connector type.' },
-    })
-  ),
   actions: schema.arrayOf(connectorSpecActionDetailResponseSchema, {
     maxSize: 500,
     meta: {

@@ -37,7 +37,6 @@ const fullWire: GetConnectorSpecResponse = {
   has_inbound_events: true,
   is_inbound_only: false,
   is_ears_experimental: false,
-  skill: 'test-skill',
   actions: [
     {
       name: 'search',
@@ -75,7 +74,6 @@ describe('createSpecsClient', () => {
         isDeprecated: false,
       });
       expect(result.actions[0].inputSchema).toBe(inputSchema);
-      expect(result.skill).toBe('test-skill');
       expect(result.icon).toBe('testIcon');
       expect(result.docsUrl).toBe('https://example.com/docs');
     });
@@ -91,11 +89,10 @@ describe('createSpecsClient', () => {
       );
     });
 
-    it('omits optional skill, icon, and docsUrl when absent on the wire', async () => {
+    it('omits optional icon and docsUrl when absent on the wire', async () => {
       const http = httpServiceMock.createStartContract();
-      const { skill, ...wireWithoutSkill } = fullWire;
       http.get.mockResolvedValueOnce({
-        ...wireWithoutSkill,
+        ...fullWire,
         metadata: {
           id: fullWire.metadata.id,
           display_name: fullWire.metadata.display_name,

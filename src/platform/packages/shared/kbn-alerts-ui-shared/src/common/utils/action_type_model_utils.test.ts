@@ -61,7 +61,6 @@ describe('action_type_model_utils', () => {
       has_inbound_events: false,
       is_inbound_only: false,
       is_ears_experimental: false,
-      skill: 'test-skill',
       actions: [
         {
           name: 'listIncidents',
