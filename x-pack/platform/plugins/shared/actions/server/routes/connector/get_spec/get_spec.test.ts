@@ -179,6 +179,41 @@ describe('getConnectorSpecRoute', () => {
     });
   });
 
+  it('rejects a disabled spec with 404 and no success body', async () => {
+    const licenseState = licenseStateMock.create();
+    const router = httpServiceMock.createRouter();
+    const specsClient = specsClientMock.create();
+    specsClient.get.mockResolvedValue({
+      ...clientResult,
+      availability: {
+        enabled: false,
+        enabledInConfig: false,
+        enabledInLicense: true,
+        isDeprecated: false,
+      },
+    });
+
+    getConnectorSpecRoute(router, licenseState);
+
+    const [, handler] = router.get.mock.calls[0];
+
+    const [context, req, res] = mockHandlerArguments(
+      { specsClient },
+      { params: { id: 'test-connector' } },
+      ['ok', 'customError']
+    );
+
+    await expect(handler(context, req, res)).rejects.toMatchObject({
+      output: {
+        statusCode: 404,
+        payload: expect.objectContaining({
+          message: 'Spec for connector type "test-connector" not found.',
+        }),
+      },
+    });
+    expect(res.ok).not.toHaveBeenCalled();
+  });
+
   it('propagates Boom notFound from specsClient.get (wrapped by handleLegacyErrors in production)', async () => {
     const licenseState = licenseStateMock.create();
     const router = httpServiceMock.createRouter();

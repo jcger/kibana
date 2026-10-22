@@ -113,6 +113,67 @@ describe('getAllConnectorSpecsRoute', () => {
     expect(specsClient.getAll).toHaveBeenCalledWith({ featureId: undefined });
   });
 
+  it('returns only enabled summaries, keeping enabled deprecated ones', async () => {
+    const licenseState = licenseStateMock.create();
+    const router = httpServiceMock.createRouter();
+    const specsClient = specsClientMock.create();
+    const enabledDeprecated: ConnectorSpecSummary = {
+      ...summary,
+      id: 'deprecated-connector',
+      availability: { ...summary.availability, isDeprecated: true },
+    };
+    const disabledInConfig: ConnectorSpecSummary = {
+      ...summary,
+      id: 'disabled-connector',
+      availability: {
+        enabled: false,
+        enabledInConfig: false,
+        enabledInLicense: true,
+        isDeprecated: false,
+      },
+    };
+    specsClient.getAll.mockResolvedValue([summary, disabledInConfig, enabledDeprecated]);
+
+    getAllConnectorSpecsRoute(router, licenseState);
+
+    const [, handler] = router.get.mock.calls[0];
+    const [context, req, res] = mockHandlerArguments({ specsClient }, { query: {} }, ['ok']);
+
+    await handler(context, req, res);
+
+    const body = (res.ok as jest.Mock).mock.calls[0][0].body;
+    expect(body.map((item: { id: string }) => item.id)).toEqual([
+      'test-connector',
+      'deprecated-connector',
+    ]);
+  });
+
+  it('returns an empty list when every summary is disabled', async () => {
+    const licenseState = licenseStateMock.create();
+    const router = httpServiceMock.createRouter();
+    const specsClient = specsClientMock.create();
+    specsClient.getAll.mockResolvedValue([
+      {
+        ...summary,
+        availability: {
+          enabled: false,
+          enabledInConfig: false,
+          enabledInLicense: false,
+          isDeprecated: false,
+        },
+      },
+    ]);
+
+    getAllConnectorSpecsRoute(router, licenseState);
+
+    const [, handler] = router.get.mock.calls[0];
+    const [context, req, res] = mockHandlerArguments({ specsClient }, { query: {} }, ['ok']);
+
+    await handler(context, req, res);
+
+    expect((res.ok as jest.Mock).mock.calls[0][0].body).toEqual([]);
+  });
+
   it('returns 200 body from specsClient.getAll that validates and has no schemas', async () => {
     const licenseState = licenseStateMock.create();
     const router = httpServiceMock.createRouter();

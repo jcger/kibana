@@ -54,8 +54,9 @@ export const getAllConnectorSpecsRoute = (
         const specsClient = (await context.actions).getSpecsClient();
         const query: ConnectorTypesRequestQueryV1 = req.query;
         const summaries = await specsClient.getAll({ featureId: query.feature_id });
+        const enabledSummaries = summaries.filter((summary) => summary.availability.enabled);
         const responseBody: GetAllConnectorSpecsResponseV1 =
-          transformGetAllConnectorSpecsResponseV1(summaries);
+          transformGetAllConnectorSpecsResponseV1(enabledSummaries);
         return res.ok({ body: responseBody });
       })
     )

@@ -5,6 +5,7 @@
  * 2.0.
  */
 
+import Boom from '@hapi/boom';
 import type { IRouter } from '@kbn/core/server';
 import {
   type GetConnectorSpecParamsV1,
@@ -54,7 +55,7 @@ export const getConnectorSpecRoute = (
             body: () => getConnectorSpecResponseBodySchemaV1,
           },
           404: {
-            description: 'Connector type not found or not spec-based.',
+            description: 'Connector type not found, not spec-based, or not enabled.',
           },
           500: {
             description: 'Internal server error.',
@@ -67,6 +68,9 @@ export const getConnectorSpecRoute = (
         const specsClient = (await context.actions).getSpecsClient();
         const { id }: GetConnectorSpecParamsV1 = req.params;
         const specResult = await specsClient.get({ id });
+        if (!specResult.availability.enabled) {
+          throw Boom.notFound(`Spec for connector type "${id}" not found.`);
+        }
         const responseBody: GetConnectorSpecResponseV1 =
           transformGetConnectorSpecResponseV1(specResult);
         return res.ok({ body: responseBody });
