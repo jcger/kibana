@@ -356,6 +356,7 @@
     "@kbn/config": "workspace:*",
     "@kbn/config-mocks": "workspace:*",
     "@kbn/config-schema": "workspace:*",
+    "@kbn/connector-catalog-fleet-plugin": "workspace:*",
     "@kbn/connector-events-bridge-plugin": "workspace:*",
     "@kbn/connector-schemas": "workspace:*",
     "@kbn/connector-specs": "workspace:*",

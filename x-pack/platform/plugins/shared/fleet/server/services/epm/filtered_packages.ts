@@ -12,10 +12,17 @@ import {
   SEARCH_AI_LAKE_ALLOWED_INSTALL_PACKAGES,
 } from '../../../common/constants';
 
+/** Connector specs package, consumed by Kibana directly and never installed through Fleet. */
+export const KIBANA_CONNECTOR_SPECS_PACKAGE = 'kibana_connector_specs';
+
 export function getFilteredSearchPackages() {
   const isElasticConnectorsServerlessEnabled = getElasticConnectorsServerlessEnabled();
   const shouldFilterFleetServer = appContextService.getConfig()?.internal?.fleetServerStandalone;
-  const filtered: string[] = ['profiler_collector', 'profiler_symbolizer'];
+  const filtered: string[] = [
+    'profiler_collector',
+    'profiler_symbolizer',
+    KIBANA_CONNECTOR_SPECS_PACKAGE,
+  ];
   if (!isElasticConnectorsServerlessEnabled) {
     filtered.push('elastic_connectors');
   }
@@ -31,7 +38,7 @@ export function getFilteredSearchPackages() {
 
 export function getFilteredInstallPackages() {
   const isElasticConnectorsServerlessEnabled = getElasticConnectorsServerlessEnabled();
-  const filtered: string[] = [];
+  const filtered: string[] = [KIBANA_CONNECTOR_SPECS_PACKAGE];
   if (!isElasticConnectorsServerlessEnabled) {
     filtered.push('elastic_connectors');
   }

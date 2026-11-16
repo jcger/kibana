@@ -10,6 +10,11 @@ export { loadCatalogConnectorTypes } from './load_catalog_connector_types';
 export { startConnectorCatalog } from './start_connector_catalog';
 export type { ConnectorCatalogHandle } from './start_connector_catalog';
 export { buildTypeFromStoredSpec } from './build_type_from_stored_spec';
+export { ingestCatalogDefinitions } from './ingest_catalog_definitions';
+export type {
+  IngestCatalogDefinitionsInput,
+  IngestCatalogDefinitionsResult,
+} from './ingest_catalog_definitions';
 export type { BuildTypeFromStoredSpec } from './build_type_from_stored_spec';
 export {
   CATALOG_FIRST_LOAD_TIMEOUT_MS,

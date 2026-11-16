@@ -142,8 +142,13 @@ import { RelayClient, type RelayClientContract } from './lib/relay';
 import {
   buildTypeFromStoredSpec,
   createConnectorCatalogStorage,
+  ingestCatalogDefinitions,
   startConnectorCatalog,
   type ConnectorCatalogHandle,
+  type ConnectorCatalogStorage,
+  type IngestCatalogDefinitionsInput,
+  type IngestCatalogDefinitionsResult,
+  type StoredCatalogDefinition,
 } from './lib/connector_catalog';
 
 export interface PluginSetupContract {
@@ -276,6 +281,14 @@ export interface PluginStartContract {
 
   /** Resolves when the first connector catalog load is done, failed, or timed out. Never rejects. */
   whenCatalogReady(): Promise<void>;
+
+  // Internal and experimental (Fleet delivery PoC). Do not depend on it outside connectorCatalogFleet.
+  connectorCatalog: {
+    /** Stores the given YAML specs in the connector catalog and registers their types. */
+    ingestDefinitions(
+      input: IngestCatalogDefinitionsInput
+    ): Promise<IngestCatalogDefinitionsResult>;
+  };
 }
 
 export interface ActionsPluginsSetup {
@@ -344,6 +357,8 @@ export class ActionsPlugin
   private connectorCatalogFeatureFlagSubscription?: Subscription;
   private setupContract?: PluginSetupContract;
   private connectorCatalog?: ConnectorCatalogHandle;
+  // Latest value of the catalog flag, read by connectorCatalog.ingestDefinitions.
+  private isConnectorCatalogEnabled = false;
   private resolveCatalogReady: () => void = () => {};
   private readonly catalogReady: Promise<void> = new Promise<void>((resolve) => {
     this.resolveCatalogReady = resolve;
@@ -653,13 +668,19 @@ export class ActionsPlugin
       );
     }
 
+    const connectorCatalogStorage = createConnectorCatalogStorage({
+      esClient: core.elasticsearch.client.asInternalUser,
+      logger: this.logger,
+    });
     // The handle must exist first, because the first flag value can arrive synchronously.
-    const connectorCatalog = this.startConnectorCatalog(core);
+    const connectorCatalog = this.startConnectorCatalog(connectorCatalogStorage);
     this.connectorCatalogFeatureFlagSubscription = core.featureFlags
       .getBooleanValue$(ACTIONS_CONNECTOR_CATALOG_ENABLED_FLAG, false)
       .subscribe({
-        next: (isConnectorCatalogEnabled: boolean) =>
-          connectorCatalog.onFlagValue(isConnectorCatalogEnabled),
+        next: (isConnectorCatalogEnabled: boolean) => {
+          this.isConnectorCatalogEnabled = isConnectorCatalogEnabled;
+          connectorCatalog.onFlagValue(isConnectorCatalogEnabled);
+        },
         error: (error: unknown) => connectorCatalog.onFlagError(error),
       });
 
@@ -969,6 +990,16 @@ export class ActionsPlugin
         this.unregisterDynamicConnector(connectorId),
       getRelayClient: () => this.relayClient,
       whenCatalogReady: () => this.catalogReady,
+      connectorCatalog: {
+        ingestDefinitions: (input: IngestCatalogDefinitionsInput) =>
+          ingestCatalogDefinitions(input, {
+            isEnabled: async () => this.isConnectorCatalogEnabled,
+            storage: connectorCatalogStorage,
+            actionTypeRegistry: actionTypeRegistry!,
+            buildType: this.buildCatalogType,
+            logger: this.logger,
+          }),
+      },
       getUsableUserOAuthConnectorIds: async (request: KibanaRequest, connectorIds: string[]) => {
         throwIfCannotEncrypt();
         const profileUid = await getCurrentUserProfileId(request);
@@ -1230,26 +1261,25 @@ export class ActionsPlugin
   };
 
   /** Creates the catalog handle. The flag subscription in `start()` drives it. */
-  private startConnectorCatalog(core: CoreStart): ConnectorCatalogHandle {
-    const { setupContract, actionTypeRegistry, logger } = this;
+  private startConnectorCatalog(storage: ConnectorCatalogStorage): ConnectorCatalogHandle {
+    const { actionTypeRegistry, logger } = this;
     const handle = startConnectorCatalog({
-      storage: createConnectorCatalogStorage({
-        esClient: core.elasticsearch.client.asInternalUser,
-        logger,
-      }),
+      storage,
       actionTypeRegistry: actionTypeRegistry!,
-      buildType: (definition) => {
-        if (!setupContract) {
-          throw new Error('The actions plugin setup contract is not available.');
-        }
-        return buildTypeFromStoredSpec(definition, setupContract);
-      },
+      buildType: this.buildCatalogType,
       logger,
     });
     this.connectorCatalog = handle;
     void handle.ready.then(this.resolveCatalogReady);
     return handle;
   }
+
+  private buildCatalogType = (definition: StoredCatalogDefinition) => {
+    if (!this.setupContract) {
+      throw new Error('The actions plugin setup contract is not available.');
+    }
+    return buildTypeFromStoredSpec(definition, this.setupContract);
+  };
 
   private validateEnabledConnectorTypes = (plugins: ActionsPluginsStart) => {
     if (

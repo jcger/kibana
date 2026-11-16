@@ -1,0 +1,23 @@
+{
+  "type": "plugin",
+  "id": "@kbn/connector-catalog-fleet-plugin",
+  "owner": [
+    "@elastic/response-ops"
+  ],
+  "group": "platform",
+  "visibility": "private",
+  "description": "PoC: fetches connector spec YAML files from a Fleet package and hands them to the actions connector catalog.",
+  "plugin": {
+    "id": "connectorCatalogFleet",
+    "browser": false,
+    "server": true,
+    "configPath": [
+      "xpack",
+      "connectorCatalogFleet"
+    ],
+    "requiredPlugins": [
+      "actions",
+      "fleet"
+    ]
+  }
+}

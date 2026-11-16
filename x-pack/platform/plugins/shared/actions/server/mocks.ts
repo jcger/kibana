@@ -71,6 +71,9 @@ const createStartMock = () => {
     getRelayClient: jest.fn(),
     getUsableUserOAuthConnectorIds: jest.fn().mockResolvedValue(new Set<string>()),
     whenCatalogReady: jest.fn().mockResolvedValue(undefined),
+    connectorCatalog: {
+      ingestDefinitions: jest.fn().mockResolvedValue({ registered: 0 }),
+    },
   });
 
   return mock;

@@ -1,0 +1,5 @@
+- version: 1.0.0
+  changes:
+    - description: Initial PoC release with 1 connector spec.
+      type: enhancement
+      link: https://github.com/elastic/kibana
